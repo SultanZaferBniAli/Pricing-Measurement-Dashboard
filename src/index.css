@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #222242;
+  color: #ffffff;
+  font-family: "Helvetica Neue LT Arabic", "Helvetica Neue", Arial,
+    "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* RTL: numbers and prices stay LTR for readability */
+.num {
+  direction: ltr;
+  unicode-bidi: embed;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbar to match the dark brand surface */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #222242;
+}
+::-webkit-scrollbar-thumb {
+  background: #33306a;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5e45ff;
+}
+
+/* Subtle geometric wave / diamond accents reused across screens */
+.tam-diamond {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  display: inline-block;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Checkmark reveal — scales + fades in (emil-design-eng: nothing from nothing) */
+@keyframes check-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-check {
+  animation: check-in 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/*
+ * Respect users who prefer reduced motion (apple-design / impeccable a11y).
+ * Motion is an enhancement — never a barrier.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
