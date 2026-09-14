@@ -1,5 +1,5 @@
 /**
- * Excel import — lets an admin re-upload an updated
+ * Excel import - lets an admin re-upload an updated
  * "Scope_of_Work_Priced_QTY.xlsx" and re-parse it at runtime, mirroring the
  * build-time Python parser (scripts/parse_excel.py).
  */
@@ -18,7 +18,7 @@ const LABEL: Record<string, string> = {
 function clean(v: unknown): string {
   if (v == null) return "";
   let s = String(typeof v === "object" && "text" in (v as any) ? (v as any).text : v).trim();
-  s = s.replace(/[—–]/g, "-"); // normalize em/en dashes to a plain hyphen
+  s = s.replace(/[--]/g, "-"); // normalize em/en dashes to a plain hyphen
   return s;
 }
 

@@ -23,10 +23,15 @@ export function SectionAccordion({
   onToggle: () => void;
 }) {
   const selections = useStore((s) => s.selections);
+  const allSections = useStore((s) => s.data.sections);
   const selectMany = useStore((s) => s.selectMany);
   const clearSection = useStore((s) => s.clearSection);
 
-  const lines = sectionLines(section, selections);
+  const lines = sectionLines(section, selections, allSections);
+  const lineById = useMemo(
+    () => new Map(lines.map((l) => [l.item.id, l])),
+    [lines]
+  );
   const totals = sumLines(lines.filter((l) => !l.isUnpriced));
   const selectedCount = lines.length;
   const unpricedSelected = lines.filter((l) => l.isUnpriced).length;
@@ -128,7 +133,7 @@ export function SectionAccordion({
                     </div>
                     <Card className="p-2 space-y-1">
                       {items.map((it) => (
-                        <ItemRow key={it.id} item={it} />
+                        <ItemRow key={it.id} item={it} resolvedLine={lineById.get(it.id)} />
                       ))}
                     </Card>
                   </div>

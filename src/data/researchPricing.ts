@@ -25,25 +25,25 @@ export const FLIGHT_PRICING: Record<
   "logistics-travel-flights-domestic-flight-tickets-economy-class": {
     price: 521,
     note:
-      "Benchmark average one-way from Riyadh · range SAR 360–885 by destination (Domestic flight research).",
+      "Benchmark average one-way from Riyadh · range SAR 360-885 by destination (Domestic flight research).",
   },
   "logistics-travel-flights-domestic-flight-tickets-business-class": {
     price: 1408,
     note:
-      "Benchmark average one-way from Riyadh · range SAR 1,150–1,990 by destination (Domestic flight research).",
+      "Benchmark average one-way from Riyadh · range SAR 1,150-1,990 by destination (Domestic flight research).",
   },
   "logistics-travel-flights-international-flight-tickets-business-class": {
     price: 22222,
     note:
-      "Benchmark average round-trip · range SAR 13,000–33,500 by country (International flight research).",
+      "Benchmark average round-trip · range SAR 13,000-33,500 by country (International flight research).",
   },
   "logistics-travel-flights-international-flight-tickets-first-class": {
     price: 46750,
     note:
-      "Benchmark average round-trip · range SAR 37,500–56,000 (International flight research).",
+      "Benchmark average round-trip · range SAR 37,500-56,000 (International flight research).",
   },
-  // Domestic First: Saudi carriers sell no First cabin — left unpriced.
-  // International Economy / Premium Economy: no benchmark data — left unpriced.
+  // Domestic First: Saudi carriers sell no First cabin - left unpriced.
+  // International Economy / Premium Economy: no benchmark data - left unpriced.
 };
 
 /** Small factory for research-sourced ground-transport line items. */
@@ -85,7 +85,7 @@ export const GROUND_TRANSPORT_ITEMS: ScopeItem[] = [
     type: "Per day (8 hrs)",
     unitPrice: 1057,
     sourceItem: "Camry / Sonata / Taurus",
-    mappingNote: "Best-supported market figure · range SAR 813–1,360.",
+    mappingNote: "Best-supported market figure · range SAR 813-1,360.",
   }),
   transport({
     id: "research-gt-standard-sedan-airport",
@@ -94,7 +94,7 @@ export const GROUND_TRANSPORT_ITEMS: ScopeItem[] = [
     type: "Per transfer",
     unitPrice: 190,
     sourceItem: "Camry / Sonata / Taurus",
-    mappingNote: "One-way airport transfer · range SAR 150–230.",
+    mappingNote: "One-way airport transfer · range SAR 150-230.",
   }),
   transport({
     id: "research-gt-executive-sedan-day",
@@ -112,7 +112,7 @@ export const GROUND_TRANSPORT_ITEMS: ScopeItem[] = [
     type: "Per day (8 hrs)",
     unitPrice: 1612,
     sourceItem: "Tahoe / Yukon",
-    mappingNote: "Range SAR 1,223–2,000.",
+    mappingNote: "Range SAR 1,223-2,000.",
   }),
   transport({
     id: "research-gt-luxury-suv-airport",
@@ -130,7 +130,7 @@ export const GROUND_TRANSPORT_ITEMS: ScopeItem[] = [
     type: "Per day (8 hrs)",
     unitPrice: 3300,
     sourceItem: "S450 / BMW 740 / 735i",
-    mappingNote: "Range SAR 2,600–4,000.",
+    mappingNote: "Range SAR 2,600-4,000.",
   }),
   transport({
     id: "research-gt-van-8h",
@@ -139,7 +139,7 @@ export const GROUND_TRANSPORT_ITEMS: ScopeItem[] = [
     type: "Per day",
     unitPrice: 2155,
     sourceItem: "Mercedes Vito / Hyundai Staria",
-    mappingNote: "Range SAR 1,309–3,000 by trim.",
+    mappingNote: "Range SAR 1,309-3,000 by trim.",
   }),
   transport({
     id: "research-gt-minibus-8h",

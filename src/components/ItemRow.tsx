@@ -1,19 +1,33 @@
 /** A single scope line rendered as a table-like row with selection + qty + math. */
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Percent } from "lucide-react";
 import { money } from "../lib/format";
 import { computeLine } from "../lib/pricing";
 import { useStore } from "../lib/store";
-import type { ScopeItem } from "../lib/types";
+import type { ComputedLine, ScopeItem } from "../lib/types";
 import { Badge, MatchBadge, SelectToggle, cx } from "./ui";
 
-export function ItemRow({ item }: { item: ScopeItem }) {
+/**
+ * A single scope line. Contingency lines take a percentage instead of a unit
+ * price, so their resolved line is passed down from the section (it depends on
+ * the rest of the budget) rather than computed here.
+ */
+export function ItemRow({
+  item,
+  resolvedLine,
+}: {
+  item: ScopeItem;
+  resolvedLine?: ComputedLine;
+}) {
   const selection = useStore((s) => s.selections[item.id]);
   const toggleItem = useStore((s) => s.toggleItem);
   const setQty = useStore((s) => s.setQty);
   const setCustomPrice = useStore((s) => s.setCustomPrice);
+  const setPercentRate = useStore((s) => s.setPercentRate);
 
   const selected = Boolean(selection);
-  const line = computeLine(item, selection ?? { qty: item.defaultQty || 1 });
+  const isPercent = item.percentBasis != null;
+  const line =
+    resolvedLine ?? computeLine(item, selection ?? { qty: item.defaultQty || 1 });
   const showsUnpriced = line.isUnpriced;
 
   return (
@@ -39,7 +53,13 @@ export function ItemRow({ item }: { item: ScopeItem }) {
             <span className="text-sm font-medium text-white truncate">{item.name}</span>
             {showsUnpriced && (
               <Badge tone="missing">
-                <AlertTriangle size={11} /> Unpriced
+                <AlertTriangle size={11} /> {isPercent ? "Set a rate" : "Unpriced"}
+              </Badge>
+            )}
+            {isPercent && !showsUnpriced && (
+              <Badge tone="gold">
+                <Percent size={11} /> of{" "}
+                {item.percentBasis === "budget" ? "budget" : "section"} base
               </Badge>
             )}
           </div>
@@ -63,23 +83,51 @@ export function ItemRow({ item }: { item: ScopeItem }) {
         </div>
       </div>
 
-      {/* qty */}
+      {/* qty (a contingency is always a single line, so no quantity applies) */}
       <div className="col-span-3 md:col-span-1 flex flex-col">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">Qty</span>
-        <input
-          type="number"
-          min={0}
-          value={selected ? selection!.qty : item.defaultQty || ""}
-          disabled={!selected}
-          onChange={(e) => setQty(item.id, parseFloat(e.target.value))}
-          className="num w-16 rounded-lg bg-navy/60 border border-white/10 px-2 py-1 text-sm text-white text-center disabled:opacity-40 focus:border-electric focus:outline-none"
-        />
+        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
+          {isPercent ? "Rate" : "Qty"}
+        </span>
+        {isPercent ? (
+          <span className="num text-sm text-lavender-light/40 text-center">-</span>
+        ) : (
+          <input
+            type="number"
+            min={0}
+            value={selected ? selection!.qty : item.defaultQty || ""}
+            disabled={!selected}
+            onChange={(e) => setQty(item.id, parseFloat(e.target.value))}
+            className="num w-16 rounded-lg bg-navy/60 border border-white/10 px-2 py-1 text-sm text-white text-center disabled:opacity-40 focus:border-electric focus:outline-none"
+          />
+        )}
       </div>
 
-      {/* unit price (or custom price input for unpriced) */}
+      {/* unit price, a custom price for unpriced lines, or a % rate */}
       <div className="col-span-4 md:col-span-2 flex flex-col">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">Unit Price</span>
-        {item.isPriced ? (
+        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
+          {isPercent ? "Rate %" : "Unit Price"}
+        </span>
+        {isPercent ? (
+          <div className="flex items-center justify-end gap-1">
+            <input
+              type="number"
+              min={0}
+              max={100}
+              step={0.5}
+              placeholder="Set %"
+              value={selection?.percentRate ?? ""}
+              onChange={(e) =>
+                setPercentRate(
+                  item.id,
+                  e.target.value === "" ? null : parseFloat(e.target.value)
+                )
+              }
+              className="num w-20 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-right placeholder:text-gold/40 focus:border-gold focus:outline-none"
+              title="Percentage applied to the subtotal of the other selected lines"
+            />
+            <span className="text-xs text-gold/70">%</span>
+          </div>
+        ) : item.isPriced ? (
           <span className="num text-sm text-lavender-light text-right">
             {money(item.unitPrice)}
           </span>

@@ -1,11 +1,11 @@
 /**
- * Excel export — produces a clean, client-ready workbook from the current
+ * Excel export - produces a clean, client-ready workbook from the current
  * selection using ExcelJS (styled headers, TAM brand colours, four sheets).
  *
- *   Sheet 1: Budget Summary  — title, date, totals, per-section breakdown
- *   Sheet 2: Selected Items  — every priced selected line with full detail
- *   Sheet 3: Unpriced Items  — selected lines still missing a price
- *   Sheet 4: Source Reference — pricing-master provenance for each line
+ *   Sheet 1: Budget Summary  - title, date, totals, per-section breakdown
+ *   Sheet 2: Selected Items  - every priced selected line with full detail
+ *   Sheet 3: Unpriced Items  - selected lines still missing a price
+ *   Sheet 4: Source Reference - pricing-master provenance for each line
  */
 import ExcelJS from "exceljs";
 import { FEE_RATE } from "./format";
@@ -171,12 +171,13 @@ export async function buildWorkbook(
     s3.addRow(["No unpriced items in this budget."]);
   } else {
     for (const l of unpriced) {
+      const isPercent = l.item.percentBasis != null;
       s3.addRow([
         l.item.section,
         l.item.subCategory,
         l.item.name,
-        l.item.type,
-        l.qty,
+        isPercent ? "Contingency (rate not set)" : l.item.type,
+        isPercent ? "-" : l.qty,
         l.item.matchStatus,
         l.item.mappingNote,
       ]);
@@ -214,25 +215,47 @@ export async function buildWorkbook(
   return wb.xlsx.writeBuffer();
 }
 
+/** Spell out how a contingency line was arrived at, for the Notes column. */
+function contingencyBasisNote(l: ComputedLine): string {
+  const scope = l.item.percentBasis === "budget" ? "budget" : "section";
+  return `${l.percentRate}% of the ${scope} base (${moneyText(
+    l.percentOfBase ?? 0
+  )} SAR).`;
+}
+
+function moneyText(v: number): string {
+  return v.toLocaleString("en-US", { maximumFractionDigits: 2 });
+}
+
 function addLineRows(ws: ExcelJS.Worksheet, lines: ComputedLine[]) {
   for (const l of lines) {
+    const isPercent = l.item.percentBasis != null;
+    const notes = [
+      l.note,
+      isPercent ? contingencyBasisNote(l) : null,
+      l.item.mappingNote,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     const r = ws.addRow([
       l.item.section,
       l.item.subCategory,
       l.item.name,
-      l.item.type,
-      l.qty,
+      // A contingency has no unit basis, so name the rate in the Type column.
+      isPercent ? `Contingency (${l.percentRate}%)` : l.item.type,
+      isPercent ? "-" : l.qty,
       l.unitPrice ?? 0,
       l.baseCost,
       l.fee,
       l.totalCost,
       l.item.priceSource || "-",
       l.item.matchStatus,
-      l.note ? `${l.note}. ${l.item.mappingNote}` : l.item.mappingNote,
+      notes,
     ]);
     [6, 7, 8, 9].forEach((i) => money(r.getCell(i)));
     r.getCell(5).alignment = { horizontal: "center" };
-    if (l.customPrice) {
+    if (l.customPrice || isPercent) {
       r.getCell(6).font = { color: { argb: "FF9A6B00" }, italic: true };
     }
   }

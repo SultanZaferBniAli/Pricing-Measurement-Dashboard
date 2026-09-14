@@ -26,6 +26,14 @@ export interface ScopeItem {
   matchStatus: MatchStatus; // EXACT / CLOSE / NOT IN MASTER
   mappingNote: string;
   isPriced: boolean; // false for GAP / NOT IN MASTER / empty price
+  /**
+   * Contingency lines are a percentage of a subtotal, not a unit rate, so they
+   * carry no unit price at all. "section" charges against the section's own
+   * priced subtotal, "budget" against the whole budget. The rate itself is left
+   * to the user (no benchmark exists for it), so the line stays excluded from
+   * totals until they enter one.
+   */
+  percentBasis?: "section" | "budget";
 }
 
 export interface Section {
@@ -80,6 +88,11 @@ export interface Selection {
   qty: number;
   /** Custom price entered by the user for an otherwise-unpriced item. */
   customPrice?: number | null;
+  /**
+   * Contingency rate as a whole number of percent (10 means 10%). Only used by
+   * items with a `percentBasis`; null until the user sets one.
+   */
+  percentRate?: number | null;
   /** Optional free-text note attached in the budget summary. */
   note?: string;
 }
@@ -97,6 +110,9 @@ export interface ComputedLine {
   isUnpriced: boolean;
   customPrice?: number | null;
   note?: string;
+  /** Set on contingency lines: the rate applied and the subtotal it ran against. */
+  percentRate?: number | null;
+  percentOfBase?: number;
 }
 
 export interface SectionTotals {

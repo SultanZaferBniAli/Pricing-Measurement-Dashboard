@@ -1,4 +1,4 @@
-/** Screen 3 — Selected Budget Summary: review, edit qty/notes, totals, export. */
+/** Screen 3 - Selected Budget Summary: review, edit qty/notes, totals, export. */
 import { useState } from "react";
 import {
   Download,
@@ -117,8 +117,8 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
               {unpricedSelected.length > 1 ? "s have" : " has"} no price
             </span>{" "}
             and {unpricedSelected.length > 1 ? "are" : "is"} excluded from the totals.
-            Enter a custom price in the section view to include{" "}
-            {unpricedSelected.length > 1 ? "them" : "it"}.
+            Set a price (or a rate, for contingency lines) in the section view to
+            include {unpricedSelected.length > 1 ? "them" : "it"}.
           </div>
         </div>
       )}
@@ -145,9 +145,16 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
                       {l.item.name}
                     </span>
                     {l.customPrice ? <Badge tone="gold">custom</Badge> : null}
+                    {l.item.percentBasis ? (
+                      <Badge tone="gold">{l.percentRate}%</Badge>
+                    ) : null}
                   </div>
                   <div className="text-[11px] text-lavender-light/50">
-                    {l.item.subCategory} · {l.item.type}
+                    {l.item.percentBasis
+                      ? `${l.item.subCategory} · ${l.percentRate}% of the ${
+                          l.item.percentBasis === "budget" ? "budget" : "section"
+                        } base (${money(l.percentOfBase ?? 0)})`
+                      : `${l.item.subCategory} · ${l.item.type}`}
                   </div>
                 </div>
                 <div className="col-span-6 md:col-span-2 text-xs text-lavender-light/70">
@@ -157,13 +164,19 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
                   </div>
                 </div>
                 <div className="col-span-2 md:col-span-1 flex justify-center">
-                  <input
-                    type="number"
-                    min={0}
-                    value={l.qty}
-                    onChange={(e) => setQty(l.item.id, parseFloat(e.target.value))}
-                    className="num w-14 rounded-lg bg-navy/60 border border-white/10 px-1.5 py-1 text-sm text-white text-center focus:border-electric focus:outline-none"
-                  />
+                  {l.item.percentBasis ? (
+                    // A contingency is a single percentage line: quantity does
+                    // not apply, so there is nothing to edit here.
+                    <span className="num text-sm text-lavender-light/40">-</span>
+                  ) : (
+                    <input
+                      type="number"
+                      min={0}
+                      value={l.qty}
+                      onChange={(e) => setQty(l.item.id, parseFloat(e.target.value))}
+                      className="num w-14 rounded-lg bg-navy/60 border border-white/10 px-1.5 py-1 text-sm text-white text-center focus:border-electric focus:outline-none"
+                    />
+                  )}
                 </div>
                 <div className="col-span-1 md:col-span-1 num text-sm text-lavender-light/70 text-right hidden md:block">
                   {money(l.unitPrice)}

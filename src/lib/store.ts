@@ -25,6 +25,7 @@ interface AppState {
   toggleItem: (id: string, defaultQty?: number) => void;
   setQty: (id: string, qty: number) => void;
   setCustomPrice: (id: string, price: number | null) => void;
+  setPercentRate: (id: string, rate: number | null) => void;
   setNote: (id: string, note: string) => void;
   selectMany: (ids: string[], defaultQtys: Record<string, number>) => void;
   clearSection: (sectionKey: string, ids: string[]) => void;
@@ -83,6 +84,17 @@ export const useStore = create<AppState>()(
             selections: {
               ...state.selections,
               [id]: { ...cur, customPrice: price },
+            },
+          };
+        }),
+
+      setPercentRate: (id, rate) =>
+        set((state) => {
+          const cur = state.selections[id] ?? { qty: 1 };
+          return {
+            selections: {
+              ...state.selections,
+              [id]: { ...cur, percentRate: rate },
             },
           };
         }),

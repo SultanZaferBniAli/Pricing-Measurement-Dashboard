@@ -146,7 +146,7 @@ export function SelectToggle({
       )}
     >
       {checked && (
-        // "Nothing appears from nothing" — the tick scales/fades in, not a pop.
+        // "Nothing appears from nothing" - the tick scales/fades in, not a pop.
         <svg
           width="12"
           height="12"

@@ -62,7 +62,7 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Checkmark reveal — scales + fades in (emil-design-eng: nothing from nothing) */
+/* Checkmark reveal - scales + fades in (emil-design-eng: nothing from nothing) */
 @keyframes check-in {
   from {
     opacity: 0;
@@ -79,7 +79,7 @@ input[type="number"] {
 
 /*
  * Respect users who prefer reduced motion (apple-design / impeccable a11y).
- * Motion is an enhancement — never a barrier.
+ * Motion is an enhancement - never a barrier.
  */
 @media (prefers-reduced-motion: reduce) {
   *,

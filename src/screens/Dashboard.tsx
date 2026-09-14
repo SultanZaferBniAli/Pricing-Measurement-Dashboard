@@ -195,6 +195,7 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                 ["EXACT", "Exact"],
                 ["CLOSE", "Close"],
                 ["RESEARCH", "Research"],
+                ["DERIVED", "Derived"],
                 ["NOT IN MASTER", "Not in master"],
               ]}
             />

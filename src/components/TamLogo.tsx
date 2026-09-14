@@ -2,7 +2,7 @@
  * TAM wordmark for the nav bar.
  *
  * Renders the official brand asset at `public/tam-logo.webp`. To update it,
- * just replace that one file (keep the name) — it will appear automatically.
+ * just replace that one file (keep the name) - it will appear automatically.
  * If the asset ever fails to load, we fall back to a clean text wordmark so the
  * nav bar is never broken.
  */

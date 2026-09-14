@@ -1,4 +1,4 @@
-/** Optional Screen 4 — Admin: re-upload the Scope of Work workbook to re-parse. */
+/** Optional Screen 4 - Admin: re-upload the Scope of Work workbook to re-parse. */
 import { useRef, useState } from "react";
 import { CheckCircle2, RotateCcw, Upload } from "lucide-react";
 import { Button, Card, Diamond } from "../components/ui";
