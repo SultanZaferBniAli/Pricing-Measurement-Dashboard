@@ -1,13 +1,15 @@
 /** Lightweight dependency-free horizontal bar chart: spend by section. */
 import { money } from "../lib/format";
+import { useT } from "../lib/i18n";
 import type { BudgetSummary } from "../lib/useTotals";
 import { Card, Diamond } from "./ui";
 
 const COLORS = ["#5E45FF", "#8A87F4", "#EBA036", "#6256F3"];
 
 export function SectionBarChart({ budget }: { budget: BudgetSummary }) {
+  const { t, tSection } = useT();
   const rows = budget.bySection.map((b, i) => ({
-    name: b.section.name,
+    name: tSection(b.section.name),
     value: b.totals.grand,
     color: COLORS[i % COLORS.length],
   }));
@@ -18,14 +20,12 @@ export function SectionBarChart({ budget }: { budget: BudgetSummary }) {
     <Card className="p-5">
       <div className="flex items-center gap-2 mb-4">
         <Diamond />
-        <h3 className="font-semibold text-white">Spend by Section</h3>
-        <span className="ml-auto text-xs text-lavender-light/60">
-          Grand total incl. 15% fee
-        </span>
+        <h3 className="font-semibold text-white">{t("chartTitle")}</h3>
+        <span className="ms-auto text-xs text-lavender-light/60">{t("chartSub")}</span>
       </div>
       {!anySpend ? (
         <p className="text-sm text-lavender-light/50 py-6 text-center">
-          Select items to see the spend breakdown.
+          {t("chartEmpty")}
         </p>
       ) : (
         <div className="space-y-3">

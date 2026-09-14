@@ -2,9 +2,11 @@
 import { useRef, useState } from "react";
 import { CheckCircle2, RotateCcw, Upload } from "lucide-react";
 import { Button, Card, Diamond } from "../components/ui";
+import { useT } from "../lib/i18n";
 import { useStore } from "../lib/store";
 
 export function Admin() {
+  const { t } = useT();
   const data = useStore((s) => s.data);
   const replaceData = useStore((s) => s.replaceData);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -15,7 +17,7 @@ export function Admin() {
 
   async function onFile(file: File) {
     setBusy(true);
-    setStatus({ kind: "idle", msg: "Parsing…" });
+    setStatus({ kind: "idle", msg: t("adminParsing") });
     try {
       // Lazy-load the ExcelJS-backed importer only when an admin uploads a file.
       const { importScopeData } = await import("../lib/excelImport");
@@ -23,7 +25,12 @@ export function Admin() {
       replaceData(next);
       setStatus({
         kind: "ok",
-        msg: `Loaded ${next.meta.counts.items} items across ${next.meta.counts.sections} sections (${next.meta.counts.priced} priced, ${next.meta.counts.unpriced} unpriced). Selections were reset.`,
+        msg: t("adminLoaded", {
+          items: next.meta.counts.items,
+          sections: next.meta.counts.sections,
+          priced: next.meta.counts.priced,
+          unpriced: next.meta.counts.unpriced,
+        }),
       });
     } catch (e) {
       setStatus({ kind: "error", msg: (e as Error).message });
@@ -37,10 +44,9 @@ export function Admin() {
       <div className="flex items-center gap-3">
         <Diamond />
         <div>
-          <h1 className="text-2xl font-bold text-white">Data Admin</h1>
+          <h1 className="text-2xl font-bold text-white">{t("adminTitle")}</h1>
           <p className="text-sm text-lavender-light/70">
-            Re-upload an updated <code className="text-lavender-light">Scope_of_Work_Priced_QTY.xlsx</code> to
-            re-parse the catalog at runtime.
+            {t("adminSub")}
           </p>
         </div>
       </div>
@@ -57,9 +63,9 @@ export function Admin() {
           onClick={() => inputRef.current?.click()}
         >
           <Upload className="mx-auto text-lavender-light/60 mb-3" size={32} />
-          <p className="text-white font-medium">Drop the workbook here or click to browse</p>
+          <p className="text-white font-medium">{t("adminDrop")}</p>
           <p className="text-xs text-lavender-light/50 mt-1">
-            Expects the "Scope of Work" sheet layout · .xlsx
+            {t("adminExpects")}
           </p>
           <input
             ref={inputRef}
@@ -84,32 +90,33 @@ export function Admin() {
             }`}
           >
             {status.kind === "ok" && <CheckCircle2 size={16} className="mt-0.5" />}
-            <span>{busy ? "Parsing…" : status.msg}</span>
+            <span>{busy ? t("adminParsing") : status.msg}</span>
           </div>
         ) : null}
 
         <div className="mt-6 flex items-center justify-between text-xs text-lavender-light/60">
           <span>
-            Currently loaded: <b className="text-white">{data.meta.counts.items}</b> items ·{" "}
-            <b className="text-white">{data.meta.counts.sections}</b> sections
+            {t("adminCurrent")} <b className="text-white">{data.meta.counts.items}</b>{" "}
+            {t("adminItemsWord")} · <b className="text-white">{data.meta.counts.sections}</b>{" "}
+            {t("adminSectionsWord")}
           </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => window.location.reload()}
           >
-            <RotateCcw size={14} /> Reset to bundled data
+            <RotateCcw size={14} /> {t("adminReset")}
           </Button>
         </div>
       </Card>
 
       <Card className="p-6">
-        <h3 className="font-semibold text-white mb-2">Parsing rules</h3>
-        <ul className="space-y-1.5 text-sm text-lavender-light/70 list-disc list-inside">
-          <li>Section headers detected: MARKETING, EVENT MANAGEMENT, LOGISTICS, VIDEO PRODUCTIONS.</li>
-          <li>Subtotal and grand-total rows are ignored for item parsing.</li>
-          <li>Rows marked NOT IN MASTER / empty price are kept but flagged unpriced.</li>
-          <li>No prices are invented. Unpriced items stay out of totals until a custom price is set.</li>
+        <h3 className="font-semibold text-white mb-2">{t("adminRulesTitle")}</h3>
+        <ul className="space-y-1.5 text-sm text-lavender-light/70 list-disc list-inside marker:text-lavender-light/40">
+          <li>{t("adminRule1")}</li>
+          <li>{t("adminRule2")}</li>
+          <li>{t("adminRule3")}</li>
+          <li>{t("adminRule4")}</li>
         </ul>
       </Card>
     </div>

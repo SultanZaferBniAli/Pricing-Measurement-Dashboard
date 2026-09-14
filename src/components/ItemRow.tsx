@@ -1,6 +1,7 @@
 /** A single scope line rendered as a table-like row with selection + qty + math. */
 import { AlertTriangle, Percent } from "lucide-react";
 import { money } from "../lib/format";
+import { useT } from "../lib/i18n";
 import { computeLine } from "../lib/pricing";
 import { useStore } from "../lib/store";
 import type { ComputedLine, ScopeItem } from "../lib/types";
@@ -18,6 +19,7 @@ export function ItemRow({
   item: ScopeItem;
   resolvedLine?: ComputedLine;
 }) {
+  const { t, tSubCategory, tType, tSource } = useT();
   const selection = useStore((s) => s.selections[item.id]);
   const toggleItem = useStore((s) => s.toggleItem);
   const setQty = useStore((s) => s.setQty);
@@ -45,7 +47,7 @@ export function ItemRow({
           <SelectToggle
             checked={selected}
             onChange={() => toggleItem(item.id, item.defaultQty)}
-            label={`Select ${item.name}`}
+            label={t("selectItem", { name: item.name })}
           />
         </div>
         <div className="min-w-0">
@@ -53,24 +55,27 @@ export function ItemRow({
             <span className="text-sm font-medium text-white truncate">{item.name}</span>
             {showsUnpriced && (
               <Badge tone="missing">
-                <AlertTriangle size={11} /> {isPercent ? "Set a rate" : "Unpriced"}
+                <AlertTriangle size={11} />{" "}
+                {isPercent ? t("badgeSetRate") : t("badgeUnpriced")}
               </Badge>
             )}
             {isPercent && !showsUnpriced && (
               <Badge tone="gold">
-                <Percent size={11} /> of{" "}
-                {item.percentBasis === "budget" ? "budget" : "section"} base
+                <Percent size={11} />{" "}
+                {item.percentBasis === "budget"
+                  ? t("ofBudgetBase")
+                  : t("ofSectionBase")}
               </Badge>
             )}
           </div>
           <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px] text-lavender-light/60">
-            <span>{item.subCategory}</span>
+            <span>{tSubCategory(item.subCategory)}</span>
             <span className="opacity-40">·</span>
-            <span>{item.type}</span>
+            <span>{tType(item.type)}</span>
             {item.priceSource && (
               <>
                 <span className="opacity-40">·</span>
-                <Badge tone="source">{item.priceSource}</Badge>
+                <Badge tone="source">{tSource(item.priceSource)}</Badge>
               </>
             )}
             <MatchBadge status={item.matchStatus} />
@@ -86,7 +91,7 @@ export function ItemRow({
       {/* qty (a contingency is always a single line, so no quantity applies) */}
       <div className="col-span-3 md:col-span-1 flex flex-col">
         <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
-          {isPercent ? "Rate" : "Qty"}
+          {isPercent ? t("colRate") : t("colQty")}
         </span>
         {isPercent ? (
           <span className="num text-sm text-lavender-light/40 text-center">-</span>
@@ -105,7 +110,7 @@ export function ItemRow({
       {/* unit price, a custom price for unpriced lines, or a % rate */}
       <div className="col-span-4 md:col-span-2 flex flex-col">
         <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
-          {isPercent ? "Rate %" : "Unit Price"}
+          {isPercent ? t("colRatePct") : t("colUnitPrice")}
         </span>
         {isPercent ? (
           <div className="flex items-center justify-end gap-1">
@@ -114,7 +119,7 @@ export function ItemRow({
               min={0}
               max={100}
               step={0.5}
-              placeholder="Set %"
+              placeholder={t("setPercent")}
               value={selection?.percentRate ?? ""}
               onChange={(e) =>
                 setPercentRate(
@@ -122,44 +127,44 @@ export function ItemRow({
                   e.target.value === "" ? null : parseFloat(e.target.value)
                 )
               }
-              className="num w-20 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-right placeholder:text-gold/40 focus:border-gold focus:outline-none"
-              title="Percentage applied to the subtotal of the other selected lines"
+              className="num w-20 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
+              title={t("percentHint")}
             />
             <span className="text-xs text-gold/70">%</span>
           </div>
         ) : item.isPriced ? (
-          <span className="num text-sm text-lavender-light text-right">
+          <span className="num text-sm text-lavender-light text-end">
             {money(item.unitPrice)}
           </span>
         ) : (
           <input
             type="number"
             min={0}
-            placeholder="Set price"
+            placeholder={t("setPrice")}
             value={selection?.customPrice ?? ""}
             onChange={(e) =>
               setCustomPrice(item.id, e.target.value === "" ? null : parseFloat(e.target.value))
             }
-            className="num w-24 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-right placeholder:text-gold/40 focus:border-gold focus:outline-none"
-            title="Enter a custom price to include this item in totals"
+            className="num w-24 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
+            title={t("customPriceHint")}
           />
         )}
       </div>
 
       {/* fee */}
       <div className="col-span-4 md:col-span-1 flex flex-col">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">Fee 15%</span>
-        <span className="num text-sm text-lavender-light/70 text-right">
+        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">{t("colFee")}</span>
+        <span className="num text-sm text-lavender-light/70 text-end">
           {selected && !showsUnpriced ? money(line.fee) : "-"}
         </span>
       </div>
 
       {/* total */}
       <div className="col-span-4 md:col-span-2 flex flex-col">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">Total</span>
+        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">{t("colTotal")}</span>
         <span
           className={cx(
-            "num text-sm font-semibold text-right",
+            "num text-sm font-semibold text-end",
             selected && !showsUnpriced ? "text-white" : "text-lavender-light/40"
           )}
         >

@@ -22,6 +22,7 @@ import { SectionAccordion } from "../components/SectionAccordion";
 import { SectionBarChart } from "../components/SectionBarChart";
 import { Card, Diamond, SectionHeading, cx } from "../components/ui";
 import { money } from "../lib/format";
+import { useT } from "../lib/i18n";
 import { useStore } from "../lib/store";
 import type { ScopeItem } from "../lib/types";
 import type { BudgetSummary } from "../lib/useTotals";
@@ -30,6 +31,7 @@ type PriceFilter = "all" | "priced" | "unpriced";
 
 export function Dashboard({ budget }: { budget: BudgetSummary }) {
   const data = useStore((s) => s.data);
+  const { t, tSource } = useT();
   const { catalog, totals, selectedCount, unpricedSelected } = budget;
 
   const [query, setQuery] = useState("");
@@ -97,39 +99,42 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
         </div>
         <div className="relative">
           <div className="flex items-center gap-2 text-lavender-light/80 text-sm">
-            <Diamond /> Scope-Based Budget Builder
+            <Diamond /> {t("heroEyebrow")}
           </div>
           <h1 className="mt-1.5 text-2xl md:text-3xl font-bold text-white">
-            Pricing Measurement Dashboard
+            {t("heroTitle")}
           </h1>
           <p className="mt-1.5 text-lavender-light/80 max-w-2xl text-sm">
-            Pick a section, choose the items you need, adjust the quantities. The
-            15% fee and all totals update instantly.
+            {t("heroBody")}
           </p>
         </div>
       </div>
 
       {/* running budget */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <MoneyKpi label="Current Base Total" value={money(totals.base)} />
-        <MoneyKpi label="Current Fees (15%)" value={money(totals.fee)} />
-        <MoneyKpi label="Current Grand Total" value={money(totals.grand)} highlight />
+        <MoneyKpi label={t("kpiCurrentBase")} value={money(totals.base)} />
+        <MoneyKpi label={t("kpiCurrentFees")} value={money(totals.fee)} />
+        <MoneyKpi label={t("kpiCurrentGrand")} value={money(totals.grand)} highlight />
       </div>
 
       {/* catalog KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Kpi label="Sections" value={catalog.sections} icon={<Layers size={18} />} />
-        <Kpi label="Priced Items" value={catalog.priced} accent="emerald" icon={<CheckCircle2 size={18} />} />
-        <Kpi label="Unpriced Items" value={catalog.unpriced} accent="gold" icon={<TriangleAlert size={18} />} />
-        <Kpi label="Total Items" value={catalog.items} icon={<Boxes size={18} />} />
+        <Kpi label={t("kpiSections")} value={catalog.sections} icon={<Layers size={18} />} />
+        <Kpi label={t("kpiPricedItems")} value={catalog.priced} accent="emerald" icon={<CheckCircle2 size={18} />} />
+        <Kpi label={t("kpiUnpricedItems")} value={catalog.unpriced} accent="gold" icon={<TriangleAlert size={18} />} />
+        <Kpi label={t("kpiTotalItems")} value={catalog.items} icon={<Boxes size={18} />} />
         <Kpi
-          label="Selected"
+          label={t("kpiSelected")}
           value={selectedCount}
           accent="electric"
           icon={<Wallet size={18} />}
-          sub={unpricedSelected.length ? `${unpricedSelected.length} need a price` : undefined}
+          sub={
+            unpricedSelected.length
+              ? t("kpiNeedPrice", { n: unpricedSelected.length })
+              : undefined
+          }
         />
-        <Kpi label="Fee Applied" value="15%" accent="gold" icon={<Receipt size={18} />} />
+        <Kpi label={t("kpiFeeApplied")} value="15%" accent="gold" icon={<Receipt size={18} />} />
       </div>
 
       {/* chart + tips */}
@@ -140,13 +145,13 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
         <Card className="p-5">
           <div className="flex items-center gap-2 mb-3">
             <Coins size={18} className="text-gold" />
-            <h3 className="font-semibold text-white">How pricing works</h3>
+            <h3 className="font-semibold text-white">{t("howTitle")}</h3>
           </div>
           <ul className="space-y-2 text-sm text-lavender-light/80">
-            <li className="flex gap-2"><Diamond className="mt-1.5" /> Base = Qty x Unit Price</li>
-            <li className="flex gap-2"><Diamond className="mt-1.5" /> Fee = Base x 15%</li>
-            <li className="flex gap-2"><Diamond className="mt-1.5" /> Total = Base + Fee</li>
-            <li className="flex gap-2 text-gold/90"><Diamond className="mt-1.5" /> Unpriced items are flagged &amp; excluded until you set a price.</li>
+            <li className="flex gap-2"><Diamond className="mt-1.5 shrink-0" /> {t("howBase")}</li>
+            <li className="flex gap-2"><Diamond className="mt-1.5 shrink-0" /> {t("howFee")}</li>
+            <li className="flex gap-2"><Diamond className="mt-1.5 shrink-0" /> {t("howTotal")}</li>
+            <li className="flex gap-2 text-gold/90"><Diamond className="mt-1.5 shrink-0" /> {t("howUnpriced")}</li>
           </ul>
         </Card>
       </div>
@@ -154,49 +159,55 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
       {/* section heading + toolbar */}
       <div>
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <SectionHeading sub="Click a section to expand it and select items">
-            Build your budget
-          </SectionHeading>
+          <SectionHeading sub={t("buildSub")}>{t("buildTitle")}</SectionHeading>
           <button
             onClick={() => setManualExpanded(allOpen ? new Set() : new Set(allKeys))}
             className="text-xs flex items-center gap-1.5 rounded-lg px-3 py-1.5 border border-white/10 text-lavender-light/80 hover:bg-white/5 transition-colors"
           >
             {allOpen ? <ChevronsDownUp size={14} /> : <ChevronsUpDown size={14} />}
-            {allOpen ? "Collapse all" : "Expand all"}
+            {allOpen ? t("collapseAll") : t("expandAll")}
           </button>
         </div>
 
         <Card className="p-3 mt-3 sticky top-[68px] z-20">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px]">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-lavender-light/50" />
+              {/* logical inset so the icon follows the text direction */}
+              <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-lavender-light/50" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search all items..."
-                className="w-full rounded-xl bg-navy/60 border border-white/10 pl-9 pr-3 py-2 text-sm text-white placeholder:text-lavender-light/40 focus:border-electric focus:outline-none"
+                placeholder={t("searchPlaceholder")}
+                className="w-full rounded-xl bg-navy/60 border border-white/10 ps-9 pe-3 py-2 text-sm text-white placeholder:text-lavender-light/40 focus:border-electric focus:outline-none"
               />
             </div>
             <FilterSelect
               value={priceFilter}
               onChange={(v) => setPriceFilter(v as PriceFilter)}
-              options={[["all", "All prices"], ["priced", "Priced only"], ["unpriced", "Unpriced only"]]}
+              options={[
+                ["all", t("filterAllPrices")],
+                ["priced", t("filterPricedOnly")],
+                ["unpriced", t("filterUnpricedOnly")],
+              ]}
             />
             <FilterSelect
               value={source}
               onChange={setSource}
-              options={[["all", "All sources"], ...sources.map((s) => [s, s] as [string, string])]}
+              options={[
+                ["all", t("filterAllSources")],
+                ...sources.map((s) => [s, tSource(s)] as [string, string]),
+              ]}
             />
             <FilterSelect
               value={match}
               onChange={setMatch}
               options={[
-                ["all", "All matches"],
-                ["EXACT", "Exact"],
-                ["CLOSE", "Close"],
-                ["RESEARCH", "Research"],
-                ["DERIVED", "Derived"],
-                ["NOT IN MASTER", "Not in master"],
+                ["all", t("filterAllMatches")],
+                ["EXACT", t("matchExact")],
+                ["CLOSE", t("matchClose")],
+                ["RESEARCH", t("matchResearch")],
+                ["DERIVED", t("matchDerived")],
+                ["NOT IN MASTER", t("matchNotInMaster")],
               ]}
             />
             {filtering && (
@@ -204,7 +215,7 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                 onClick={clearFilters}
                 className="text-xs text-lavender-light/60 hover:text-white flex items-center gap-1"
               >
-                <X size={13} /> Clear
+                <X size={13} /> {t("clear")}
               </button>
             )}
           </div>
@@ -226,9 +237,9 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
           })}
           {filtering && perSection.every((p) => p.items.length === 0) && (
             <Card className="p-8 text-center text-lavender-light/50">
-              No items match “{query}”.{" "}
+              {t("noMatches", { q: query })}{" "}
               <button className="text-electric underline" onClick={clearFilters}>
-                Clear filters
+                {t("clearFilters")}
               </button>
             </Card>
           )}

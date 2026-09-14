@@ -3,6 +3,7 @@
  * Kept dependency-free (plain Tailwind) so the whole app is self-contained.
  */
 import React from "react";
+import { useT } from "../lib/i18n";
 
 type DivProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -95,11 +96,12 @@ export function Badge({
 
 /** Match-status badge with the right tone. */
 export function MatchBadge({ status }: { status: string }) {
+  const { tMatch } = useT();
   const s = (status || "").toUpperCase();
-  if (s === "EXACT") return <Badge tone="exact">EXACT</Badge>;
-  if (s === "CLOSE") return <Badge tone="close">CLOSE</Badge>;
-  if (s === "NOT IN MASTER") return <Badge tone="missing">NOT IN MASTER</Badge>;
-  return status ? <Badge tone="neutral">{status}</Badge> : null;
+  if (s === "EXACT") return <Badge tone="exact">{tMatch(s)}</Badge>;
+  if (s === "CLOSE") return <Badge tone="close">{tMatch(s)}</Badge>;
+  if (s === "NOT IN MASTER") return <Badge tone="missing">{tMatch(s)}</Badge>;
+  return status ? <Badge tone="neutral">{tMatch(s)}</Badge> : null;
 }
 
 /** Section-heading label with diamond markers. */

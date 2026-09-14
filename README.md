@@ -29,7 +29,8 @@ Requires Node 18+. Python 3 with `openpyxl` is only needed if you want to
 
 ## What's in the box
 
-A top bar switches between three views: **Dashboard**, **Budget**, and **Admin**.
+A top bar switches between three views: **Dashboard**, **Budget**, and **Admin**,
+plus an **English / Arabic** toggle.
 
 | View | What it does |
 | --- | --- |
@@ -40,8 +41,28 @@ A top bar switches between three views: **Dashboard**, **Budget**, and **Admin**
 The filter toolbar (search + priced / unpriced + price source + match type)
 applies across all sections at once, and searching auto-expands only the sections
 that contain matches. A sticky bottom bar keeps the running **Base / Fees / Grand
-Total** and a "Review Budget" button visible. Selections and the budget title
-persist to `localStorage`, so a work-in-progress budget survives a refresh.
+Total** and a "Review Budget" button visible. Selections, the budget title and
+the chosen language persist to `localStorage`, so a work-in-progress budget
+survives a refresh.
+
+### Arabic / RTL
+
+The toggle in the top bar switches the whole interface between English and
+Arabic and mirrors the layout (it sets `lang` and `dir` on the document, and the
+components use logical `start` / `end` utilities rather than left / right).
+Strings live in `src/lib/i18n.ts`, where `en` is the source of truth and
+TypeScript requires `ar` to cover exactly the same keys.
+
+Translated: all interface chrome, the four section names, the 17 sub-categories,
+the pricing bases, the match statuses and the price sources. **Not** translated:
+individual line-item names. Those are the wording of the signed scope of work,
+and a paraphrase in a client-facing budget would be a liability, so they stay in
+English in both languages.
+
+Figures stay in Western digits and read left-to-right in both languages (the
+`.num` class pins their direction), which is the convention for Saudi commercial
+documents. In Arabic the number columns align to the left edge of the row, which
+is the end of the line in RTL.
 
 ### Research pricing (flights & ground transport)
 
@@ -61,9 +82,39 @@ price source so they stay visually distinct from TAM / Threelines master prices:
   SUV, van, minibus by duration) and a **Car Rental (Monthly)** group, from the
   Riyadh car-with-driver study.
 
+### Derived pricing and contingencies
+
+Three further lines the source left unpriced are now priced by **summing real
+Pricing Master rows**, flagged with a **`Derived`** price source, with the
+components written into the mapping note so the arithmetic can be checked
+against the workbook (`src/data/derivedPricing.ts`):
+
+- **Main stage build & layout** (16,000) = podium 3,500 + rigging 3,000 +
+  flooring 5,500 + panels 4,000.
+- **Technical, security & cleaning teams** (5,030) = technical support 3,500 +
+  security guards 980 + cleaning staff 550.
+- **Printed materials for trips & closing event** (14 per attendee) = printed
+  agendas 6 + folders 8.
+
+The first two formulas are taken verbatim from the scope file's own mapping
+note. **Airport lounge access** (7,000) also comes in as a `Research` price,
+from the international flight study.
+
+The two **contingency** lines are a percentage of a subtotal rather than a unit
+rate, so they no longer carry a unit price at all. "Additional transfer
+contingencies" charges against the Logistics section base, "Operational
+contingency reserve" against the whole budget base. You set the rate; no default
+is supplied, because no benchmark for one exists, so the line stays excluded
+from totals until you enter one. A contingency never charges against another
+contingency.
+
 This enrichment runs for both the bundled data and any admin re-upload, so they
-behave identically. After enrichment the catalog holds **116 lines, 75 priced,
-41 unpriced**.
+behave identically. After enrichment the catalog holds **116 lines, 79 priced,
+37 unpriced**.
+
+The remaining 37 have no figure in any source file (hotels, visas, permits,
+insurance, entrance gates, animation), and are deliberately left unpriced rather
+than guessed. Enter a custom price per line when you have a quote.
 
 ---
 
@@ -154,6 +205,11 @@ Total Cost = Base Cost + Fee
   promotes the line into the totals (shown as a `custom` badge and logged in the
   export).
 - Effective unit price = `customPrice ?? unitPrice` (`effectiveUnitPrice`).
+- **Contingency lines** are the one exception to `Base = Qty * Unit Price`. They
+  charge `rate% * (a subtotal of the other selected lines)` instead, so the
+  budget is resolved in **two passes** (`resolveBudget`): every ordinary line
+  first, then the contingencies against the priced base of that first pass. The
+  15% fee applies to the result as normal.
 
 ---
 
@@ -192,9 +248,10 @@ src/
 ├── App.tsx                 # shell: top bar, view routing, sticky budget bar
 ├── data/scopeData.json     # generated catalog (source of truth at runtime)
 ├── data/researchPricing.ts # benchmark flight + transport prices (layered on)
+├── data/derivedPricing.ts  # composites from master rows + contingency bases
 ├── components/             # ui primitives, KPI cards, item row, chart, accordion, logo
 ├── screens/                # Dashboard (builder), BudgetSummary, Admin
-└── lib/                    # types, store, pricing, enrich, format, excelImport/Export, useTotals
+└── lib/                    # types, store, pricing, enrich, i18n, format, excelImport/Export, useTotals
 scripts/
 ├── parse_excel.py          # build-time workbook to JSON parser
 └── test_export.mts         # export smoke test (npx tsx)

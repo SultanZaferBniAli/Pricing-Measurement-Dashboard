@@ -2,11 +2,19 @@
  * App shell: top bar (brand + nav), routed views, and a sticky budget bar that
  * surfaces the running grand total and a quick jump to the summary.
  */
-import { useState } from "react";
-import { LayoutDashboard, ListChecks, Settings2, ShoppingCart } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  LayoutDashboard,
+  Languages,
+  ListChecks,
+  Settings2,
+  ShoppingCart,
+} from "lucide-react";
 import { TamLogo } from "./components/TamLogo";
 import { Button, cx } from "./components/ui";
 import { money } from "./lib/format";
+import { useT } from "./lib/i18n";
+import { useStore } from "./lib/store";
 import { useBudget } from "./lib/useTotals";
 import { Admin } from "./screens/Admin";
 import { BudgetSummary } from "./screens/BudgetSummary";
@@ -18,6 +26,15 @@ export default function App() {
   const [view, setView] = useState<View>({ name: "dashboard" });
   const budget = useBudget();
   const selectedCount = budget.selectedCount;
+  const { t, lang, dir } = useT();
+  const setLanguage = useStore((s) => s.setLanguage);
+
+  // Mirror the whole document, so Tailwind's logical properties, form controls
+  // and the native scrollbar all flip with the language.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = dir;
+  }, [lang, dir]);
 
   const nav = (v: View) => {
     setView(v);
@@ -29,7 +46,7 @@ export default function App() {
       {/* top bar */}
       <header className="sticky top-0 z-30 border-b border-white/5 bg-navy/85 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 md:px-6 py-3 flex items-center justify-between gap-4">
-          <button onClick={() => nav({ name: "dashboard" })} aria-label="Home">
+          <button onClick={() => nav({ name: "dashboard" })} aria-label={t("appHome")}>
             <TamLogo />
           </button>
           <nav className="flex items-center gap-1">
@@ -38,7 +55,7 @@ export default function App() {
               onClick={() => nav({ name: "dashboard" })}
               icon={<LayoutDashboard size={16} />}
             >
-              Dashboard
+              {t("navDashboard")}
             </NavButton>
             <NavButton
               active={view.name === "summary"}
@@ -46,15 +63,24 @@ export default function App() {
               icon={<ListChecks size={16} />}
               badge={selectedCount || undefined}
             >
-              Budget
+              {t("navBudget")}
             </NavButton>
             <NavButton
               active={view.name === "admin"}
               onClick={() => nav({ name: "admin" })}
               icon={<Settings2 size={16} />}
             >
-              Admin
+              {t("navAdmin")}
             </NavButton>
+            <button
+              onClick={() => setLanguage(lang === "ar" ? "en" : "ar")}
+              aria-label={t("langToggleLabel")}
+              title={t("langToggleLabel")}
+              className="ms-1 flex items-center gap-1.5 rounded-xl border border-white/10 px-2.5 py-2 text-sm font-medium text-lavender-light/80 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <Languages size={16} />
+              <span className="hidden sm:inline">{t("langToggle")}</span>
+            </button>
           </nav>
         </div>
       </header>
@@ -73,21 +99,21 @@ export default function App() {
         <div className="fixed bottom-0 inset-x-0 z-30 border-t border-white/10 bg-surface/95 backdrop-blur-md print:hidden">
           <div className="mx-auto max-w-7xl px-4 md:px-6 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 md:gap-8 text-sm">
-              <BudgetStat label="Selected" value={String(selectedCount)} />
-              <BudgetStat label="Base" value={money(budget.totals.base)} />
+              <BudgetStat label={t("barSelected")} value={String(selectedCount)} />
+              <BudgetStat label={t("barBase")} value={money(budget.totals.base)} />
               <BudgetStat
-                label="Fees 15%"
+                label={t("barFees")}
                 value={money(budget.totals.fee)}
                 className="hidden sm:block"
               />
               <BudgetStat
-                label="Grand Total"
+                label={t("barGrandTotal")}
                 value={`${money(budget.totals.grand)} SAR`}
                 accent
               />
             </div>
             <Button onClick={() => nav({ name: "summary" })} disabled={!selectedCount}>
-              <ShoppingCart size={16} /> Review Budget
+              <ShoppingCart size={16} /> {t("barReview")}
             </Button>
           </div>
         </div>

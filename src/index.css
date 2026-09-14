@@ -22,11 +22,29 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/*
+ * In Arabic, lead with the Arabic webfont. The default stack reaches Arial
+ * first, and Arial does carry Arabic glyphs, so without this the loaded
+ * IBM Plex Sans Arabic would never actually be used.
+ */
+:root[lang="ar"] body {
+  font-family: "Helvetica Neue LT Arabic", "IBM Plex Sans Arabic", Tajawal,
+    "Noto Sans Arabic", "Segoe UI", sans-serif;
+}
+
 /* RTL: numbers and prices stay LTR for readability */
 .num {
   direction: ltr;
   unicode-bidi: embed;
   font-variant-numeric: tabular-nums;
+}
+
+/* Keep a number cell's own alignment when the page flips to RTL. */
+:root[dir="rtl"] .num.text-end {
+  text-align: left;
+}
+:root[dir="rtl"] .num.text-center {
+  text-align: center;
 }
 
 /* Custom scrollbar to match the dark brand surface */

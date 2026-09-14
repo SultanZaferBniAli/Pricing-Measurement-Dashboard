@@ -7,6 +7,7 @@ import { CheckCheck, ChevronDown, TriangleAlert } from "lucide-react";
 import { ItemRow } from "./ItemRow";
 import { Badge, Card, Diamond, cx } from "./ui";
 import { money } from "../lib/format";
+import { useT } from "../lib/i18n";
 import { sectionLines, sumLines } from "../lib/pricing";
 import { useStore } from "../lib/store";
 import type { ScopeItem, Section } from "../lib/types";
@@ -22,6 +23,7 @@ export function SectionAccordion({
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const { t, tSection, tSubCategory } = useT();
   const selections = useStore((s) => s.selections);
   const allSections = useStore((s) => s.data.sections);
   const selectMany = useStore((s) => s.selectMany);
@@ -51,25 +53,27 @@ export function SectionAccordion({
       {/* header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors duration-150"
+        className="w-full flex items-center gap-4 px-5 py-4 text-start hover:bg-white/[0.03] active:bg-white/[0.06] transition-colors duration-150"
       >
         <Diamond />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-lg font-semibold text-white">{section.name}</h3>
-            <Badge tone="neutral">{section.items.length} items</Badge>
-            <Badge tone="exact">{pricedAvailable} priced</Badge>
-            {selectedCount > 0 && <Badge tone="gold">{selectedCount} selected</Badge>}
+            <h3 className="text-lg font-semibold text-white">{tSection(section.name)}</h3>
+            <Badge tone="neutral">{t("countItems", { n: section.items.length })}</Badge>
+            <Badge tone="exact">{t("countPriced", { n: pricedAvailable })}</Badge>
+            {selectedCount > 0 && (
+              <Badge tone="gold">{t("countSelected", { n: selectedCount })}</Badge>
+            )}
             {unpricedSelected > 0 && (
               <Badge tone="missing">
-                <TriangleAlert size={11} /> {unpricedSelected} need price
+                <TriangleAlert size={11} /> {t("countNeedPrice", { n: unpricedSelected })}
               </Badge>
             )}
           </div>
         </div>
-        <div className="text-right shrink-0">
+        <div className="text-end shrink-0">
           <div className="text-[10px] uppercase tracking-wider text-lavender-light/50">
-            Subtotal (incl. fee)
+            {t("subtotalInclFee")}
           </div>
           <div className="text-lg font-bold text-gold num">{money(totals.grand)}</div>
         </div>
@@ -86,17 +90,17 @@ export function SectionAccordion({
       {expanded && (
         <div className="px-3 pb-4 pt-1 border-t border-white/5 animate-fade-in">
           <div className="hidden md:grid grid-cols-12 gap-2 px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-lavender-light/40">
-            <div className="col-span-5">Item</div>
-            <div className="col-span-1">Qty</div>
-            <div className="col-span-2 text-right">Unit Price</div>
-            <div className="col-span-1 text-right">Fee 15%</div>
-            <div className="col-span-2 text-right">Total</div>
+            <div className="col-span-5">{t("colItem")}</div>
+            <div className="col-span-1">{t("colQty")}</div>
+            <div className="col-span-2 text-end">{t("colUnitPrice")}</div>
+            <div className="col-span-1 text-end">{t("colFee")}</div>
+            <div className="col-span-2 text-end">{t("colTotal")}</div>
             <div className="col-span-1" />
           </div>
 
           {groups.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-lavender-light/50">
-              No items match the current filters.
+              {t("noFilterMatches")}
             </p>
           ) : (
             <div className="space-y-4 mt-2">
@@ -111,7 +115,9 @@ export function SectionAccordion({
                     <div className="flex items-center justify-between mb-1.5 px-2">
                       <div className="flex items-center gap-2">
                         <span className="tam-diamond bg-lavender/60" />
-                        <h4 className="text-sm font-semibold text-lavender-light">{sub}</h4>
+                        <h4 className="text-sm font-semibold text-lavender-light">
+                          {tSubCategory(sub)}
+                        </h4>
                         <span className="text-xs text-lavender-light/40">({items.length})</span>
                       </div>
                       <button
@@ -128,7 +134,7 @@ export function SectionAccordion({
                         )}
                       >
                         <CheckCheck size={13} />
-                        {allSelected ? "Deselect all" : "Select all"}
+                        {allSelected ? t("deselectAll") : t("selectAll")}
                       </button>
                     </div>
                     <Card className="p-2 space-y-1">
