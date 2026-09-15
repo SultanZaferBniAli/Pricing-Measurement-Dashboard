@@ -1,5 +1,6 @@
 /** A single scope line rendered as a table-like row with selection + qty + math. */
 import { AlertTriangle, Percent } from "lucide-react";
+import { QtyStepper } from "./QtyStepper";
 import { money } from "../lib/format";
 import { useT } from "../lib/i18n";
 import { computeLine } from "../lib/pricing";
@@ -89,26 +90,23 @@ export function ItemRow({
       </div>
 
       {/* qty (a contingency is always a single line, so no quantity applies) */}
-      <div className="col-span-3 md:col-span-1 flex flex-col">
+      <div className="col-span-5 md:col-span-2 flex flex-col gap-1">
         <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
           {isPercent ? t("colRate") : t("colQty")}
         </span>
         {isPercent ? (
           <span className="num text-sm text-lavender-light/40 text-center">-</span>
         ) : (
-          <input
-            type="number"
-            min={0}
-            value={selected ? selection!.qty : item.defaultQty || ""}
+          <QtyStepper
+            value={selected ? selection!.qty : item.defaultQty || 1}
             disabled={!selected}
-            onChange={(e) => setQty(item.id, parseFloat(e.target.value))}
-            className="num w-16 rounded-lg bg-navy/60 border border-white/10 px-2 py-1 text-sm text-white text-center disabled:opacity-40 focus:border-electric focus:outline-none"
+            onChange={(n) => setQty(item.id, n)}
           />
         )}
       </div>
 
       {/* unit price, a custom price for unpriced lines, or a % rate */}
-      <div className="col-span-4 md:col-span-2 flex flex-col">
+      <div className="col-span-7 md:col-span-2 flex flex-col gap-1">
         <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
           {isPercent ? t("colRatePct") : t("colUnitPrice")}
         </span>
@@ -152,7 +150,7 @@ export function ItemRow({
       </div>
 
       {/* fee */}
-      <div className="col-span-4 md:col-span-1 flex flex-col">
+      <div className="col-span-5 md:col-span-1 flex flex-col gap-1">
         <span className="md:hidden text-[10px] uppercase text-lavender-light/40">{t("colFee")}</span>
         <span className="num text-sm text-lavender-light/70 text-end">
           {selected && !showsUnpriced ? money(line.fee) : "-"}
@@ -160,7 +158,7 @@ export function ItemRow({
       </div>
 
       {/* total */}
-      <div className="col-span-4 md:col-span-2 flex flex-col">
+      <div className="col-span-7 md:col-span-2 flex flex-col gap-1">
         <span className="md:hidden text-[10px] uppercase text-lavender-light/40">{t("colTotal")}</span>
         <span
           className={cx(
@@ -171,8 +169,6 @@ export function ItemRow({
           {selected && !showsUnpriced ? money(line.totalCost) : "-"}
         </span>
       </div>
-
-      <div className="hidden md:block md:col-span-1" />
     </div>
   );
 }

@@ -1,9 +1,13 @@
 /**
  * Global application state (Zustand).
  *
- * Holds the parsed scope data plus the user's selections. Selections and the
- * budget title persist to localStorage so a work-in-progress budget survives a
- * page refresh. Admin re-uploads can replace the scope data at runtime.
+ * Holds the parsed scope data plus the user's selections. Selections, the
+ * budget heading and the language persist to localStorage so a work-in-progress
+ * budget survives a page refresh. Admin re-uploads can replace the scope data
+ * at runtime.
+ *
+ * Which sections are open is UI state shared by the sidebar and the builder, so
+ * it lives here too, but it is deliberately NOT persisted.
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -19,7 +23,17 @@ interface AppState {
   /** Map of item id -> selection state. Presence == selected. */
   selections: Record<string, Selection>;
   budgetTitle: string;
+  /** Who the budget is being prepared for. Appears on the export. */
+  client: string;
   language: "en" | "ar";
+
+  /** Section keys currently expanded in the builder. */
+  expanded: string[];
+  /**
+   * Bumped when the sidebar asks the builder to jump to a section. The builder
+   * watches the counter so repeat clicks on the same section still scroll.
+   */
+  focus: { key: string; nonce: number } | null;
 
   // ---- selection actions ----
   toggleItem: (id: string, defaultQty?: number) => void;
@@ -33,6 +47,10 @@ interface AppState {
 
   // ---- meta actions ----
   setBudgetTitle: (title: string) => void;
+  setClient: (client: string) => void;
+  toggleSection: (key: string) => void;
+  setExpanded: (keys: string[]) => void;
+  focusSection: (key: string) => void;
   setLanguage: (lang: "en" | "ar") => void;
   replaceData: (data: ScopeData) => void;
 
@@ -52,7 +70,10 @@ export const useStore = create<AppState>()(
       data: initialData,
       selections: {},
       budgetTitle: initialData.meta.project,
+      client: "",
       language: "en",
+      expanded: [],
+      focus: null,
 
       toggleItem: (id, defaultQty) =>
         set((state) => {
@@ -130,9 +151,27 @@ export const useStore = create<AppState>()(
       clearAll: () => set({ selections: {} }),
 
       setBudgetTitle: (title) => set({ budgetTitle: title }),
+      setClient: (client) => set({ client }),
+
+      toggleSection: (key) =>
+        set((state) => ({
+          expanded: state.expanded.includes(key)
+            ? state.expanded.filter((k) => k !== key)
+            : [...state.expanded, key],
+        })),
+
+      setExpanded: (keys) => set({ expanded: keys }),
+
+      focusSection: (key) =>
+        set((state) => ({
+          expanded: state.expanded.includes(key)
+            ? state.expanded
+            : [...state.expanded, key],
+          focus: { key, nonce: (state.focus?.nonce ?? 0) + 1 },
+        })),
       setLanguage: (language) => set({ language }),
       replaceData: (data) =>
-        set({ data, selections: {}, budgetTitle: data.meta.project }),
+        set({ data, selections: {}, budgetTitle: data.meta.project, expanded: [] }),
 
       sections: () => get().data.sections,
       isSelected: (id) => Boolean(get().selections[id]),
@@ -143,6 +182,7 @@ export const useStore = create<AppState>()(
       partialize: (state) => ({
         selections: state.selections,
         budgetTitle: state.budgetTitle,
+        client: state.client,
         language: state.language,
       }),
     }

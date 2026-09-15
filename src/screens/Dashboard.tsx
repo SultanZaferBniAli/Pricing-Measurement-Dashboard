@@ -1,27 +1,20 @@
 /**
- * Single-page builder: overview KPIs, spend chart, a filter toolbar, and the
- * four sections as inline expandable accordions. Pick items and adjust pricing
- * without leaving the page.
+ * The builder. Catalog stats as a single strip, the spend chart, a filter bar,
+ * and the four sections as inline accordions.
+ *
+ * The running Base / Fees / Grand total is NOT here. It lives once, in the
+ * sidebar, so the same figures are never shown twice on one screen.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Boxes,
-  CheckCircle2,
   ChevronsDownUp,
   ChevronsUpDown,
-  Coins,
-  Layers,
-  Receipt,
   Search,
-  TriangleAlert,
-  Wallet,
   X,
 } from "lucide-react";
-import { Kpi, MoneyKpi } from "../components/Kpi";
 import { SectionAccordion } from "../components/SectionAccordion";
 import { SectionBarChart } from "../components/SectionBarChart";
-import { Card, Diamond, SectionHeading, cx } from "../components/ui";
-import { money } from "../lib/format";
+import { Card, cx } from "../components/ui";
 import { useT } from "../lib/i18n";
 import { useStore } from "../lib/store";
 import type { ScopeItem } from "../lib/types";
@@ -31,16 +24,41 @@ type PriceFilter = "all" | "priced" | "unpriced";
 
 export function Dashboard({ budget }: { budget: BudgetSummary }) {
   const data = useStore((s) => s.data);
+  const expanded = useStore((s) => s.expanded);
+  const setExpanded = useStore((s) => s.setExpanded);
+  const toggleSection = useStore((s) => s.toggleSection);
+  const focus = useStore((s) => s.focus);
   const { t, tSource } = useT();
-  const { catalog, totals, selectedCount, unpricedSelected } = budget;
+  const { catalog, selectedCount, unpricedSelected } = budget;
 
   const [query, setQuery] = useState("");
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
   const [source, setSource] = useState("all");
   const [match, setMatch] = useState("all");
-  const [manualExpanded, setManualExpanded] = useState<Set<string>>(
-    new Set([data.sections[0]?.key])
-  );
+
+  /**
+   * While a filter is on, sections open automatically to reveal their matches.
+   * That used to override the header click entirely, so collapsing a section
+   * mid-filter did nothing. Now a click records an override for that section
+   * and the override wins until the filter itself changes.
+   */
+  const [openOverrides, setOpenOverrides] = useState<Record<string, boolean>>({});
+
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const filtering =
+    query !== "" || priceFilter !== "all" || source !== "all" || match !== "all";
+
+  useEffect(() => {
+    setOpenOverrides({});
+  }, [query, priceFilter, source, match]);
+
+  // The sidebar asks for a section by bumping a nonce; scroll to it.
+  useEffect(() => {
+    if (!focus) return;
+    const el = sectionRefs.current[focus.key];
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [focus]);
 
   const sources = useMemo(
     () =>
@@ -59,26 +77,39 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
     return true;
   };
 
-  const filtering =
-    query !== "" || priceFilter !== "all" || source !== "all" || match !== "all";
-
   const perSection = data.sections.map((s) => ({
     section: s,
     items: s.items.filter(filterItem),
   }));
 
   const isExpanded = (key: string, hasMatches: boolean) =>
-    filtering ? hasMatches : manualExpanded.has(key);
+    filtering ? openOverrides[key] ?? hasMatches : expanded.includes(key);
 
-  const toggle = (key: string) =>
-    setManualExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
+  const toggle = (key: string, hasMatches: boolean) => {
+    if (filtering) {
+      setOpenOverrides((prev) => ({
+        ...prev,
+        [key]: !(prev[key] ?? hasMatches),
+      }));
+    } else {
+      toggleSection(key);
+    }
+  };
 
   const allKeys = data.sections.map((s) => s.key);
-  const allOpen = allKeys.every((k) => manualExpanded.has(k));
+  const allOpen = filtering
+    ? perSection.every(({ section, items }) => isExpanded(section.key, items.length > 0))
+    : allKeys.every((k) => expanded.includes(k));
+
+  const toggleAll = () => {
+    if (filtering) {
+      setOpenOverrides(
+        Object.fromEntries(allKeys.map((k) => [k, !allOpen]))
+      );
+    } else {
+      setExpanded(allOpen ? [] : allKeys);
+    }
+  };
 
   const clearFilters = () => {
     setQuery("");
@@ -87,101 +118,56 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
     setMatch("all");
   };
 
+  const noResults = filtering && perSection.every((p) => p.items.length === 0);
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* hero */}
-      <div className="rounded-card bg-tam-gradient p-6 md:p-7 relative overflow-hidden border border-electric/30">
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2 opacity-20">
-          <svg viewBox="0 0 200 200" className="h-full w-full">
-            <path d="M0 100 Q50 40 100 100 T200 100" stroke="#EBA036" fill="none" strokeWidth="2" />
-            <path d="M0 130 Q50 70 100 130 T200 130" stroke="#B7B2F9" fill="none" strokeWidth="2" />
-          </svg>
-        </div>
-        <div className="relative">
-          <div className="flex items-center gap-2 text-lavender-light/80 text-sm">
-            <Diamond /> {t("heroEyebrow")}
-          </div>
-          <h1 className="mt-1.5 text-2xl md:text-3xl font-bold text-white">
-            {t("heroTitle")}
-          </h1>
-          <p className="mt-1.5 text-lavender-light/80 max-w-2xl text-sm">
-            {t("heroBody")}
-          </p>
-        </div>
-      </div>
-
-      {/* running budget */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <MoneyKpi label={t("kpiCurrentBase")} value={money(totals.base)} />
-        <MoneyKpi label={t("kpiCurrentFees")} value={money(totals.fee)} />
-        <MoneyKpi label={t("kpiCurrentGrand")} value={money(totals.grand)} highlight />
-      </div>
-
-      {/* catalog KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Kpi label={t("kpiSections")} value={catalog.sections} icon={<Layers size={18} />} />
-        <Kpi label={t("kpiPricedItems")} value={catalog.priced} accent="emerald" icon={<CheckCircle2 size={18} />} />
-        <Kpi label={t("kpiUnpricedItems")} value={catalog.unpriced} accent="gold" icon={<TriangleAlert size={18} />} />
-        <Kpi label={t("kpiTotalItems")} value={catalog.items} icon={<Boxes size={18} />} />
-        <Kpi
-          label={t("kpiSelected")}
-          value={selectedCount}
-          accent="electric"
-          icon={<Wallet size={18} />}
-          sub={
-            unpricedSelected.length
-              ? t("kpiNeedPrice", { n: unpricedSelected.length })
-              : undefined
-          }
-        />
-        <Kpi label={t("kpiFeeApplied")} value="15%" accent="gold" icon={<Receipt size={18} />} />
-      </div>
-
-      {/* chart + tips */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <SectionBarChart budget={budget} />
-        </div>
-        <Card className="p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <Coins size={18} className="text-gold" />
-            <h3 className="font-semibold text-white">{t("howTitle")}</h3>
-          </div>
-          <ul className="space-y-2 text-sm text-lavender-light/80">
-            <li className="flex gap-2"><Diamond className="mt-1.5 shrink-0" /> {t("howBase")}</li>
-            <li className="flex gap-2"><Diamond className="mt-1.5 shrink-0" /> {t("howFee")}</li>
-            <li className="flex gap-2"><Diamond className="mt-1.5 shrink-0" /> {t("howTotal")}</li>
-            <li className="flex gap-2 text-gold/90"><Diamond className="mt-1.5 shrink-0" /> {t("howUnpriced")}</li>
-          </ul>
-        </Card>
-      </div>
-
-      {/* section heading + toolbar */}
       <div>
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <SectionHeading sub={t("buildSub")}>{t("buildTitle")}</SectionHeading>
-          <button
-            onClick={() => setManualExpanded(allOpen ? new Set() : new Set(allKeys))}
-            className="text-xs flex items-center gap-1.5 rounded-lg px-3 py-1.5 border border-white/10 text-lavender-light/80 hover:bg-white/5 transition-colors"
-          >
-            {allOpen ? <ChevronsDownUp size={14} /> : <ChevronsUpDown size={14} />}
-            {allOpen ? t("collapseAll") : t("expandAll")}
-          </button>
-        </div>
+        <h1 className="text-2xl font-bold text-white md:text-3xl">{t("buildTitle")}</h1>
+        <p className="mt-1 text-sm text-lavender-light/70">{t("buildSub")}</p>
+      </div>
 
-        <Card className="p-3 mt-3 sticky top-[68px] z-20">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
+      {/* catalog facts, one line, no cards */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-white/5 bg-surface/40 px-4 py-2.5 text-sm">
+        <Stat value={catalog.items} label={t("statItems")} />
+        <Stat value={catalog.priced} label={t("statPriced")} tone="text-emerald-300" />
+        <Stat value={catalog.unpriced} label={t("statUnpriced")} tone="text-gold" />
+        <span className="h-4 w-px bg-white/10" />
+        <Stat value={selectedCount} label={t("statSelected")} tone="text-white" />
+        {unpricedSelected.length > 0 && (
+          <span className="text-xs text-gold/90">
+            {t("kpiNeedPrice", { n: unpricedSelected.length })}
+          </span>
+        )}
+        <span className="ms-auto text-xs text-lavender-light/50">
+          15% {t("statFee")}
+        </span>
+      </div>
+
+      {/* An empty chart is just a large hole above the work, so it waits until
+          there is something to plot. */}
+      {selectedCount > 0 && <SectionBarChart budget={budget} />}
+
+      {/* filters */}
+      <div className="space-y-3">
+        <Card className="sticky top-2 z-20 p-3 lg:top-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[180px] flex-1">
               {/* logical inset so the icon follows the text direction */}
-              <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-lavender-light/50" />
+              <Search
+                size={16}
+                className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-lavender-light/50"
+              />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t("searchPlaceholder")}
-                className="w-full rounded-xl bg-navy/60 border border-white/10 ps-9 pe-3 py-2 text-sm text-white placeholder:text-lavender-light/40 focus:border-electric focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-navy/60 py-2 pe-3 ps-9 text-sm text-white placeholder:text-lavender-light/40 focus:border-electric focus:outline-none"
               />
             </div>
-            <FilterSelect
+
+            {/* the filter people actually reach for, as one visible control */}
+            <Segmented
               value={priceFilter}
               onChange={(v) => setPriceFilter(v as PriceFilter)}
               options={[
@@ -190,6 +176,7 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                 ["unpriced", t("filterUnpricedOnly")],
               ]}
             />
+
             <FilterSelect
               value={source}
               onChange={setSource}
@@ -210,34 +197,51 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                 ["NOT IN MASTER", t("matchNotInMaster")],
               ]}
             />
+
             {filtering && (
               <button
                 onClick={clearFilters}
-                className="text-xs text-lavender-light/60 hover:text-white flex items-center gap-1"
+                className="flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-lavender-light/60 transition-colors hover:bg-white/5 hover:text-white"
               >
                 <X size={13} /> {t("clear")}
               </button>
             )}
+
+            <button
+              onClick={toggleAll}
+              className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-2 text-xs text-lavender-light/80 transition-colors hover:bg-white/5"
+            >
+              {allOpen ? <ChevronsDownUp size={14} /> : <ChevronsUpDown size={14} />}
+              <span className="hidden sm:inline">
+                {allOpen ? t("collapseAll") : t("expandAll")}
+              </span>
+            </button>
           </div>
         </Card>
 
-        {/* accordions */}
-        <div className="mt-4 space-y-3">
+        {/* sections */}
+        <div className="space-y-3">
           {perSection.map(({ section, items }) => {
             if (filtering && items.length === 0) return null;
             return (
-              <SectionAccordion
+              <div
                 key={section.key}
-                section={section}
-                visibleItems={items}
-                expanded={isExpanded(section.key, items.length > 0)}
-                onToggle={() => toggle(section.key)}
-              />
+                ref={(el) => (sectionRefs.current[section.key] = el)}
+                className="scroll-mt-24"
+              >
+                <SectionAccordion
+                  section={section}
+                  visibleItems={items}
+                  expanded={isExpanded(section.key, items.length > 0)}
+                  onToggle={() => toggle(section.key, items.length > 0)}
+                />
+              </div>
             );
           })}
-          {filtering && perSection.every((p) => p.items.length === 0) && (
+
+          {noResults && (
             <Card className="p-8 text-center text-lavender-light/50">
-              {t("noMatches", { q: query })}{" "}
+              {query ? t("noMatches", { q: query }) : t("noFilterMatches")}{" "}
               <button className="text-electric underline" onClick={clearFilters}>
                 {t("clearFilters")}
               </button>
@@ -245,6 +249,54 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Stat({
+  value,
+  label,
+  tone = "text-lavender-light",
+}: {
+  value: number;
+  label: string;
+  tone?: string;
+}) {
+  return (
+    <span className="flex items-baseline gap-1.5">
+      <span className={cx("num text-base font-bold", tone)}>{value}</span>
+      <span className="text-xs text-lavender-light/50">{label}</span>
+    </span>
+  );
+}
+
+/** Three mutually exclusive states worth showing at once, so not a dropdown. */
+function Segmented({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: [string, string][];
+}) {
+  return (
+    <div className="flex rounded-xl border border-white/10 bg-navy/60 p-0.5">
+      {options.map(([v, label]) => (
+        <button
+          key={v}
+          onClick={() => onChange(v)}
+          aria-pressed={value === v}
+          className={cx(
+            "rounded-[10px] px-2.5 py-1.5 text-xs font-medium transition-colors duration-150",
+            value === v
+              ? "bg-electric text-white"
+              : "text-lavender-light/70 hover:text-white"
+          )}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -258,11 +310,17 @@ function FilterSelect({
   onChange: (v: string) => void;
   options: [string, string][];
 }) {
+  const active = value !== "all";
   return (
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-xl bg-navy/60 border border-white/10 px-3 py-2 text-sm text-lavender-light focus:border-electric focus:outline-none cursor-pointer"
+      className={cx(
+        "cursor-pointer rounded-xl border px-2.5 py-2 text-xs focus:outline-none",
+        active
+          ? "border-electric/50 bg-electric/10 text-white"
+          : "border-white/10 bg-navy/60 text-lavender-light/80"
+      )}
     >
       {options.map(([v, label]) => (
         <option key={v} value={v} className="bg-navy text-white">

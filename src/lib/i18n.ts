@@ -17,46 +17,43 @@ export type Lang = "en" | "ar";
 const en = {
   // ---- app shell ----
   appHome: "Home",
-  navDashboard: "Dashboard",
-  navBudget: "Budget",
   navAdmin: "Admin",
-  barSelected: "Selected",
-  barBase: "Base",
-  barFees: "Fees 15%",
-  barGrandTotal: "Grand Total",
   barReview: "Review Budget",
   langToggle: "العربية",
   langToggleLabel: "Switch to Arabic",
 
-  // ---- dashboard hero ----
-  heroEyebrow: "Scope-Based Budget Builder",
-  heroTitle: "Pricing Measurement Dashboard",
-  heroBody:
-    "Pick a section, choose the items you need, adjust the quantities. The 15% fee and all totals update instantly.",
+  // ---- sidebar ----
+  navOverview: "Overview",
+  navSections: "Sections",
+  sidebarTotalLabel: "Grand total",
+  sidebarBaseFee: "{base} base + {fee} fee",
+  sidebarEmpty: "Nothing selected yet",
+  openMenu: "Open menu",
+  closeMenu: "Close menu",
 
-  // ---- running budget ----
-  kpiCurrentBase: "Current Base Total",
-  kpiCurrentFees: "Current Fees (15%)",
-  kpiCurrentGrand: "Current Grand Total",
-
-  // ---- catalog KPIs ----
-  kpiSections: "Sections",
-  kpiPricedItems: "Priced Items",
-  kpiUnpricedItems: "Unpriced Items",
-  kpiTotalItems: "Total Items",
-  kpiSelected: "Selected",
+  // ---- stat strip ----
+  statItems: "items",
+  statPriced: "priced",
+  statUnpriced: "unpriced",
+  statSelected: "selected",
+  statFee: "fee",
   kpiNeedPrice: "{n} need a price",
-  kpiFeeApplied: "Fee Applied",
 
-  // ---- chart + explainer ----
+  // ---- quantity stepper ----
+  decrease: "Decrease quantity",
+  increase: "Increase quantity",
+
+  // ---- budget summary header ----
+  clientLabel: "Client",
+  clientPlaceholder: "Who is this budget for?",
+  titlePlaceholder: "Name this budget",
+  backToBuilder: "Back to builder",
+
+
+  // ---- chart ----
   chartTitle: "Spend by Section",
   chartSub: "Grand total incl. 15% fee",
   chartEmpty: "Select items to see the spend breakdown.",
-  howTitle: "How pricing works",
-  howBase: "Base = Qty x Unit Price",
-  howFee: "Fee = Base x 15%",
-  howTotal: "Total = Base + Fee",
-  howUnpriced: "Unpriced items are flagged & excluded until you set a price.",
 
   // ---- builder toolbar ----
   buildTitle: "Build your budget",
@@ -109,7 +106,6 @@ const en = {
   // ---- budget summary ----
   emptyTitle: "Your budget is empty",
   emptyBody: "Head into a section and select the scope items you need.",
-  emptyCta: "Browse sections",
   budgetTitleLabel: "Budget title",
   print: "Print",
   clearAll: "Clear all",
@@ -162,46 +158,43 @@ export type StringKey = keyof typeof en;
 const ar: Record<StringKey, string> = {
   // ---- app shell ----
   appHome: "الرئيسية",
-  navDashboard: "لوحة التحكم",
-  navBudget: "الميزانية",
   navAdmin: "الإدارة",
-  barSelected: "المحدد",
-  barBase: "الأساس",
-  barFees: "الرسوم ١٥٪",
-  barGrandTotal: "الإجمالي الكلي",
   barReview: "مراجعة الميزانية",
   langToggle: "English",
   langToggleLabel: "التحويل إلى الإنجليزية",
 
-  // ---- dashboard hero ----
-  heroEyebrow: "أداة بناء الميزانية حسب نطاق العمل",
-  heroTitle: "لوحة قياس التسعير",
-  heroBody:
-    "اختر القسم، ثم حدد البنود التي تحتاجها واضبط الكميات. تُحتسب رسوم الـ ١٥٪ وجميع الإجماليات فوراً.",
+  // ---- sidebar ----
+  navOverview: "نظرة عامة",
+  navSections: "الأقسام",
+  sidebarTotalLabel: "الإجمالي الكلي",
+  sidebarBaseFee: "{base} أساسي + {fee} رسوم",
+  sidebarEmpty: "لم تحدد أي بند بعد",
+  openMenu: "فتح القائمة",
+  closeMenu: "إغلاق القائمة",
 
-  // ---- running budget ----
-  kpiCurrentBase: "إجمالي التكلفة الأساسية",
-  kpiCurrentFees: "إجمالي الرسوم (١٥٪)",
-  kpiCurrentGrand: "الإجمالي الكلي",
-
-  // ---- catalog KPIs ----
-  kpiSections: "الأقسام",
-  kpiPricedItems: "البنود المسعّرة",
-  kpiUnpricedItems: "البنود غير المسعّرة",
-  kpiTotalItems: "إجمالي البنود",
-  kpiSelected: "المحدد",
+  // ---- stat strip ----
+  statItems: "بند",
+  statPriced: "مسعّر",
+  statUnpriced: "غير مسعّر",
+  statSelected: "محدد",
+  statFee: "رسوم",
   kpiNeedPrice: "{n} بحاجة إلى سعر",
-  kpiFeeApplied: "الرسوم المطبقة",
 
-  // ---- chart + explainer ----
+  // ---- quantity stepper ----
+  decrease: "إنقاص الكمية",
+  increase: "زيادة الكمية",
+
+  // ---- budget summary header ----
+  clientLabel: "العميل",
+  clientPlaceholder: "لمن هذه الميزانية؟",
+  titlePlaceholder: "سمّ هذه الميزانية",
+  backToBuilder: "العودة إلى الأداة",
+
+
+  // ---- chart ----
   chartTitle: "الإنفاق حسب القسم",
   chartSub: "الإجمالي الكلي شامل رسوم ١٥٪",
   chartEmpty: "حدد بنوداً لعرض توزيع الإنفاق.",
-  howTitle: "كيف يُحتسب التسعير",
-  howBase: "التكلفة الأساسية = الكمية × سعر الوحدة",
-  howFee: "الرسوم = التكلفة الأساسية × ١٥٪",
-  howTotal: "الإجمالي = التكلفة الأساسية + الرسوم",
-  howUnpriced: "تُميَّز البنود غير المسعّرة وتُستبعد من الإجماليات حتى تحدد لها سعراً.",
 
   // ---- builder toolbar ----
   buildTitle: "ابنِ ميزانيتك",
@@ -254,7 +247,6 @@ const ar: Record<StringKey, string> = {
   // ---- budget summary ----
   emptyTitle: "ميزانيتك فارغة",
   emptyBody: "انتقل إلى أحد الأقسام وحدد بنود نطاق العمل التي تحتاجها.",
-  emptyCta: "تصفح الأقسام",
   budgetTitleLabel: "عنوان الميزانية",
   print: "طباعة",
   clearAll: "مسح الكل",

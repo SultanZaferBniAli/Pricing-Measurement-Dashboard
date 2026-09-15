@@ -57,7 +57,8 @@ export async function buildWorkbook(
   data: ScopeData,
   selections: Record<string, Selection>,
   budgetTitle: string,
-  dateStr: string
+  dateStr: string,
+  client = ""
 ): Promise<ExcelJS.Buffer> {
   const wb = new ExcelJS.Workbook();
   wb.creator = "TAM Scope-Based Budget Builder";
@@ -76,6 +77,7 @@ export async function buildWorkbook(
   titleRow(s1, "TAM Development Company Budget Summary", 4);
   s1.addRow([]);
   s1.addRow(["Budget Title", budgetTitle]);
+  s1.addRow(["Client", client || "-"]);
   s1.addRow(["Export Date", dateStr]);
   s1.addRow(["Currency", data.meta.currency]);
   s1.addRow(["Fee Rate", `${FEE_RATE * 100}%`]);
@@ -265,17 +267,23 @@ function addLineRows(ws: ExcelJS.Worksheet, lines: ComputedLine[]) {
 export async function downloadBudget(
   data: ScopeData,
   selections: Record<string, Selection>,
-  budgetTitle: string
+  budgetTitle: string,
+  client = ""
 ) {
   const dateStr = new Date().toISOString().slice(0, 10);
-  const buffer = await buildWorkbook(data, selections, budgetTitle, dateStr);
+  const buffer = await buildWorkbook(data, selections, budgetTitle, dateStr, client);
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const safe = budgetTitle.replace(/[^a-z0-9]+/gi, "_").slice(0, 40);
+  const slug = (v: string) => v.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
+  const safe = [client, budgetTitle]
+    .filter(Boolean)
+    .map((v) => slug(v).slice(0, 30))
+    .filter(Boolean)
+    .join("_") || "Budget";
   a.download = `TAM_Budget_${safe}_${dateStr}.xlsx`;
   document.body.appendChild(a);
   a.click();

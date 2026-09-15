@@ -71,12 +71,16 @@ export function SectionAccordion({
             )}
           </div>
         </div>
-        <div className="text-end shrink-0">
-          <div className="text-[10px] uppercase tracking-wider text-lavender-light/50">
-            {t("subtotalInclFee")}
+        {/* The sidebar already labels these subtotals, so the number can stand
+            on its own here, and stays out of the way at zero. */}
+        {totals.grand > 0 && (
+          <div
+            className="num shrink-0 text-lg font-bold text-gold"
+            title={t("subtotalInclFee")}
+          >
+            {money(totals.grand)}
           </div>
-          <div className="text-lg font-bold text-gold num">{money(totals.grand)}</div>
-        </div>
+        )}
         <ChevronDown
           size={20}
           className={cx(
@@ -91,11 +95,10 @@ export function SectionAccordion({
         <div className="px-3 pb-4 pt-1 border-t border-white/5 animate-fade-in">
           <div className="hidden md:grid grid-cols-12 gap-2 px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-lavender-light/40">
             <div className="col-span-5">{t("colItem")}</div>
-            <div className="col-span-1">{t("colQty")}</div>
+            <div className="col-span-2">{t("colQty")}</div>
             <div className="col-span-2 text-end">{t("colUnitPrice")}</div>
             <div className="col-span-1 text-end">{t("colFee")}</div>
             <div className="col-span-2 text-end">{t("colTotal")}</div>
-            <div className="col-span-1" />
           </div>
 
           {groups.length === 0 ? (

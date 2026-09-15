@@ -7,6 +7,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
+import { QtyStepper } from "../components/QtyStepper";
 import { Badge, Button, Card, Diamond, MatchBadge } from "../components/ui";
 import { money, sar } from "../lib/format";
 import { useT } from "../lib/i18n";
@@ -20,6 +21,8 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const selections = useStore((s) => s.selections);
   const budgetTitle = useStore((s) => s.budgetTitle);
   const setBudgetTitle = useStore((s) => s.setBudgetTitle);
+  const client = useStore((s) => s.client);
+  const setClient = useStore((s) => s.setClient);
   const setQty = useStore((s) => s.setQty);
   const setNote = useStore((s) => s.setNote);
   const toggleItem = useStore((s) => s.toggleItem);
@@ -33,7 +36,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
     try {
       // Lazy-load the ExcelJS-backed export so it stays out of the main bundle.
       const { downloadBudget } = await import("../lib/excelExport");
-      await downloadBudget(data, selections, budgetTitle);
+      await downloadBudget(data, selections, budgetTitle, client);
     } finally {
       setExporting(false);
     }
@@ -49,7 +52,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
             {t("emptyBody")}
           </p>
           <Button className="mt-5" onClick={onBrowse}>
-            {t("emptyCta")}
+            {t("backToBuilder")}
           </Button>
         </Card>
       </div>
@@ -60,17 +63,36 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
     <div className="space-y-5 animate-fade-in print:space-y-3">
       {/* header + actions */}
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Diamond />
-          <div>
-            <label className="text-[10px] uppercase tracking-wider text-lavender-light/50">
-              {t("budgetTitleLabel")}
-            </label>
-            <input
-              value={budgetTitle}
-              onChange={(e) => setBudgetTitle(e.target.value)}
-              className="block bg-transparent text-2xl font-bold text-white border-b border-transparent hover:border-white/10 focus:border-electric focus:outline-none w-full max-w-md"
-            />
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <Diamond className="mt-3 shrink-0" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div>
+              <label
+                htmlFor="budget-title"
+                className="text-xs text-lavender-light/50"
+              >
+                {t("budgetTitleLabel")}
+              </label>
+              <input
+                id="budget-title"
+                value={budgetTitle}
+                onChange={(e) => setBudgetTitle(e.target.value)}
+                placeholder={t("titlePlaceholder")}
+                className="block w-full border-b border-white/10 bg-transparent text-2xl font-bold text-white placeholder:text-lavender-light/30 hover:border-white/20 focus:border-electric focus:outline-none"
+              />
+            </div>
+            <div>
+              <label htmlFor="budget-client" className="text-xs text-lavender-light/50">
+                {t("clientLabel")}
+              </label>
+              <input
+                id="budget-client"
+                value={client}
+                onChange={(e) => setClient(e.target.value)}
+                placeholder={t("clientPlaceholder")}
+                className="block w-full max-w-md border-b border-white/10 bg-transparent text-base text-lavender-light placeholder:text-lavender-light/30 hover:border-white/20 focus:border-electric focus:outline-none"
+              />
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2 print:hidden">
@@ -128,7 +150,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
 
       {/* priced lines table */}
       <Card className="overflow-hidden">
-        <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-navy/60 text-[10px] uppercase tracking-wider text-lavender-light/50 border-b border-white/5">
+        <div className="hidden md:grid grid-cols-12 gap-2 px-4 py-3 bg-navy/60 text-[10px] uppercase tracking-wider text-lavender-light/50 border-b border-white/5">
           <div className="col-span-4">{t("colItem")}</div>
           <div className="col-span-2">{t("colSection")}</div>
           <div className="col-span-1 text-center">{t("colQty")}</div>
@@ -141,8 +163,8 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         <div className="divide-y divide-white/5">
           {priced.map((l) => (
             <div key={l.item.id} className="px-4 py-3">
-              <div className="grid grid-cols-12 gap-2 items-center">
-                <div className="col-span-12 md:col-span-4 min-w-0">
+              <div className="flex flex-col gap-2 md:grid md:grid-cols-12 md:items-center">
+                <div className="md:col-span-4 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-white truncate">
                       {l.item.name}
@@ -166,40 +188,31 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
                       : `${tSubCategory(l.item.subCategory)} · ${tType(l.item.type)}`}
                   </div>
                 </div>
-                <div className="col-span-6 md:col-span-2 text-xs text-lavender-light/70">
+                <div className="md:col-span-2 text-xs text-lavender-light/70">
                   {tSection(l.item.section)}
                   <div className="mt-0.5">
                     <MatchBadge status={l.item.matchStatus} />
                   </div>
                 </div>
-                <div className="col-span-2 md:col-span-1 flex justify-center">
+                <div className="flex items-center gap-2 md:col-span-1 md:justify-center">
+                  <span className="text-[10px] uppercase text-lavender-light/40 md:hidden">
+                    {t("colQty")}
+                  </span>
                   {l.item.percentBasis ? (
                     // A contingency is a single percentage line: quantity does
                     // not apply, so there is nothing to edit here.
                     <span className="num text-sm text-lavender-light/40">-</span>
                   ) : (
-                    <input
-                      type="number"
-                      min={0}
-                      value={l.qty}
-                      onChange={(e) => setQty(l.item.id, parseFloat(e.target.value))}
-                      className="num w-14 rounded-lg bg-navy/60 border border-white/10 px-1.5 py-1 text-sm text-white text-center focus:border-electric focus:outline-none"
-                    />
+                    <QtyStepper value={l.qty} onChange={(n) => setQty(l.item.id, n)} />
                   )}
                 </div>
-                <div className="col-span-1 md:col-span-1 num text-sm text-lavender-light/70 text-end hidden md:block">
+                <div className="num hidden text-sm text-lavender-light/70 text-end md:col-span-1 md:block">
                   {money(l.unitPrice)}
                 </div>
-                <div className="col-span-2 md:col-span-1 num text-sm text-lavender-light/70 text-end">
-                  {money(l.baseCost)}
-                </div>
-                <div className="col-span-2 md:col-span-1 num text-sm text-lavender-light/70 text-end">
-                  {money(l.fee)}
-                </div>
-                <div className="col-span-3 md:col-span-1 num text-sm font-semibold text-white text-end">
-                  {money(l.totalCost)}
-                </div>
-                <div className="col-span-1 flex justify-end print:hidden">
+                <MoneyCell label={t("colBase")} value={money(l.baseCost)} />
+                <MoneyCell label={t("colFee")} value={money(l.fee)} />
+                <MoneyCell label={t("colTotal")} value={money(l.totalCost)} strong />
+                <div className="flex justify-end md:col-span-1 print:hidden">
                   <button
                     onClick={() => toggleItem(l.item.id)}
                     className="text-lavender-light/40 hover:text-red-400 transition-colors"
@@ -256,6 +269,37 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
           </Card>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * One money figure. On a phone the column headers are gone, so the label rides
+ * along with the value; from md up it is just the cell in the table.
+ */
+function MoneyCell({
+  label,
+  value,
+  strong,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-2 md:col-span-1 md:justify-end">
+      <span className="text-[10px] uppercase text-lavender-light/40 md:hidden">
+        {label}
+      </span>
+      <span
+        className={
+          strong
+            ? "num text-sm font-semibold text-white text-end"
+            : "num text-sm text-lavender-light/70 text-end"
+        }
+      >
+        {value}
+      </span>
     </div>
   );
 }

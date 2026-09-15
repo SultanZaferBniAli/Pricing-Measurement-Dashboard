@@ -1,33 +1,26 @@
 /**
- * App shell: top bar (brand + nav), routed views, and a sticky budget bar that
- * surfaces the running grand total and a quick jump to the summary.
+ * App shell: a persistent sidebar plus the active view.
+ *
+ * The sidebar carries navigation, the per-section rollup and the running grand
+ * total, which is why there is no sticky totals bar along the bottom any more:
+ * that bar and the old KPI cards were showing the same figures twice.
  */
 import { useEffect, useState } from "react";
-import {
-  LayoutDashboard,
-  Languages,
-  ListChecks,
-  Settings2,
-  ShoppingCart,
-} from "lucide-react";
+import { Menu } from "lucide-react";
+import { Sidebar, type View } from "./components/Sidebar";
 import { TamLogo } from "./components/TamLogo";
-import { Button, cx } from "./components/ui";
 import { money } from "./lib/format";
 import { useT } from "./lib/i18n";
-import { useStore } from "./lib/store";
 import { useBudget } from "./lib/useTotals";
 import { Admin } from "./screens/Admin";
 import { BudgetSummary } from "./screens/BudgetSummary";
 import { Dashboard } from "./screens/Dashboard";
 
-type View = { name: "dashboard" } | { name: "summary" } | { name: "admin" };
-
 export default function App() {
-  const [view, setView] = useState<View>({ name: "dashboard" });
+  const [view, setView] = useState<View>("builder");
+  const [menuOpen, setMenuOpen] = useState(false);
   const budget = useBudget();
-  const selectedCount = budget.selectedCount;
   const { t, lang, dir } = useT();
-  const setLanguage = useStore((s) => s.setLanguage);
 
   // Mirror the whole document, so Tailwind's logical properties, form controls
   // and the native scrollbar all flip with the language.
@@ -42,143 +35,54 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-navy text-white flex flex-col">
-      {/* top bar */}
-      <header className="sticky top-0 z-30 border-b border-white/5 bg-navy/85 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 md:px-6 py-3 flex items-center justify-between gap-4">
-          <button onClick={() => nav({ name: "dashboard" })} aria-label={t("appHome")}>
-            <TamLogo />
+    <div className="min-h-screen bg-navy text-white">
+      {/* desktop rail */}
+      <aside className="fixed inset-y-0 start-0 z-30 hidden w-64 lg:block print:hidden">
+        <Sidebar view={view} onNavigate={nav} budget={budget} />
+      </aside>
+
+      {/* mobile drawer */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden print:hidden">
+          <button
+            className="absolute inset-0 bg-navy/80 backdrop-blur-sm"
+            aria-label={t("closeMenu")}
+            onClick={() => setMenuOpen(false)}
+          />
+          <aside className="absolute inset-y-0 start-0 w-72 max-w-[85vw] shadow-card">
+            <Sidebar
+              view={view}
+              onNavigate={nav}
+              budget={budget}
+              onCloseMobile={() => setMenuOpen(false)}
+            />
+          </aside>
+        </div>
+      )}
+
+      <div className="lg:ms-64">
+        {/* mobile top bar: the rail is a drawer below lg */}
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/5 bg-navy/85 px-4 py-3 backdrop-blur-md lg:hidden print:hidden">
+          <button
+            onClick={() => setMenuOpen(true)}
+            aria-label={t("openMenu")}
+            className="rounded-lg p-1.5 text-lavender-light/80 hover:bg-white/5 hover:text-white"
+          >
+            <Menu size={20} />
           </button>
-          <nav className="flex items-center gap-1">
-            <NavButton
-              active={view.name === "dashboard"}
-              onClick={() => nav({ name: "dashboard" })}
-              icon={<LayoutDashboard size={16} />}
-            >
-              {t("navDashboard")}
-            </NavButton>
-            <NavButton
-              active={view.name === "summary"}
-              onClick={() => nav({ name: "summary" })}
-              icon={<ListChecks size={16} />}
-              badge={selectedCount || undefined}
-            >
-              {t("navBudget")}
-            </NavButton>
-            <NavButton
-              active={view.name === "admin"}
-              onClick={() => nav({ name: "admin" })}
-              icon={<Settings2 size={16} />}
-            >
-              {t("navAdmin")}
-            </NavButton>
-            <button
-              onClick={() => setLanguage(lang === "ar" ? "en" : "ar")}
-              aria-label={t("langToggleLabel")}
-              title={t("langToggleLabel")}
-              className="ms-1 flex items-center gap-1.5 rounded-xl border border-white/10 px-2.5 py-2 text-sm font-medium text-lavender-light/80 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <Languages size={16} />
-              <span className="hidden sm:inline">{t("langToggle")}</span>
-            </button>
-          </nav>
-        </div>
-      </header>
+          <TamLogo />
+          {budget.selectedCount > 0 && (
+            <span className="num ms-auto text-sm font-bold text-gold">
+              {money(budget.totals.grand)}
+            </span>
+          )}
+        </header>
 
-      {/* main content */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-4 md:px-6 py-6 pb-28">
-        {view.name === "dashboard" && <Dashboard budget={budget} />}
-        {view.name === "summary" && (
-          <BudgetSummary onBrowse={() => nav({ name: "dashboard" })} />
-        )}
-        {view.name === "admin" && <Admin />}
-      </main>
-
-      {/* sticky budget bar */}
-      {view.name !== "summary" && (
-        <div className="fixed bottom-0 inset-x-0 z-30 border-t border-white/10 bg-surface/95 backdrop-blur-md print:hidden">
-          <div className="mx-auto max-w-7xl px-4 md:px-6 py-3 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 md:gap-8 text-sm">
-              <BudgetStat label={t("barSelected")} value={String(selectedCount)} />
-              <BudgetStat label={t("barBase")} value={money(budget.totals.base)} />
-              <BudgetStat
-                label={t("barFees")}
-                value={money(budget.totals.fee)}
-                className="hidden sm:block"
-              />
-              <BudgetStat
-                label={t("barGrandTotal")}
-                value={`${money(budget.totals.grand)} SAR`}
-                accent
-              />
-            </div>
-            <Button onClick={() => nav({ name: "summary" })} disabled={!selectedCount}>
-              <ShoppingCart size={16} /> {t("barReview")}
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function NavButton({
-  children,
-  active,
-  onClick,
-  icon,
-  badge,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  badge?: number;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cx(
-        "relative flex items-center gap-2 rounded-xl px-3 md:px-3.5 py-2 text-sm font-medium transition-colors",
-        active
-          ? "bg-electric/15 text-white"
-          : "text-lavender-light/70 hover:text-white hover:bg-white/5"
-      )}
-    >
-      {icon}
-      <span className="hidden sm:inline">{children}</span>
-      {badge != null && (
-        <span className="ml-0.5 rounded-full bg-gold px-1.5 py-0.5 text-[10px] font-bold text-navy num">
-          {badge}
-        </span>
-      )}
-    </button>
-  );
-}
-
-function BudgetStat({
-  label,
-  value,
-  accent,
-  className,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <div className="text-[10px] uppercase tracking-wider text-lavender-light/50">
-        {label}
-      </div>
-      <div
-        className={cx(
-          "num font-bold",
-          accent ? "text-gold text-base md:text-lg" : "text-white"
-        )}
-      >
-        {value}
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
+          {view === "builder" && <Dashboard budget={budget} />}
+          {view === "summary" && <BudgetSummary onBrowse={() => nav("builder")} />}
+          {view === "admin" && <Admin />}
+        </main>
       </div>
     </div>
   );
