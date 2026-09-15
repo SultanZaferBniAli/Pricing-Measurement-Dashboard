@@ -10,6 +10,8 @@ import { useRef, useState } from "react";
 import {
   FileSearch,
   FileText,
+  History,
+  Languages,
   Loader2,
   Plus,
   Sparkles,
@@ -18,15 +20,26 @@ import {
 } from "lucide-react";
 import { Badge, Button, Card, cx } from "./ui";
 import { money } from "../lib/format";
-import { useT } from "../lib/i18n";
+import { useT, type StringKey } from "../lib/i18n";
 import { useStore } from "../lib/store";
-import { analyseRfp, extractText, type RfpAnalysis, type ScopeSuggestion } from "../lib/rfp";
+import type { ScopeItem } from "../lib/types";
+import {
+  analyseRfp,
+  detectLanguage,
+  extractText,
+  findPrecedents,
+  type PrecedentMatch,
+  type RfpAnalysis,
+  type ScopeSuggestion,
+} from "../lib/rfp";
 
 export function RfpCheck() {
   const { t, tSection } = useT();
   const data = useStore((s) => s.data);
   const selections = useStore((s) => s.selections);
   const toggleItem = useStore((s) => s.toggleItem);
+  const setRfp = useStore((s) => s.setRfp);
+  const history = useStore((s) => s.history);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [files, setFiles] = useState<File[]>([]);
@@ -34,6 +47,8 @@ export function RfpCheck() {
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<RfpAnalysis | null>(null);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [precedents, setPrecedents] = useState<PrecedentMatch[]>([]);
+  const [rfpLang, setRfpLang] = useState<ReturnType<typeof detectLanguage> | null>(null);
 
   const addFiles = (list: FileList | null) => {
     if (!list?.length) return;
@@ -67,7 +82,13 @@ export function RfpCheck() {
         setAnalysis(null);
         return;
       }
+      const text = docs.map((d) => d.text).join("\n");
+      // Remember it: the export files it with the budget, and the next RFP is
+      // compared against it.
+      setRfp(text, docs.map((d) => d.name));
       setAnalysis(analyseRfp(docs, data.sections, selections));
+      setPrecedents(findPrecedents(text, history, data.sections, selections));
+      setRfpLang(detectLanguage(text));
       setDismissed(new Set());
     } catch (e) {
       setError((e as Error).message);
@@ -176,6 +197,23 @@ export function RfpCheck() {
               {t("rfpConfirmed", { n: analysis.confirmedCount })}
             </span>
           </div>
+
+          {/* an Arabic RFP will barely match an English catalog: say so */}
+          {rfpLang && rfpLang.lang !== "en" && (
+            <p className="rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-xs leading-relaxed text-gold/90">
+              <Languages size={12} className="me-1 inline" />
+              {rfpLang.lang === "ar" ? t("rfpArabic") : t("rfpMixed")}
+            </p>
+          )}
+
+          {precedents.length > 0 && (
+            <Precedents
+              matches={precedents}
+              onAdd={(item) => toggleItem(item.id, item.defaultQty)}
+              selections={selections}
+              t={t}
+            />
+          )}
 
           {toAdd.length === 0 && toReview.length === 0 ? (
             <p className="rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-xs text-emerald-200">
@@ -323,5 +361,114 @@ function SuggestionRow({
         </Button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Budgets already exported against a similar RFP.
+ *
+ * This is retrieval, not prediction: it does not guess what belongs in the
+ * budget, it shows what a comparable budget actually contained and leaves the
+ * call to the user. The shared words are on show, so a spurious match is
+ * obvious rather than authoritative.
+ */
+function Precedents({
+  matches,
+  onAdd,
+  selections,
+  t,
+}: {
+  matches: PrecedentMatch[];
+  onAdd: (item: ScopeItem) => void;
+  selections: Record<string, unknown>;
+  t: (k: StringKey, vars?: Record<string, string | number>) => string;
+}) {
+  return (
+    <section className="rounded-xl border border-lavender/25 bg-lavender/[0.06] p-3">
+      <h3 className="flex items-center gap-2 text-xs font-semibold text-lavender-light">
+        <History size={13} />
+        {t("precedentTitle", { n: matches.length })}
+      </h3>
+      <p className="mb-2.5 mt-0.5 text-[11px] text-lavender-light/50">
+        {t("precedentBody")}
+      </p>
+
+      <div className="space-y-2">
+        {matches.map((m) => (
+          <div
+            key={m.entry.id}
+            className="rounded-lg border border-white/10 bg-navy/40 px-3 py-2.5"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="text-sm font-medium text-white">
+                {m.entry.title || t("untitledBudget")}
+                {m.entry.client && (
+                  <span className="ms-2 text-[11px] font-normal text-lavender-light/50">
+                    {m.entry.client}
+                  </span>
+                )}
+              </span>
+              <span className="num text-xs text-lavender-light/60">
+                {t("precedentSimilarity", { pct: Math.round(m.similarity * 100) })} ·{" "}
+                {money(m.entry.grand)}
+              </span>
+            </div>
+
+            {m.sharedTerms.length > 0 && (
+              <p className="mt-1 text-[11px] text-lavender-light/45">
+                {t("rfpMatchedOn")}{" "}
+                {m.sharedTerms.map((w) => (
+                  <span
+                    key={w}
+                    className="me-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-lavender-light/70"
+                  >
+                    {w}
+                  </span>
+                ))}
+              </p>
+            )}
+
+            <p className="mt-1.5 text-[11px] text-lavender-light/60">
+              {t("precedentDiff", {
+                same: m.overlap,
+                missing: m.missing.length,
+                extra: m.extra.length,
+              })}
+            </p>
+
+            {m.missing.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {m.missing.slice(0, 8).map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex flex-wrap items-center gap-2 rounded-md bg-white/[0.03] px-2 py-1.5"
+                  >
+                    <span className="min-w-0 flex-1 truncate text-xs text-lavender-light">
+                      {item.name}
+                    </span>
+                    <span className="num text-[11px] text-lavender-light/50">
+                      {item.isPriced ? money(item.unitPrice) : t("badgeUnpriced")}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={Boolean(selections[item.id])}
+                      onClick={() => onAdd(item)}
+                    >
+                      {selections[item.id] ? t("precedentAdded") : t("rfpAdd")}
+                    </Button>
+                  </li>
+                ))}
+                {m.missing.length > 8 && (
+                  <li className="px-2 text-[11px] text-lavender-light/40">
+                    {t("precedentMore", { n: m.missing.length - 8 })}
+                  </li>
+                )}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

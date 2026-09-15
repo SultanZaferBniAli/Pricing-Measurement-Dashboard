@@ -34,6 +34,13 @@ interface AppState {
   projectDate: string;
   /** A few lines on what the project is. */
   projectDescription: string;
+  /**
+   * Text of the RFP most recently analysed, and the file names it came from.
+   * Held here so the export can file it alongside the budget: a past budget is
+   * only useful as precedent if you know what it was priced against.
+   */
+  rfpText: string;
+  rfpFiles: string[];
   language: "en" | "ar";
 
   /** The one section the builder is showing. */
@@ -56,6 +63,7 @@ interface AppState {
   setClient: (client: string) => void;
   setProjectDate: (date: string) => void;
   setProjectDescription: (text: string) => void;
+  setRfp: (text: string, files: string[]) => void;
   setActiveSection: (key: string) => void;
   saveToHistory: (entry: Omit<BudgetHistoryEntry, "id" | "exportedAt">) => void;
   restoreFromHistory: (id: string) => void;
@@ -82,6 +90,8 @@ export const useStore = create<AppState>()(
       client: "",
       projectDate: "",
       projectDescription: "",
+      rfpText: "",
+      rfpFiles: [],
       language: "en",
       activeSection: initialData.sections[0]?.key ?? "",
       history: [],
@@ -165,6 +175,8 @@ export const useStore = create<AppState>()(
       setClient: (client) => set({ client }),
       setProjectDate: (projectDate) => set({ projectDate }),
       setProjectDescription: (projectDescription) => set({ projectDescription }),
+      // Capped: this lands in localStorage, and a 200-page RFP would not fit.
+      setRfp: (text, files) => set({ rfpText: text.slice(0, 60000), rfpFiles: files }),
 
       setActiveSection: (key) => set({ activeSection: key }),
 
@@ -219,6 +231,8 @@ export const useStore = create<AppState>()(
         client: state.client,
         projectDate: state.projectDate,
         projectDescription: state.projectDescription,
+        rfpText: state.rfpText,
+        rfpFiles: state.rfpFiles,
         language: state.language,
         history: state.history,
       }),

@@ -15,7 +15,7 @@
  * whatever the engine: a suggestion a user cannot check is a suggestion a user
  * cannot trust.
  */
-import type { ScopeItem, Section } from "./types";
+import type { BudgetHistoryEntry, ScopeItem, Section } from "./types";
 
 export interface RfpDocument {
   name: string;
@@ -256,4 +256,143 @@ export function analyseRfp(
     confirmedCount,
     analysedAt: new Date().toISOString(),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Language
+// ---------------------------------------------------------------------------
+
+export type RfpLanguage = "en" | "ar" | "mixed";
+
+/**
+ * Which script the RFP is written in.
+ *
+ * Matters because the catalog's item names are English. An Arabic RFP will
+ * match almost nothing, and the honest thing is to say so up front rather than
+ * report "0 suggestions" as though the budget were already correct.
+ */
+export function detectLanguage(text: string): {
+  lang: RfpLanguage;
+  arabicShare: number;
+} {
+  const letters = text.match(/[a-z؀-ۿ]/gi) ?? [];
+  if (letters.length === 0) return { lang: "en", arabicShare: 0 };
+  const arabic = letters.filter((c) => /[؀-ۿ]/.test(c)).length;
+  const share = arabic / letters.length;
+  return {
+    lang: share > 0.6 ? "ar" : share > 0.15 ? "mixed" : "en",
+    arabicShare: share,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Precedent: has something like this been budgeted before?
+// ---------------------------------------------------------------------------
+
+export interface PrecedentMatch {
+  entry: BudgetHistoryEntry;
+  /** 0..1 cosine similarity between the two RFPs' vocabulary. */
+  similarity: number;
+  /** The distinctive words both documents share, as the reason for the match. */
+  sharedTerms: string[];
+  /** Priced in that budget, absent from this one. */
+  missing: ScopeItem[];
+  /** In this budget, absent from that one. */
+  extra: ScopeItem[];
+  /** Lines both budgets agree on. */
+  overlap: number;
+}
+
+/** Term-frequency vector of the distinctive words in a document. */
+function termVector(text: string): Map<string, number> {
+  const v = new Map<string, number>();
+  for (const w of tokenise(text)) {
+    if (w.length < 4 || STOPWORDS.has(w)) continue;
+    v.set(w, (v.get(w) ?? 0) + 1);
+  }
+  return v;
+}
+
+function cosine(a: Map<string, number>, b: Map<string, number>) {
+  let dot = 0;
+  let aLen = 0;
+  let bLen = 0;
+  for (const [, n] of a) aLen += n * n;
+  for (const [, n] of b) bLen += n * n;
+  const smaller = a.size < b.size ? a : b;
+  const larger = smaller === a ? b : a;
+  const shared: string[] = [];
+  for (const [w, n] of smaller) {
+    const m = larger.get(w);
+    if (m) {
+      dot += n * m;
+      shared.push(w);
+    }
+  }
+  const denom = Math.sqrt(aLen) * Math.sqrt(bLen);
+  return { score: denom === 0 ? 0 : dot / denom, shared };
+}
+
+/** Below this the two documents have little in common beyond chance. */
+const PRECEDENT_THRESHOLD = 0.12;
+
+/**
+ * Find past budgets whose RFP reads like this one, and diff their line items
+ * against the current selection.
+ *
+ * This is retrieval, not prediction: it does not guess what a budget should
+ * contain, it shows what a comparable budget actually did contain and leaves
+ * the judgement to the user. It improves as more budgets are exported, because
+ * there is more precedent to draw on, not because anything is retrained.
+ *
+ * Today it can only see budgets exported in THIS browser. Making it see the
+ * whole company's history is a server problem, not an algorithm problem: the
+ * matching below is unchanged, it just needs a shared corpus to run against.
+ */
+export function findPrecedents(
+  rfpText: string,
+  history: BudgetHistoryEntry[],
+  sections: Section[],
+  selections: Record<string, unknown>,
+  limit = 3
+): PrecedentMatch[] {
+  const itemsById = new Map<string, ScopeItem>();
+  for (const s of sections) for (const i of s.items) itemsById.set(i.id, i);
+
+  const current = termVector(rfpText);
+  const selectedIds = new Set(Object.keys(selections));
+
+  return history
+    .filter((h) => (h.rfpText ?? "").length > 50)
+    .map((entry) => {
+      const { score, shared } = cosine(current, termVector(entry.rfpText!));
+      const pastIds = new Set(Object.keys(entry.selections));
+
+      const missing: ScopeItem[] = [];
+      for (const id of pastIds) {
+        const item = itemsById.get(id);
+        if (item && !selectedIds.has(id)) missing.push(item);
+      }
+      const extra: ScopeItem[] = [];
+      for (const id of selectedIds) {
+        const item = itemsById.get(id);
+        if (item && !pastIds.has(id)) extra.push(item);
+      }
+      let overlap = 0;
+      for (const id of selectedIds) if (pastIds.has(id)) overlap += 1;
+
+      return {
+        entry,
+        similarity: score,
+        sharedTerms: shared
+          .sort((a, b) => (current.get(b) ?? 0) - (current.get(a) ?? 0))
+          .slice(0, 8),
+        missing,
+        extra,
+        overlap,
+      };
+    })
+    .filter((m) => m.similarity >= PRECEDENT_THRESHOLD)
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, limit);
 }

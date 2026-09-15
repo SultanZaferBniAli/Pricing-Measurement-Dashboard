@@ -31,6 +31,8 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const projectDate = useStore((s) => s.projectDate);
   const setProjectDate = useStore((s) => s.setProjectDate);
   const projectDescription = useStore((s) => s.projectDescription);
+  const rfpText = useStore((s) => s.rfpText);
+  const rfpFiles = useStore((s) => s.rfpFiles);
   const setProjectDescription = useStore((s) => s.setProjectDescription);
   const setQty = useStore((s) => s.setQty);
   const setNote = useStore((s) => s.setNote);
@@ -66,6 +68,10 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
       saveToHistory({
         title: budgetTitle,
         client,
+        projectDate,
+        projectDescription,
+        rfpText,
+        rfpFiles,
         base: totals.base,
         fee: totals.fee,
         grand: totals.grand,

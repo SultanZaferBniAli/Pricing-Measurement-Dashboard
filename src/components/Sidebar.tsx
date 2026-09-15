@@ -26,7 +26,12 @@ import { useT } from "../lib/i18n";
 import { useStore } from "../lib/store";
 import type { BudgetSummary } from "../lib/useTotals";
 
-export type View = "builder" | "vendors" | "summary" | "admin";
+export type View =
+  | { name: "builder" }
+  | { name: "vendors" }
+  | { name: "summary" }
+  | { name: "admin" }
+  | { name: "history"; id: string };
 
 export function Sidebar({
   view,
@@ -42,7 +47,6 @@ export function Sidebar({
   const { t, lang } = useT();
   const setLanguage = useStore((s) => s.setLanguage);
   const history = useStore((s) => s.history);
-  const restoreFromHistory = useStore((s) => s.restoreFromHistory);
   const removeFromHistory = useStore((s) => s.removeFromHistory);
   const budgetTitle = useStore((s) => s.budgetTitle);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -52,16 +56,13 @@ export function Sidebar({
     onCloseMobile?.();
   };
 
-  const restore = (id: string) => {
-    restoreFromHistory(id);
-    go("summary");
-  };
+  const openEntry = (id: string) => go({ name: "history", id });
 
   return (
     <div className="flex h-full flex-col border-e border-white/5 bg-surface/60">
       {/* brand */}
       <div className="flex items-center justify-between gap-2 px-5 py-4">
-        <button onClick={() => go("builder")} aria-label={t("appHome")}>
+        <button onClick={() => go({ name: "builder" })} aria-label={t("appHome")}>
           <TamLogo />
         </button>
         {onCloseMobile && (
@@ -77,15 +78,15 @@ export function Sidebar({
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
         <RailButton
-          active={view === "builder"}
-          onClick={() => go("builder")}
+          active={view.name === "builder"}
+          onClick={() => go({ name: "builder" })}
           icon={<LayoutGrid size={16} />}
         >
           {t("navOverview")}
         </RailButton>
         <RailButton
-          active={view === "vendors"}
-          onClick={() => go("vendors")}
+          active={view.name === "vendors"}
+          onClick={() => go({ name: "vendors" })}
           icon={<Handshake size={16} />}
         >
           {t("navVendors")}
@@ -103,12 +104,15 @@ export function Sidebar({
         ) : (
           <ul className="space-y-0.5">
             {history.map((h) => {
-              const isCurrent = h.title.trim() === budgetTitle.trim();
+              const isCurrent =
+                view.name === "history"
+                  ? view.id === h.id
+                  : h.title.trim() !== "" && h.title.trim() === budgetTitle.trim();
               return (
                 <li key={h.id} className="group relative">
                   <button
-                    onClick={() => restore(h.id)}
-                    title={t("historyRestore")}
+                    onClick={() => openEntry(h.id)}
+                    title={t("historyOpen")}
                     className={cx(
                       "w-full rounded-xl px-3 py-2 pe-8 text-start transition-colors",
                       isCurrent ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"
@@ -176,7 +180,7 @@ export function Sidebar({
         )}
         <Button
           className="mt-3 w-full"
-          onClick={() => go("summary")}
+          onClick={() => go({ name: "summary" })}
           disabled={!budget.selectedCount}
         >
           <ShoppingCart size={16} /> {t("barReview")}
@@ -184,8 +188,8 @@ export function Sidebar({
 
         <div className="mt-3 flex items-center justify-between">
           <RailButton
-            active={view === "admin"}
-            onClick={() => go("admin")}
+            active={view.name === "admin"}
+            onClick={() => go({ name: "admin" })}
             icon={<Settings2 size={15} />}
             compact
           >

@@ -26,7 +26,14 @@ const en = {
   navOverview: "Overview",
   navHistory: "Exported budgets",
   historyEmpty: "Budgets you export to Excel are saved here, so you can reopen one later.",
-  historyRestore: "Open this budget",
+  historyOpen: "Open this budget",
+  historyOpenInBuilder: "Open in builder",
+  historyExportedOn: "Exported",
+  historyRfpLabel: "RFP",
+  historyGone: "That budget is no longer in the list.",
+  historyDrift:
+    "This budget totalled {then} when it was exported. Priced against today's catalog it comes to {now}, so a rate has changed since.",
+  historyUnpricedNote: "{n} selected lines had no price and were excluded from the total.",
   historyDelete: "Remove from history",
   historyConfirm: "Click again to remove",
   untitledBudget: "Untitled budget",
@@ -174,6 +181,19 @@ const en = {
   rfpMissingBody: "These appear in the RFP but are not in the budget.",
   rfpExtraTitle: "{n} lines the RFP does not mention",
   rfpExtraBody: "These are in the budget but nothing in the RFP refers to them. That may be correct: check before dropping.",
+  rfpArabic:
+    "This RFP is written in Arabic, and the catalog's item names are English, so very little will match. Until the catalog carries Arabic terms, treat the result below as incomplete rather than as a clean bill of health.",
+  rfpMixed:
+    "This RFP mixes Arabic and English. Only the English parts were matched against the catalog, so the result below is partial.",
+
+  // ---- precedent ----
+  precedentTitle: "Budgeted before: {n} similar RFP(s)",
+  precedentBody:
+    "Budgets you exported against an RFP that reads like this one. What they contained is precedent, not instruction.",
+  precedentSimilarity: "{pct}% alike",
+  precedentDiff: "shared {same} · only in theirs {missing} · only in yours {extra}",
+  precedentAdded: "Added",
+  precedentMore: "and {n} more",
   rfpMatchedOn: "Found:",
   rfpAdd: "Add",
   rfpRemove: "Remove",
@@ -216,7 +236,14 @@ const ar: Record<StringKey, string> = {
   navOverview: "نظرة عامة",
   navHistory: "الميزانيات المصدَّرة",
   historyEmpty: "تُحفظ هنا الميزانيات التي تصدّرها إلى إكسل، لتتمكن من فتحها لاحقاً.",
-  historyRestore: "فتح هذه الميزانية",
+  historyOpen: "فتح هذه الميزانية",
+  historyOpenInBuilder: "فتحها في الأداة",
+  historyExportedOn: "تاريخ التصدير",
+  historyRfpLabel: "كراسة الشروط",
+  historyGone: "لم تعد هذه الميزانية ضمن القائمة.",
+  historyDrift:
+    "بلغ إجمالي هذه الميزانية {then} عند تصديرها. وبتسعيرها وفق الكتالوج الحالي تبلغ {now}، أي أن سعراً ما قد تغيّر منذ ذلك الحين.",
+  historyUnpricedNote: "{n} بنداً محدداً بلا سعر واستُبعدت من الإجمالي.",
   historyDelete: "إزالة من السجل",
   historyConfirm: "اضغط مرة أخرى للإزالة",
   untitledBudget: "ميزانية بلا عنوان",
@@ -364,6 +391,19 @@ const ar: Record<StringKey, string> = {
   rfpMissingBody: "تظهر هذه البنود في كراسة الشروط لكنها ليست ضمن الميزانية.",
   rfpExtraTitle: "{n} بنداً لا تذكرها كراسة الشروط",
   rfpExtraBody: "هذه البنود ضمن الميزانية لكن لا شيء في كراسة الشروط يشير إليها. قد يكون ذلك صحيحاً: تحقق قبل الحذف.",
+  rfpArabic:
+    "كراسة الشروط هذه مكتوبة بالعربية، وأسماء بنود الكتالوج بالإنجليزية، لذا لن يتطابق منها إلا القليل. إلى أن يحمل الكتالوج مصطلحات عربية، اعتبر النتيجة أدناه ناقصة لا شهادة سلامة.",
+  rfpMixed:
+    "تخلط كراسة الشروط هذه بين العربية والإنجليزية. طوبقت الأجزاء الإنجليزية فقط مع الكتالوج، لذا النتيجة أدناه جزئية.",
+
+  // ---- precedent ----
+  precedentTitle: "سبق تسعيرها: {n} كراسة شروط مشابهة",
+  precedentBody:
+    "ميزانيات صدّرتها سابقاً مقابل كراسة شروط تشبه هذه. ما احتوته سابقة يُستأنس بها، لا تعليمات تُتبع.",
+  precedentSimilarity: "تشابه {pct}٪",
+  precedentDiff: "مشترك {same} · لديهم فقط {missing} · لديك فقط {extra}",
+  precedentAdded: "أُضيف",
+  precedentMore: "و{n} غيرها",
   rfpMatchedOn: "وُجد:",
   rfpAdd: "إضافة",
   rfpRemove: "حذف",

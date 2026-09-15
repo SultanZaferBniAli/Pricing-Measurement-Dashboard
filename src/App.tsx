@@ -15,10 +15,11 @@ import { useBudget } from "./lib/useTotals";
 import { Admin } from "./screens/Admin";
 import { BudgetSummary } from "./screens/BudgetSummary";
 import { Dashboard } from "./screens/Dashboard";
+import { HistoryView } from "./screens/HistoryView";
 import { Vendors } from "./screens/Vendors";
 
 export default function App() {
-  const [view, setView] = useState<View>("builder");
+  const [view, setView] = useState<View>({ name: "builder" });
   const [menuOpen, setMenuOpen] = useState(false);
   const budget = useBudget();
   const { t, lang, dir } = useT();
@@ -80,10 +81,19 @@ export default function App() {
         </header>
 
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
-          {view === "builder" && <Dashboard budget={budget} />}
-          {view === "vendors" && <Vendors />}
-          {view === "summary" && <BudgetSummary onBrowse={() => nav("builder")} />}
-          {view === "admin" && <Admin />}
+          {view.name === "builder" && <Dashboard budget={budget} />}
+          {view.name === "vendors" && <Vendors />}
+          {view.name === "summary" && (
+            <BudgetSummary onBrowse={() => nav({ name: "builder" })} />
+          )}
+          {view.name === "history" && (
+            <HistoryView
+              entryId={view.id}
+              onBack={() => nav({ name: "builder" })}
+              onOpened={() => nav({ name: "summary" })}
+            />
+          )}
+          {view.name === "admin" && <Admin />}
         </main>
       </div>
     </div>

@@ -126,11 +126,21 @@ export interface BudgetHistoryEntry {
   client: string;
   /** ISO timestamp of the export that created this entry. */
   exportedAt: string;
+  projectDate: string;
+  projectDescription: string;
   base: number;
   fee: number;
   grand: number;
   itemCount: number;
   selections: Record<string, Selection>;
+  /**
+   * The RFP this budget was priced against, if one was analysed. Kept so a
+   * later RFP can be compared against it: a budget that was actually exported
+   * is a decision somebody stood behind, which makes it the most useful kind of
+   * precedent. Capped when stored, since this is going into localStorage.
+   */
+  rfpText?: string;
+  rfpFiles?: string[];
 }
 
 export interface SectionTotals {
