@@ -42,9 +42,11 @@ export function QtyStepper({
   return (
     <div
       className={cx(
-        "inline-flex items-center rounded-lg border border-white/10 bg-navy/60",
+        // self-start, or the flex column this sits in stretches it edge to edge
+        "inline-flex w-fit shrink-0 self-start items-center rounded-lg border border-white/10 bg-navy/60",
         disabled && "opacity-40"
       )}
+      onClick={(e) => e.stopPropagation()}
     >
       <StepButton
         label={t("decrease")}

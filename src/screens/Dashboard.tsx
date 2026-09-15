@@ -2,13 +2,17 @@
  * The builder. One section at a time, chosen from a tab strip, so picking items
  * in Logistics never means scrolling past everything in Marketing first.
  *
+ * Order on the page follows the order of the work: see where the budget stands,
+ * narrow the catalog, choose a section, tick items. The search and filters sit
+ * above the tabs because they apply to every section, not just the open one.
+ *
  * The running Base / Fees / Grand total is not here. It lives once, in the
  * sidebar, so the same figures are never shown twice on one screen.
  */
 import { useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
+import { BudgetBar, SECTION_ACCENT } from "../components/BudgetBar";
 import { SectionPanel } from "../components/SectionPanel";
-import { SectionBarChart } from "../components/SectionBarChart";
 import { Card, cx } from "../components/ui";
 import { money } from "../lib/format";
 import { useT } from "../lib/i18n";
@@ -18,20 +22,11 @@ import type { BudgetSummary } from "../lib/useTotals";
 
 type PriceFilter = "all" | "priced" | "unpriced";
 
-/** Accent per section, shared with the spend chart so the two read as one. */
-const SECTION_ACCENT: Record<string, string> = {
-  MARKETING: "#5E45FF",
-  "EVENT MANAGEMENT": "#8A87F4",
-  LOGISTICS: "#EBA036",
-  "VIDEO PRODUCTIONS": "#6256F3",
-};
-
 export function Dashboard({ budget }: { budget: BudgetSummary }) {
   const data = useStore((s) => s.data);
   const activeSection = useStore((s) => s.activeSection);
   const setActiveSection = useStore((s) => s.setActiveSection);
   const { t, tSection, tSource } = useT();
-  const { catalog, selectedCount, unpricedSelected } = budget;
 
   const [query, setQuery] = useState("");
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
@@ -64,8 +59,7 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
     rollup: budget.bySection.find((b) => b.section.key === s.key),
   }));
 
-  const current =
-    perSection.find((p) => p.section.key === activeSection) ?? perSection[0];
+  const current = perSection.find((p) => p.section.key === activeSection) ?? perSection[0];
 
   const clearFilters = () => {
     setQuery("");
@@ -78,25 +72,68 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
     <div className="space-y-5 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-white md:text-3xl">{t("buildTitle")}</h1>
-        <p className="mt-1 text-sm text-lavender-light/70">{t("buildSubTabs")}</p>
+        <p className="mt-1 max-w-2xl text-sm text-lavender-light/70">{t("buildHowTo")}</p>
       </div>
 
-      {/* catalog facts, one line, no cards */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-white/5 bg-surface/40 px-4 py-2.5 text-sm">
-        <Stat value={catalog.items} label={t("statItems")} />
-        <Stat value={catalog.priced} label={t("statPriced")} tone="text-emerald-300" />
-        <Stat value={catalog.unpriced} label={t("statUnpriced")} tone="text-gold" />
-        <span className="h-4 w-px bg-white/10" />
-        <Stat value={selectedCount} label={t("statSelected")} tone="text-white" />
-        {unpricedSelected.length > 0 && (
-          <span className="text-xs text-gold/90">
-            {t("kpiNeedPrice", { n: unpricedSelected.length })}
-          </span>
-        )}
-      </div>
+      <BudgetBar budget={budget} />
 
-      {/* An empty chart is a large hole above the work, so it waits for data. */}
-      {selectedCount > 0 && <SectionBarChart budget={budget} />}
+      {/* search and filters apply across every section, so they lead */}
+      <Card className="sticky top-2 z-20 p-3 lg:top-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[180px] flex-1">
+            {/* logical inset so the icon follows the text direction */}
+            <Search
+              size={16}
+              className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-lavender-light/50"
+            />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="w-full rounded-xl border border-white/10 bg-navy/60 py-2 pe-3 ps-9 text-sm text-white placeholder:text-lavender-light/40 focus:border-electric focus:outline-none"
+            />
+          </div>
+
+          <FilterSelect
+            value={priceFilter}
+            onChange={(v) => setPriceFilter(v as PriceFilter)}
+            options={[
+              ["all", t("filterAllPrices")],
+              ["priced", t("filterPricedOnly")],
+              ["unpriced", t("filterUnpricedOnly")],
+            ]}
+          />
+          <FilterSelect
+            value={source}
+            onChange={setSource}
+            options={[
+              ["all", t("filterAllSources")],
+              ...sources.map((s) => [s, tSource(s)] as [string, string]),
+            ]}
+          />
+          <FilterSelect
+            value={match}
+            onChange={setMatch}
+            options={[
+              ["all", t("filterAllMatches")],
+              ["EXACT", t("matchExact")],
+              ["CLOSE", t("matchClose")],
+              ["RESEARCH", t("matchResearch")],
+              ["DERIVED", t("matchDerived")],
+              ["NOT IN MASTER", t("matchNotInMaster")],
+            ]}
+          />
+
+          {filtering && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-lavender-light/60 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <X size={13} /> {t("clear")}
+            </button>
+          )}
+        </div>
+      </Card>
 
       {/* the four sections, side by side */}
       <div>
@@ -132,10 +169,7 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                   style={{ backgroundColor: accent }}
                 />
                 <span className="flex items-center gap-2">
-                  <span
-                    className="tam-diamond shrink-0"
-                    style={{ backgroundColor: accent }}
-                  />
+                  <span className="tam-diamond shrink-0" style={{ backgroundColor: accent }} />
                   <span
                     className={cx(
                       "min-w-0 flex-1 truncate text-sm font-semibold",
@@ -157,73 +191,13 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                       : t("countItems", { n: section.items.length })}
                   </span>
                   {subtotal > 0 && (
-                    <span className="num text-sm font-bold text-gold">
-                      {money(subtotal)}
-                    </span>
+                    <span className="num text-sm font-bold text-gold">{money(subtotal)}</span>
                   )}
                 </span>
               </button>
             );
           })}
         </div>
-
-        {/* filters apply to whichever section is open */}
-        <Card className="sticky top-2 z-20 mt-3 p-3 lg:top-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative min-w-[180px] flex-1">
-              {/* logical inset so the icon follows the text direction */}
-              <Search
-                size={16}
-                className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-lavender-light/50"
-              />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("searchPlaceholder")}
-                className="w-full rounded-xl border border-white/10 bg-navy/60 py-2 pe-3 ps-9 text-sm text-white placeholder:text-lavender-light/40 focus:border-electric focus:outline-none"
-              />
-            </div>
-
-            <FilterSelect
-              value={priceFilter}
-              onChange={(v) => setPriceFilter(v as PriceFilter)}
-              options={[
-                ["all", t("filterAllPrices")],
-                ["priced", t("filterPricedOnly")],
-                ["unpriced", t("filterUnpricedOnly")],
-              ]}
-            />
-            <FilterSelect
-              value={source}
-              onChange={setSource}
-              options={[
-                ["all", t("filterAllSources")],
-                ...sources.map((s) => [s, tSource(s)] as [string, string]),
-              ]}
-            />
-            <FilterSelect
-              value={match}
-              onChange={setMatch}
-              options={[
-                ["all", t("filterAllMatches")],
-                ["EXACT", t("matchExact")],
-                ["CLOSE", t("matchClose")],
-                ["RESEARCH", t("matchResearch")],
-                ["DERIVED", t("matchDerived")],
-                ["NOT IN MASTER", t("matchNotInMaster")],
-              ]}
-            />
-
-            {filtering && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-lavender-light/60 transition-colors hover:bg-white/5 hover:text-white"
-              >
-                <X size={13} /> {t("clear")}
-              </button>
-            )}
-          </div>
-        </Card>
 
         <div className="mt-4">
           {current && (
@@ -238,23 +212,6 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function Stat({
-  value,
-  label,
-  tone = "text-lavender-light",
-}: {
-  value: number;
-  label: string;
-  tone?: string;
-}) {
-  return (
-    <span className="flex items-baseline gap-1.5">
-      <span className={cx("num text-base font-bold", tone)}>{value}</span>
-      <span className="text-xs text-lavender-light/50">{label}</span>
-    </span>
   );
 }
 

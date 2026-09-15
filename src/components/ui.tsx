@@ -128,16 +128,20 @@ export function SelectToggle({
   checked,
   onChange,
   label,
+  tabIndex,
 }: {
   checked: boolean;
   onChange: () => void;
   label?: string;
+  /** -1 when an enclosing row already handles focus and keyboard activation. */
+  tabIndex?: number;
 }) {
   return (
     <button
       role="checkbox"
       aria-checked={checked}
       aria-label={label ?? "Select item"}
+      tabIndex={tabIndex}
       onClick={onChange}
       className={cx(
         // emil-design-eng: specific transitions + a quick press response.

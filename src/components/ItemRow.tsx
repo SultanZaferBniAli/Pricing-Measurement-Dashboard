@@ -34,21 +34,40 @@ export function ItemRow({
   const showsUnpriced = line.isUnpriced;
 
   return (
+    /**
+     * The whole row toggles selection, so the target is the line you are reading
+     * rather than a 20px box beside it. The quantity, price and rate controls
+     * stop the click, since editing a value is not choosing the line.
+     */
     <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+      onClick={() => toggleItem(item.id, item.defaultQty)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleItem(item.id, item.defaultQty);
+        }
+      }}
       className={cx(
-        "grid grid-cols-12 gap-2 items-center px-3 py-2.5 rounded-xl border transition-colors",
+        "grid cursor-pointer grid-cols-12 items-center gap-2 rounded-xl border px-3 py-2.5 transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lavender/50",
         selected
-          ? "bg-electric/10 border-electric/30"
-          : "bg-white/[0.02] border-transparent hover:bg-white/[0.04]"
+          ? "border-electric/30 bg-electric/10"
+          : "border-transparent bg-white/[0.02] hover:bg-white/[0.06]"
       )}
     >
       {/* select + name */}
       <div className="col-span-12 md:col-span-5 flex items-start gap-3 min-w-0">
-        <div className="pt-0.5">
+        {/* the box toggles on its own; without this the click would also reach
+            the row handler and cancel itself out */}
+        <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
           <SelectToggle
             checked={selected}
             onChange={() => toggleItem(item.id, item.defaultQty)}
             label={t("selectItem", { name: item.name })}
+            tabIndex={-1}
           />
         </div>
         <div className="min-w-0">
@@ -125,6 +144,7 @@ export function ItemRow({
                   e.target.value === "" ? null : parseFloat(e.target.value)
                 )
               }
+              onClick={(e) => e.stopPropagation()}
               className="num w-20 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
               title={t("percentHint")}
             />
@@ -143,6 +163,7 @@ export function ItemRow({
             onChange={(e) =>
               setCustomPrice(item.id, e.target.value === "" ? null : parseFloat(e.target.value))
             }
+            onClick={(e) => e.stopPropagation()}
             className="num w-24 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
             title={t("customPriceHint")}
           />

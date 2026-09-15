@@ -30,7 +30,6 @@ const en = {
   historyDelete: "Remove from history",
   historyConfirm: "Click again to remove",
   untitledBudget: "Untitled budget",
-  buildSubTabs: "Pick a section, then choose the items you need.",
   countMatching: "{n} matching",
   sidebarTotalLabel: "Grand total",
   sidebarBaseFee: "{base} base + {fee} fee",
@@ -39,11 +38,6 @@ const en = {
   closeMenu: "Close menu",
 
   // ---- stat strip ----
-  statItems: "items",
-  statPriced: "priced",
-  statUnpriced: "unpriced",
-  statSelected: "selected",
-  kpiNeedPrice: "{n} need a price",
 
   // ---- quantity stepper ----
   decrease: "Decrease quantity",
@@ -62,6 +56,11 @@ const en = {
 
   // ---- builder toolbar ----
   buildTitle: "Build your budget",
+  buildHowTo:
+    "Choose a section below, then tick the items you need and set their quantities. Totals update as you go. Items with no price are flagged and stay out of the total until you set one.",
+  budgetBarHint: "Nothing selected yet",
+  budgetBarStatus: "{n} selected",
+  budgetBarNeedsPrice: "· {n} still need a price",
   searchPlaceholder: "Search all items...",
   filterAllPrices: "All prices",
   filterPricedOnly: "Priced only",
@@ -171,7 +170,6 @@ const ar: Record<StringKey, string> = {
   historyDelete: "إزالة من السجل",
   historyConfirm: "اضغط مرة أخرى للإزالة",
   untitledBudget: "ميزانية بلا عنوان",
-  buildSubTabs: "اختر القسم، ثم حدد البنود التي تحتاجها.",
   countMatching: "{n} مطابق",
   sidebarTotalLabel: "الإجمالي الكلي",
   sidebarBaseFee: "{base} أساسي + {fee} رسوم",
@@ -180,11 +178,6 @@ const ar: Record<StringKey, string> = {
   closeMenu: "إغلاق القائمة",
 
   // ---- stat strip ----
-  statItems: "بند",
-  statPriced: "مسعّر",
-  statUnpriced: "غير مسعّر",
-  statSelected: "محدد",
-  kpiNeedPrice: "{n} بحاجة إلى سعر",
 
   // ---- quantity stepper ----
   decrease: "إنقاص الكمية",
@@ -203,6 +196,11 @@ const ar: Record<StringKey, string> = {
 
   // ---- builder toolbar ----
   buildTitle: "ابنِ ميزانيتك",
+  buildHowTo:
+    "اختر قسماً أدناه، ثم حدد البنود التي تحتاجها واضبط كمياتها. تُحدَّث الإجماليات تلقائياً. تُميَّز البنود بلا سعر وتبقى خارج الإجمالي حتى تحدد لها سعراً.",
+  budgetBarHint: "لم تحدد أي بند بعد",
+  budgetBarStatus: "{n} محدد",
+  budgetBarNeedsPrice: "· {n} بحاجة إلى سعر",
   searchPlaceholder: "ابحث في جميع البنود...",
   filterAllPrices: "جميع الأسعار",
   filterPricedOnly: "المسعّرة فقط",
