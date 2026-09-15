@@ -10,7 +10,7 @@
  * sidebar, so the same figures are never shown twice on one screen.
  */
 import { useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import { CheckCircle2, Search, X } from "lucide-react";
 import { BudgetBar, SECTION_ACCENT } from "../components/BudgetBar";
 import { SectionPanel } from "../components/SectionPanel";
 import { Card, cx } from "../components/ui";
@@ -22,11 +22,19 @@ import type { BudgetSummary } from "../lib/useTotals";
 
 type PriceFilter = "all" | "priced" | "unpriced";
 
-export function Dashboard({ budget }: { budget: BudgetSummary }) {
+export function Dashboard({
+  budget,
+  onOpenExport,
+}: {
+  budget: BudgetSummary;
+  onOpenExport: (id: string) => void;
+}) {
   const data = useStore((s) => s.data);
   const activeSection = useStore((s) => s.activeSection);
   const setActiveSection = useStore((s) => s.setActiveSection);
   const { t, tSection, tSource } = useT();
+  const lastExport = useStore((s) => s.lastExport);
+  const dismissLastExport = useStore((s) => s.dismissLastExport);
 
   const [query, setQuery] = useState("");
   const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
@@ -73,6 +81,31 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
       <div>
         <h1 className="text-2xl font-bold text-white md:text-3xl">{t("buildTitle")}</h1>
       </div>
+
+      {/* the previous budget did not vanish: say where it went */}
+      {lastExport && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-2.5 text-sm text-emerald-200">
+          <CheckCircle2 size={16} className="shrink-0" />
+          <span className="min-w-0 flex-1">
+            {t("exportedNotice", {
+              title: lastExport.title || t("untitledBudget"),
+            })}
+          </span>
+          <button
+            onClick={() => onOpenExport(lastExport.id)}
+            className="shrink-0 underline underline-offset-2 hover:text-white"
+          >
+            {t("exportedView")}
+          </button>
+          <button
+            onClick={dismissLastExport}
+            aria-label={t("clear")}
+            className="shrink-0 rounded-md p-1 text-emerald-200/60 transition-colors hover:text-white"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       <BudgetBar budget={budget} />
 

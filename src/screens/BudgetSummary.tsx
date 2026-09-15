@@ -39,6 +39,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const toggleItem = useStore((s) => s.toggleItem);
   const clearAll = useStore((s) => s.clearAll);
   const saveToHistory = useStore((s) => s.saveToHistory);
+  const startNewBudget = useStore((s) => s.startNewBudget);
   const [exporting, setExporting] = useState(false);
 
   const { lines, priced, unpricedSelected, totals } = budget;
@@ -78,6 +79,10 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         itemCount: lines.length,
         selections,
       });
+      // Both the download and the history entry succeeded, so this budget is
+      // finished and safely filed. Clear the desk and go back to the builder.
+      startNewBudget();
+      onBrowse();
     } finally {
       setExporting(false);
     }

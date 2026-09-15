@@ -81,7 +81,12 @@ export default function App() {
         </header>
 
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
-          {view.name === "builder" && <Dashboard budget={budget} />}
+          {view.name === "builder" && (
+            <Dashboard
+              budget={budget}
+              onOpenExport={(id) => nav({ name: "history", id })}
+            />
+          )}
           {view.name === "vendors" && <Vendors />}
           {view.name === "summary" && (
             <BudgetSummary onBrowse={() => nav({ name: "builder" })} />

@@ -47,6 +47,11 @@ interface AppState {
   activeSection: string;
   /** Budgets that have been exported, newest first. */
   history: BudgetHistoryEntry[];
+  /**
+   * The budget just exported, so the builder can say where it went after
+   * clearing the desk. Not persisted: it is a message, not a record.
+   */
+  lastExport: { id: string; title: string } | null;
 
   // ---- selection actions ----
   toggleItem: (id: string, defaultQty?: number) => void;
@@ -68,6 +73,9 @@ interface AppState {
   saveToHistory: (entry: Omit<BudgetHistoryEntry, "id" | "exportedAt">) => void;
   restoreFromHistory: (id: string) => void;
   removeFromHistory: (id: string) => void;
+  /** Clear the working budget and its brief, keeping history. */
+  startNewBudget: () => void;
+  dismissLastExport: () => void;
   setLanguage: (lang: "en" | "ar") => void;
   replaceData: (data: ScopeData) => void;
 
@@ -95,6 +103,7 @@ export const useStore = create<AppState>()(
       language: "en",
       activeSection: initialData.sections[0]?.key ?? "",
       history: [],
+      lastExport: null,
 
       toggleItem: (id, defaultQty) =>
         set((state) => {
@@ -194,8 +203,29 @@ export const useStore = create<AppState>()(
           const rest = state.history.filter(
             (h) => h.title.trim().toLowerCase() !== next.title.trim().toLowerCase()
           );
-          return { history: [next, ...rest].slice(0, 30) };
+          return {
+            history: [next, ...rest].slice(0, 30),
+            lastExport: { id: next.id, title: next.title },
+          };
         }),
+
+      /**
+       * Wipe the desk for the next budget. Safe because export has already
+       * filed this one under history, selections and all, so nothing here is
+       * the only copy.
+       */
+      startNewBudget: () =>
+        set({
+          selections: {},
+          budgetTitle: "",
+          client: "",
+          projectDate: "",
+          projectDescription: "",
+          rfpText: "",
+          rfpFiles: [],
+        }),
+
+      dismissLastExport: () => set({ lastExport: null }),
 
       restoreFromHistory: (id) =>
         set((state) => {
