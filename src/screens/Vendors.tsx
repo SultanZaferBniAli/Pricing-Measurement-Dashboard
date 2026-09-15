@@ -18,7 +18,7 @@ import { money } from "../lib/format";
 import { useT, type StringKey } from "../lib/i18n";
 import { useStore } from "../lib/store";
 import { useBudget } from "../lib/useTotals";
-import type { ComputedLine } from "../lib/types";
+import type { ComputedLine, ScopeItem } from "../lib/types";
 
 export function Vendors() {
   const data = useStore((s) => s.data);
@@ -38,6 +38,8 @@ export function Vendors() {
         );
         return {
           vendor,
+          /** Everything this vendor prices, selected or not. */
+          catalogItems: catalogLines,
           catalogCount: catalogLines.length,
           sections: Array.from(
             new Set(catalogLines.filter((i) => i.isPriced).map((i) => i.section))
@@ -247,6 +249,13 @@ function Backing({
   );
 }
 
+/**
+ * Everything this vendor prices, not just the lines that happen to be selected.
+ *
+ * The point is to check the prices in the builder against the vendor's own list,
+ * so the whole list has to be here. Lines that are in the current budget are
+ * marked and carry their quantity and total; the rest show the unit price alone.
+ */
 function VendorDetail({
   row,
   tSection,
@@ -255,69 +264,140 @@ function VendorDetail({
 }: {
   row: {
     vendor: VendorProfile;
+    catalogItems: ScopeItem[];
     lines: ComputedLine[];
-    sections: string[];
     value: number;
   };
   tSection: (v: string) => string;
   tSubCategory: (v: string) => string;
   t: (k: StringKey, vars?: Record<string, string | number>) => string;
 }) {
+  const [onlyInBudget, setOnlyInBudget] = useState(false);
+
+  const selectedById = useMemo(
+    () => new Map(row.lines.map((l) => [l.item.id, l])),
+    [row.lines]
+  );
+
   const bySection = useMemo(() => {
-    const map = new Map<string, ComputedLine[]>();
-    for (const l of row.lines) {
-      if (!map.has(l.item.section)) map.set(l.item.section, []);
-      map.get(l.item.section)!.push(l);
+    const map = new Map<string, ScopeItem[]>();
+    for (const item of row.catalogItems) {
+      if (onlyInBudget && !selectedById.has(item.id)) continue;
+      if (!map.has(item.section)) map.set(item.section, []);
+      map.get(item.section)!.push(item);
     }
     return Array.from(map.entries());
-  }, [row.lines]);
+  }, [row.catalogItems, onlyInBudget, selectedById]);
+
+  const shown = bySection.reduce((sum, [, items]) => sum + items.length, 0);
 
   return (
     <Card className="overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 bg-navy/40 px-5 py-3">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-          <span
-            className="tam-diamond"
-            style={{ backgroundColor: row.vendor.accent }}
-          />
-          {t("vendorsDetailTitle", { name: row.vendor.name })}
-        </h2>
-        {row.lines.length > 0 && (
-          <span className="num text-sm font-bold text-gold">{money(row.value)}</span>
-        )}
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
+            <span className="tam-diamond" style={{ backgroundColor: row.vendor.accent }} />
+            {t("vendorsDetailTitle", { name: row.vendor.name })}
+          </h2>
+          <p className="mt-0.5 text-xs text-lavender-light/50">
+            {t("vendorsDetailCounts", {
+              total: row.catalogItems.length,
+              used: row.lines.length,
+            })}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {row.lines.length > 0 && (
+            <button
+              onClick={() => setOnlyInBudget((v) => !v)}
+              aria-pressed={onlyInBudget}
+              className={cx(
+                "rounded-lg border px-2.5 py-1.5 text-xs transition-colors",
+                onlyInBudget
+                  ? "border-electric/50 bg-electric/15 text-white"
+                  : "border-white/10 text-lavender-light/70 hover:bg-white/5"
+              )}
+            >
+              {t("vendorsOnlyInBudget")}
+            </button>
+          )}
+          {row.value > 0 && (
+            <span className="num text-sm font-bold text-gold">{money(row.value)}</span>
+          )}
+        </div>
       </div>
 
-      {row.lines.length === 0 ? (
+      {shown === 0 ? (
         <p className="px-5 py-8 text-center text-sm text-lavender-light/50">
           {t("vendorsDetailEmpty", { name: row.vendor.name })}
         </p>
       ) : (
         <div className="divide-y divide-white/5">
-          {bySection.map(([section, lines]) => (
+          {bySection.map(([section, items]) => (
             <div key={section} className="px-5 py-3">
               <h3 className="mb-2 text-xs font-semibold text-lavender-light/70">
                 {tSection(section)}
+                <span className="num ms-2 font-normal text-lavender-light/40">
+                  {items.length}
+                </span>
               </h3>
-              <ul className="space-y-1.5">
-                {lines.map((l) => (
-                  <li
-                    key={l.item.id}
-                    className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <span className="text-sm text-white">{l.item.name}</span>
-                      <span className="ms-2 text-[11px] text-lavender-light/45">
-                        {tSubCategory(l.item.subCategory)}
+              <ul className="space-y-0.5">
+                {items.map((item) => {
+                  const line = selectedById.get(item.id);
+                  return (
+                    <li
+                      key={item.id}
+                      className={cx(
+                        "flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg px-2 py-1.5",
+                        line ? "bg-electric/[0.09]" : ""
+                      )}
+                    >
+                      {/* a filled marker means this line is in the budget */}
+                      <span
+                        aria-hidden="true"
+                        className={cx(
+                          "tam-diamond mt-1.5 shrink-0",
+                          line ? "" : "opacity-25"
+                        )}
+                        style={{ backgroundColor: line ? row.vendor.accent : "#8A87F4" }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span
+                          className={cx(
+                            "text-sm",
+                            line ? "font-medium text-white" : "text-lavender-light/80"
+                          )}
+                        >
+                          {item.name}
+                        </span>
+                        <span className="ms-2 text-[11px] text-lavender-light/45">
+                          {tSubCategory(item.subCategory)}
+                        </span>
+                      </div>
+
+                      <span className="num shrink-0 text-xs text-lavender-light/55">
+                        {item.isPriced ? money(item.unitPrice) : t("badgeUnpriced")}
                       </span>
-                    </div>
-                    <span className="num shrink-0 text-xs text-lavender-light/50">
-                      {l.qty} x {money(l.unitPrice)}
-                    </span>
-                    <span className="num w-24 shrink-0 text-end text-sm font-semibold text-white">
-                      {money(l.totalCost)}
-                    </span>
-                  </li>
-                ))}
+                      <span className="num w-28 shrink-0 text-end text-sm">
+                        {line ? (
+                          <>
+                            <span className="text-lavender-light/45">
+                              {line.qty} x{" "}
+                            </span>
+                            <span className="font-semibold text-white">
+                              {money(line.totalCost)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-lavender-light/25">
+                            {t("vendorsNotSelected")}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

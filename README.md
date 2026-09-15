@@ -36,7 +36,7 @@ Arabic** toggle sits in its footer.
 | View | What it does |
 | --- | --- |
 | **Overview** | The builder. The four departments sit side by side as **tabs**, and only the chosen one's items are on screen, so picking items in Logistics never means scrolling past everything in Marketing. Each tab carries its own selected count and subtotal. Above them: a stacked bar showing how the budget splits across sections, and a search / filter row that applies to every section. |
-| **Vendors** | Who stands behind the prices. A card per supplier, with its logo; open one to see exactly which selected lines it prices. Leads with how much of the budget was quoted versus assumed. |
+| **Vendors** | Who stands behind the prices. A card per supplier, with its logo; open one for their whole price list, so the builder's prices can be checked against it. Leads with how much of the budget was quoted versus assumed. |
 | **Budget** | The project brief, the RFP check, then every selected line grouped by section with its own subtotal: editable quantity, optional per-line note, remove button, **Export to Excel**, and Print. |
 | **Admin** | Drag-and-drop re-upload of an updated `Scope_of_Work_Priced_QTY.xlsx` to re-parse the catalog at runtime. |
 
@@ -93,8 +93,12 @@ is a suggestion nobody should trust.
 
 The question this page answers is the one a client asks: how much of this number
 did somebody quote us, and how much did we assume? It leads with that split, then
-gives each supplier a card. Open a card to see exactly which of your selected
-lines it prices, grouped by section, with quantities and line totals.
+gives each supplier a card.
+
+Open a card and you get **that supplier's whole price list**, grouped by section,
+with the unit price on every line, so the prices in the builder can be checked
+against the list they came from. Lines that are in the current budget are marked
+and carry their quantity and total; a toggle narrows the list to just those.
 
 The split comes from `priceSource`, mapped in `src/data/vendors.ts`:
 

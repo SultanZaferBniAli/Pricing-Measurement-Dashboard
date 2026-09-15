@@ -139,8 +139,11 @@ const en = {
   vendorsLinesInBudget: "{n} lines here",
   vendorsOneLineInBudget: "1 line here",
   vendorsNotUsed: "not used here",
-  vendorsDetailTitle: "{name} in this budget",
-  vendorsDetailEmpty: "Nothing in this budget is priced by {name} yet.",
+  vendorsDetailTitle: "Everything {name} prices",
+  vendorsDetailCounts: "{total} lines on their list · {used} in this budget",
+  vendorsOnlyInBudget: "Only what I selected",
+  vendorsNotSelected: "not selected",
+  vendorsDetailEmpty: "Nothing to show for {name}.",
   vendorsCatalogLines: "catalog lines",
 
   // ---- project brief ----
@@ -325,8 +328,11 @@ const ar: Record<StringKey, string> = {
   vendorsLinesInBudget: "{n} بنود هنا",
   vendorsOneLineInBudget: "بند واحد هنا",
   vendorsNotUsed: "غير مستخدم هنا",
-  vendorsDetailTitle: "{name} في هذه الميزانية",
-  vendorsDetailEmpty: "لا يوجد في هذه الميزانية أي بند مسعّر من {name} حتى الآن.",
+  vendorsDetailTitle: "كل ما يسعّره {name}",
+  vendorsDetailCounts: "{total} بنداً في قائمتهم · {used} في هذه الميزانية",
+  vendorsOnlyInBudget: "ما حددته فقط",
+  vendorsNotSelected: "غير محدد",
+  vendorsDetailEmpty: "لا يوجد ما يُعرض لـ {name}.",
   vendorsCatalogLines: "بنداً في الكتالوج",
 
   // ---- project brief ----
