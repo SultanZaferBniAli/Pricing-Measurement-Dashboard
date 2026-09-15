@@ -22,6 +22,12 @@ export interface RfpDocument {
   /** Characters of text extracted. 0 means nothing readable came out. */
   chars: number;
   text: string;
+  /**
+   * Set when extraction threw. A file that fails to open is a different problem
+   * from one that opens and holds no text, and the two must not be reported the
+   * same way: the first is a bug to fix, the second needs OCR.
+   */
+  error?: string;
 }
 
 export type SuggestionKind = "add" | "review";
@@ -54,9 +60,9 @@ export interface RfpAnalysis {
 export async function extractText(file: File): Promise<RfpDocument> {
   const name = file.name;
   const lower = name.toLowerCase();
-  let text = "";
 
   try {
+    let text = "";
     if (lower.endsWith(".pdf")) {
       text = await extractPdf(file);
     } else if (lower.endsWith(".docx")) {
@@ -64,21 +70,25 @@ export async function extractText(file: File): Promise<RfpDocument> {
     } else {
       text = await file.text();
     }
-  } catch {
-    text = "";
+    return { name, text, chars: text.length };
+  } catch (e) {
+    const message = (e as Error)?.message || String(e);
+    // Keep it in the console too: the UI shows one line, the stack is here.
+    console.error(`[rfp] could not read ${name}`, e);
+    return { name, text: "", chars: 0, error: message };
   }
-
-  return { name, text, chars: text.length };
 }
 
 async function extractPdf(file: File): Promise<string> {
   // Lazy-loaded: pdf.js is large and most sessions never open a PDF.
   const pdfjs = await import("pdfjs-dist");
-  // Vite resolves the worker to a real URL it will emit in the build.
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url
-  ).toString();
+  // `?url` is Vite's own way to get a hashed, emitted asset URL for a bare
+  // specifier. `new URL(spec, import.meta.url)` does NOT resolve bare
+  // specifiers: it treats them as relative, which silently produced a 404 and
+  // left the worker dead.
+  const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url"))
+    .default;
+  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
   const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
   const pages: string[] = [];

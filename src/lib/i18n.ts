@@ -164,6 +164,7 @@ const en = {
   rfpAnalyse: "Analyse",
   rfpAnalysing: "Reading...",
   rfpRemoveFile: "Remove file",
+  rfpFailed: "Could not open {files}. {reason}",
   rfpUnreadable:
     "No text could be read from those files. A scanned PDF holds pictures of text, not text, so it needs to be run through OCR first.",
   rfpRead: "Read {n} file(s), {chars} characters",
@@ -353,6 +354,7 @@ const ar: Record<StringKey, string> = {
   rfpAnalyse: "تحليل",
   rfpAnalysing: "جارٍ القراءة...",
   rfpRemoveFile: "إزالة الملف",
+  rfpFailed: "تعذّر فتح {files}. {reason}",
   rfpUnreadable:
     "تعذّرت قراءة أي نص من هذه الملفات. ملف PDF الممسوح ضوئياً يحتوي صوراً للنص لا نصاً، ويحتاج إلى معالجة تعرّف ضوئي أولاً.",
   rfpRead: "قُرئ {n} ملف، {chars} حرف",

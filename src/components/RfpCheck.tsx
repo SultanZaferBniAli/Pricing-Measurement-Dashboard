@@ -47,8 +47,22 @@ export function RfpCheck() {
     setError("");
     try {
       const docs = await Promise.all(files.map(extractText));
-      const unreadable = docs.filter((d) => d.chars === 0);
-      if (unreadable.length === docs.length) {
+      const failed = docs.filter((d) => d.error);
+      const empty = docs.filter((d) => !d.error && d.chars === 0);
+
+      // A file that would not open is a different problem from one that opened
+      // and held no text, so say which happened rather than blaming OCR for both.
+      if (failed.length > 0) {
+        setError(
+          t("rfpFailed", {
+            files: failed.map((d) => d.name).join(", "),
+            reason: failed[0].error ?? "",
+          })
+        );
+        setAnalysis(null);
+        return;
+      }
+      if (empty.length === docs.length) {
         setError(t("rfpUnreadable"));
         setAnalysis(null);
         return;
