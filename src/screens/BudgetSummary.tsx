@@ -2,17 +2,21 @@
 import { useState } from "react";
 import {
   Download,
+  Plus,
   FileSpreadsheet,
   Printer,
   Trash2,
   TriangleAlert,
 } from "lucide-react";
+import { SECTION_ACCENT } from "../components/BudgetBar";
 import { QtyStepper } from "../components/QtyStepper";
 import { Badge, Button, Card, Diamond, MatchBadge } from "../components/ui";
 import { money, sar } from "../lib/format";
 import { useT } from "../lib/i18n";
+import { sumLines } from "../lib/pricing";
 import { useStore } from "../lib/store";
 import { useBudget } from "../lib/useTotals";
+import type { ComputedLine } from "../lib/types";
 
 export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const { t, tSection, tSubCategory, tType } = useT();
@@ -31,6 +35,16 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const [exporting, setExporting] = useState(false);
 
   const { lines, priced, unpricedSelected, totals } = budget;
+
+  // Grouped by section, so each line is read under the heading it belongs to
+  // and the Section column no longer has to repeat itself on every row.
+  const bySection = data.sections
+    .map((section) => ({
+      section,
+      lines: priced.filter((l) => l.item.sectionKey === section.key),
+      unpriced: unpricedSelected.filter((l) => l.item.sectionKey === section.key),
+    }))
+    .filter((g) => g.lines.length > 0 || g.unpriced.length > 0);
 
   async function handleExport() {
     setExporting(true);
@@ -108,6 +122,9 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
           </div>
         </div>
         <div className="flex items-center gap-2 print:hidden">
+          <Button variant="secondary" size="sm" onClick={onBrowse}>
+            <Plus size={15} /> {t("addMoreItems")}
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => window.print()}>
             <Printer size={15} /> {t("print")}
           </Button>
@@ -160,11 +177,23 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         </div>
       )}
 
-      {/* priced lines table */}
-      <Card className="overflow-hidden">
+      {/* one block per section */}
+      {bySection.map(({ section, lines: sectionLines, unpriced: sectionUnpriced }) => {
+        const st = sumLines(sectionLines);
+        return (
+        <Card key={section.key} className="overflow-hidden">
+          <div className="flex items-center justify-between gap-3 border-b border-white/5 bg-navy/40 px-4 py-2.5">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+              <span
+                className="tam-diamond"
+                style={{ backgroundColor: SECTION_ACCENT[section.key] ?? "#8A87F4" }}
+              />
+              {tSection(section.name)}
+            </h3>
+            <span className="num text-sm font-bold text-gold">{money(st.grand)}</span>
+          </div>
         <div className="hidden md:grid grid-cols-12 gap-2 px-4 py-3 bg-navy/60 text-[10px] uppercase tracking-wider text-lavender-light/50 border-b border-white/5">
-          <div className="col-span-4">{t("colItem")}</div>
-          <div className="col-span-2">{t("colSection")}</div>
+          <div className="col-span-6">{t("colItem")}</div>
           <div className="col-span-1 text-center">{t("colQty")}</div>
           <div className="col-span-1 text-end">{t("colUnit")}</div>
           <div className="col-span-1 text-end">{t("colBase")}</div>
@@ -173,10 +202,10 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
           <div className="col-span-1" />
         </div>
         <div className="divide-y divide-white/5">
-          {priced.map((l) => (
+          {sectionLines.map((l) => (
             <div key={l.item.id} className="px-4 py-3">
               <div className="flex flex-col gap-2 md:grid md:grid-cols-12 md:items-center">
-                <div className="md:col-span-4 min-w-0">
+                <div className="md:col-span-6 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-white truncate">
                       {l.item.name}
@@ -199,10 +228,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
                         )}`
                       : `${tSubCategory(l.item.subCategory)} · ${tType(l.item.type)}`}
                   </div>
-                </div>
-                <div className="md:col-span-2 text-xs text-lavender-light/70">
-                  {tSection(l.item.section)}
-                  <div className="mt-0.5">
+                  <div className="mt-1">
                     <MatchBadge status={l.item.matchStatus} />
                   </div>
                 </div>
@@ -243,44 +269,26 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
               />
             </div>
           ))}
+
+          {/* the section's unpriced lines, on the same columns as the rest */}
+          {sectionUnpriced.map((l) => (
+            <UnpricedRow
+              key={l.item.id}
+              line={l}
+              onRemove={() => toggleItem(l.item.id)}
+              labels={{
+                qty: t("colQty"),
+                excluded: t("excludedTitle"),
+                remove: t("removeItem"),
+                meta: `${tSubCategory(l.item.subCategory)} · ${tType(l.item.type)}`,
+              }}
+            />
+          ))}
         </div>
       </Card>
+        );
+      })}
 
-      {/* unpriced excluded list */}
-      {unpricedSelected.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2 text-gold">
-            <TriangleAlert size={16} />
-            <h3 className="font-semibold">{t("excludedTitle")}</h3>
-          </div>
-          <Card className="divide-y divide-white/5">
-            {unpricedSelected.map((l) => (
-              <div
-                key={l.item.id}
-                className="px-4 py-3 flex items-center justify-between gap-3"
-              >
-                <div className="min-w-0">
-                  <div className="text-sm text-white truncate">{l.item.name}</div>
-                  <div className="text-[11px] text-lavender-light/50 truncate">
-                    {tSection(l.item.section)} · {tSubCategory(l.item.subCategory)} ·{" "}
-                    {l.item.mappingNote}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge tone="missing">{t("qtyBadge", { n: l.qty })}</Badge>
-                  <button
-                    onClick={() => toggleItem(l.item.id)}
-                    className="text-lavender-light/40 hover:text-red-400"
-                    title={t("removeItem")}
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
@@ -312,6 +320,73 @@ function MoneyCell({
       >
         {value}
       </span>
+    </div>
+  );
+}
+
+/**
+ * An unpriced line inside a section block. It rides the same 12-column grid as
+ * the priced rows so the item name, quantity and money columns line up, rather
+ * than sitting in a separate list with its own layout.
+ */
+function UnpricedRow({
+  line,
+  onRemove,
+  labels,
+}: {
+  line: ComputedLine;
+  onRemove: () => void;
+  labels: { qty: string; excluded: string; remove: string; meta: string };
+}) {
+  const isPercent = line.item.percentBasis != null;
+  return (
+    <div className="bg-gold/[0.04] px-4 py-3">
+      <div className="flex flex-col gap-2 md:grid md:grid-cols-12 md:items-center">
+        <div className="min-w-0 md:col-span-6">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium text-white">
+              {line.item.name}
+            </span>
+            <Badge tone="missing">
+              <TriangleAlert size={11} /> {labels.excluded}
+            </Badge>
+          </div>
+          <div className="text-[11px] text-lavender-light/50">{labels.meta}</div>
+          {line.item.mappingNote && (
+            <p className="mt-1 text-[11px] leading-snug text-lavender-light/40">
+              {line.item.mappingNote}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 md:col-span-1 md:justify-center">
+          <span className="text-[10px] uppercase text-lavender-light/40 md:hidden">
+            {labels.qty}
+          </span>
+          <span className="num text-sm text-lavender-light/50">
+            {isPercent ? "-" : line.qty}
+          </span>
+        </div>
+        {/* the three money columns stay empty: this line contributes nothing */}
+        <div className="hidden text-end md:col-span-1 md:block" />
+        <div className="num hidden text-end text-sm text-lavender-light/30 md:col-span-1 md:block">
+          -
+        </div>
+        <div className="num hidden text-end text-sm text-lavender-light/30 md:col-span-1 md:block">
+          -
+        </div>
+        <div className="num hidden text-end text-sm text-lavender-light/30 md:col-span-1 md:block">
+          -
+        </div>
+        <div className="flex justify-end md:col-span-1 print:hidden">
+          <button
+            onClick={onRemove}
+            className="text-lavender-light/40 transition-colors hover:text-red-400"
+            title={labels.remove}
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

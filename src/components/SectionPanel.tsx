@@ -93,7 +93,7 @@ export function SectionPanel({
               {/* column headings sit with the rows they describe */}
               <div className="hidden grid-cols-12 gap-2 px-3 pb-1 pt-1 text-[10px] text-lavender-light/40 md:grid">
                 <div className="col-span-5">{t("colItem")}</div>
-                <div className="col-span-2">{t("colQty")}</div>
+                <div className="col-span-2 ps-3">{t("colQty")}</div>
                 <div className="col-span-2 text-end">{t("colUnitPrice")}</div>
                 <div className="col-span-1 text-end">{t("colFee")}</div>
                 <div className="col-span-2 text-end">{t("colTotal")}</div>

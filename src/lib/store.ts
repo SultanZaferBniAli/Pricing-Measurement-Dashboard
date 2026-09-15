@@ -72,7 +72,7 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       data: initialData,
       selections: {},
-      budgetTitle: initialData.meta.project,
+      budgetTitle: "",
       client: "",
       language: "en",
       activeSection: initialData.sections[0]?.key ?? "",
@@ -193,7 +193,7 @@ export const useStore = create<AppState>()(
         set({
           data,
           selections: {},
-          budgetTitle: data.meta.project,
+          budgetTitle: "",
           activeSection: data.sections[0]?.key ?? "",
         }),
 

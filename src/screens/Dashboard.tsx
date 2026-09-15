@@ -72,7 +72,6 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
     <div className="space-y-5 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-white md:text-3xl">{t("buildTitle")}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-lavender-light/70">{t("buildHowTo")}</p>
       </div>
 
       <BudgetBar budget={budget} />

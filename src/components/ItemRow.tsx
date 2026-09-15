@@ -109,7 +109,7 @@ export function ItemRow({
       </div>
 
       {/* qty (a contingency is always a single line, so no quantity applies) */}
-      <div className="col-span-5 md:col-span-2 flex flex-col gap-1">
+      <div className="col-span-5 md:col-span-2 flex flex-col gap-1 md:ps-3">
         <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
           {isPercent ? t("colRate") : t("colQty")}
         </span>
@@ -130,7 +130,7 @@ export function ItemRow({
           {isPercent ? t("colRatePct") : t("colUnitPrice")}
         </span>
         {isPercent ? (
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex items-center justify-end gap-1 self-end">
             <input
               type="number"
               min={0}
@@ -164,7 +164,7 @@ export function ItemRow({
               setCustomPrice(item.id, e.target.value === "" ? null : parseFloat(e.target.value))
             }
             onClick={(e) => e.stopPropagation()}
-            className="num w-24 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
+            className="num w-24 self-end rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
             title={t("customPriceHint")}
           />
         )}

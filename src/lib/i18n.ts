@@ -48,6 +48,7 @@ const en = {
   clientPlaceholder: "Who is this budget for?",
   titlePlaceholder: "Name this budget",
   backToBuilder: "Back to builder",
+  addMoreItems: "Add more items",
 
   // ---- chart ----
   chartTitle: "Spend by Section",
@@ -56,8 +57,6 @@ const en = {
 
   // ---- builder toolbar ----
   buildTitle: "Build your budget",
-  buildHowTo:
-    "Choose a section below, then tick the items you need and set their quantities. Totals update as you go. Items with no price are flagged and stay out of the total until you set one.",
   budgetBarHint: "Nothing selected yet",
   budgetBarStatus: "{n} selected",
   budgetBarNeedsPrice: "· {n} still need a price",
@@ -119,14 +118,12 @@ const en = {
     "and is excluded from the totals. Set a price (or a rate, for contingency lines) in the section view to include it.",
   unpricedCalloutTailMany:
     "and are excluded from the totals. Set a price (or a rate, for contingency lines) in the section view to include them.",
-  colSection: "Section",
   colUnit: "Unit",
   colBase: "Base",
   badgeCustom: "custom",
   notePlaceholder: "Add a note (optional)...",
   removeItem: "Remove item",
-  excludedTitle: "Excluded (needs a price)",
-  qtyBadge: "Qty {n}",
+  excludedTitle: "Needs a price",
   percentOfBudgetBase: "{rate}% of the budget base ({base})",
   percentOfSectionBase: "{rate}% of the section base ({base})",
 
@@ -188,6 +185,7 @@ const ar: Record<StringKey, string> = {
   clientPlaceholder: "لمن هذه الميزانية؟",
   titlePlaceholder: "سمّ هذه الميزانية",
   backToBuilder: "العودة إلى الأداة",
+  addMoreItems: "إضافة بنود أخرى",
 
   // ---- chart ----
   chartTitle: "الإنفاق حسب القسم",
@@ -196,8 +194,6 @@ const ar: Record<StringKey, string> = {
 
   // ---- builder toolbar ----
   buildTitle: "ابنِ ميزانيتك",
-  buildHowTo:
-    "اختر قسماً أدناه، ثم حدد البنود التي تحتاجها واضبط كمياتها. تُحدَّث الإجماليات تلقائياً. تُميَّز البنود بلا سعر وتبقى خارج الإجمالي حتى تحدد لها سعراً.",
   budgetBarHint: "لم تحدد أي بند بعد",
   budgetBarStatus: "{n} محدد",
   budgetBarNeedsPrice: "· {n} بحاجة إلى سعر",
@@ -259,14 +255,12 @@ const ar: Record<StringKey, string> = {
     "ومستبعد من الإجماليات. حدد سعراً (أو نسبة، لبنود الطوارئ) من عرض القسم لإدراجه.",
   unpricedCalloutTailMany:
     "ومستبعدة من الإجماليات. حدد سعراً (أو نسبة، لبنود الطوارئ) من عرض القسم لإدراجها.",
-  colSection: "القسم",
   colUnit: "الوحدة",
   colBase: "الأساس",
   badgeCustom: "مخصص",
   notePlaceholder: "أضف ملاحظة (اختياري)...",
   removeItem: "إزالة البند",
-  excludedTitle: "مستبعد (بحاجة إلى سعر)",
-  qtyBadge: "الكمية {n}",
+  excludedTitle: "بحاجة إلى سعر",
   percentOfBudgetBase: "{rate}٪ من أساس الميزانية ({base})",
   percentOfSectionBase: "{rate}٪ من أساس القسم ({base})",
 
