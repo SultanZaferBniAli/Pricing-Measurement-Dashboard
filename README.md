@@ -36,7 +36,7 @@ Arabic** toggle sits in its footer.
 | View | What it does |
 | --- | --- |
 | **Overview** | The builder. The four departments sit side by side as **tabs**, and only the chosen one's items are on screen, so picking items in Logistics never means scrolling past everything in Marketing. Each tab carries its own selected count and subtotal. Above them: a stacked bar showing how the budget splits across sections, and a search / filter row that applies to every section. |
-| **Vendors** | Who priced what. One row per price source, with how many lines it prices, which sections it covers, and how much of the current budget rests on an agreed price rather than a benchmark. |
+| **Vendors** | Who stands behind the prices. A card per supplier, with its logo; open one to see exactly which selected lines it prices. Leads with how much of the budget was quoted versus assumed. |
 | **Budget** | The project brief, the RFP check, then every selected line grouped by section with its own subtotal: editable quantity, optional per-line note, remove button, **Export to Excel**, and Print. |
 | **Admin** | Drag-and-drop re-upload of an updated `Scope_of_Work_Priced_QTY.xlsx` to re-parse the catalog at runtime. |
 
@@ -62,8 +62,8 @@ caps at 30, and deleting asks for a second click.
 ### Project brief and the RFP check
 
 The Budget view opens with a **project brief**: project / RFP, client, established
-date, and short descriptions of the project and of what the budget covers. All of
-it persists and all of it lands on the export's summary sheet.
+date, and a short description of the project. All of it persists and all of it
+lands on the export's summary sheet.
 
 Below that sits **Check against the RFP** (`src/lib/rfp.ts` + `components/RfpCheck.tsx`).
 Drop in the RFP as PDF, Word, or plain text; it extracts the text in the browser
@@ -88,6 +88,29 @@ needs to satisfy that signature and nothing else. It would need a backend to hol
 the API key, and a decision that confidential client RFPs may leave TAM's network.
 Whatever the engine, keep `matchedTerms` populated: a suggestion nobody can check
 is a suggestion nobody should trust.
+
+### Vendors
+
+The question this page answers is the one a client asks: how much of this number
+did somebody quote us, and how much did we assume? It leads with that split, then
+gives each supplier a card. Open a card to see exactly which of your selected
+lines it prices, grouped by section, with quantities and line totals.
+
+The split comes from `priceSource`, mapped in `src/data/vendors.ts`:
+
+- **Quoted** - TAM (in-house rate card), Threelines (contracted supplier),
+  Pricing_V1 (an earlier internal list). A named party is answerable for these.
+- **Assumed** - Research (benchmark figures from the travel and transport
+  studies), Derived (composed from Pricing Master rows), and anything the scope
+  file left without a source. Nobody has quoted these, and the page says so.
+
+**Adding a vendor logo.** Drop the file at `public/vendors/<name>.png` and point
+`VENDORS[].logo` at it. Without a file the card falls back to the vendor's
+initials, so a missing logo is never a broken image. TAM uses the existing
+`public/tam-logo.webp`.
+
+There are no contract, contact or discount fields, because that data exists in
+none of the source workbooks.
 
 ### Arabic / RTL
 

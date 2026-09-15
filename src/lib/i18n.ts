@@ -129,18 +129,19 @@ const en = {
   navVendors: "Vendors",
   vendorsTitle: "Who priced what",
   vendorsSub:
-    "Every price in the catalog comes from somewhere. This is where each one came from, and how much of the current budget rests on a price that was agreed with a supplier rather than benchmarked.",
-  vendorsVerifiedTitle: "Agreed prices in this budget",
-  vendorsVerifiedBody: "{pct}% of the budget uses a price agreed with TAM or a supplier. The rest is benchmark or composed pricing.",
-  vendorsVerifiedEmpty: "Select items to see how much of the budget rests on agreed pricing.",
-  vendorsAgreed: "Agreed",
-  vendorsBenchmark: "Benchmark",
-  vendorsPricesLines: "lines priced",
-  vendorsInBudget: "in this budget",
-  vendorsValue: "value (SAR)",
-  vendorsNoSource: "No source on file",
-  vendorsNoSourceBody: "Lines the scope file left without a price or a source. They stay out of the totals until someone sets a price.",
-  vendorsNoPriced: "No priced lines",
+    "How much of this budget did somebody quote us, and how much did we assume? Open a supplier to see exactly which of your selected lines they price.",
+  vendorsVerifiedEmpty: "Select items to see how much of the budget rests on quoted pricing.",
+  vendorsQuotedLabel: "Quoted by a supplier",
+  vendorsQuotedBody:
+    "{quoted}% of this budget uses a price somebody quoted us. The remaining {assumed}% is our own benchmark or composed pricing, and should be presented as an estimate.",
+  vendorsQuoted: "Quoted",
+  vendorsAssumed: "Assumed",
+  vendorsLinesInBudget: "{n} lines here",
+  vendorsOneLineInBudget: "1 line here",
+  vendorsNotUsed: "not used here",
+  vendorsDetailTitle: "{name} in this budget",
+  vendorsDetailEmpty: "Nothing in this budget is priced by {name} yet.",
+  vendorsCatalogLines: "catalog lines",
 
   // ---- project brief ----
   reviewTitle: "Review budget",
@@ -150,8 +151,6 @@ const en = {
   dateLabel: "Established",
   projectDescLabel: "About the project",
   projectDescPlaceholder: "A few lines on what the project involves.",
-  budgetNotesLabel: "About this budget",
-  budgetNotesPlaceholder: "What this budget is meant to cover, and anything the client should know.",
 
   // ---- RFP scope check ----
   rfpTitle: "Check against the RFP",
@@ -316,18 +315,19 @@ const ar: Record<StringKey, string> = {
   navVendors: "المورّدون",
   vendorsTitle: "من سعّر ماذا",
   vendorsSub:
-    "لكل سعر في الكتالوج مصدر. هنا تجد مصدر كل سعر، وكم من الميزانية الحالية يستند إلى سعر متفق عليه مع مورّد بدلاً من سعر استرشادي.",
-  vendorsVerifiedTitle: "الأسعار المتفق عليها في هذه الميزانية",
-  vendorsVerifiedBody: "‏{pct}٪ من الميزانية تستخدم سعراً متفقاً عليه مع تام أو أحد المورّدين. الباقي أسعار استرشادية أو مركّبة.",
-  vendorsVerifiedEmpty: "حدد بنوداً لمعرفة نسبة الميزانية المستندة إلى أسعار متفق عليها.",
-  vendorsAgreed: "متفق عليه",
-  vendorsBenchmark: "استرشادي",
-  vendorsPricesLines: "بند مسعّر",
-  vendorsInBudget: "في هذه الميزانية",
-  vendorsValue: "القيمة (ريال)",
-  vendorsNoSource: "بلا مصدر مسجل",
-  vendorsNoSourceBody: "بنود تركها ملف نطاق العمل بلا سعر وبلا مصدر. تبقى خارج الإجماليات حتى يُحدد لها سعر.",
-  vendorsNoPriced: "لا توجد بنود مسعّرة",
+    "كم من هذه الميزانية مبني على عرض سعر من مورّد، وكم منها تقديري؟ افتح أي مورّد لترى البنود المحددة التي يسعّرها.",
+  vendorsVerifiedEmpty: "حدد بنوداً لمعرفة نسبة الميزانية المستندة إلى أسعار بعروض من المورّدين.",
+  vendorsQuotedLabel: "بعرض سعر من مورّد",
+  vendorsQuotedBody:
+    "‏{quoted}٪ من هذه الميزانية تستخدم سعراً قدّمه لنا مورّد. أما {assumed}٪ المتبقية فهي أسعار استرشادية أو مركّبة من إعدادنا، ويجب تقديمها كتقدير.",
+  vendorsQuoted: "بعرض سعر",
+  vendorsAssumed: "تقديري",
+  vendorsLinesInBudget: "{n} بنود هنا",
+  vendorsOneLineInBudget: "بند واحد هنا",
+  vendorsNotUsed: "غير مستخدم هنا",
+  vendorsDetailTitle: "{name} في هذه الميزانية",
+  vendorsDetailEmpty: "لا يوجد في هذه الميزانية أي بند مسعّر من {name} حتى الآن.",
+  vendorsCatalogLines: "بنداً في الكتالوج",
 
   // ---- project brief ----
   reviewTitle: "مراجعة الميزانية",
@@ -337,8 +337,6 @@ const ar: Record<StringKey, string> = {
   dateLabel: "تاريخ الإنشاء",
   projectDescLabel: "عن المشروع",
   projectDescPlaceholder: "سطور قليلة عمّا يتضمنه المشروع.",
-  budgetNotesLabel: "عن هذه الميزانية",
-  budgetNotesPlaceholder: "ما الذي تغطيه هذه الميزانية، وأي ملاحظات يحتاج العميل لمعرفتها.",
 
   // ---- RFP scope check ----
   rfpTitle: "المطابقة مع كراسة الشروط",

@@ -34,8 +34,6 @@ interface AppState {
   projectDate: string;
   /** A few lines on what the project is. */
   projectDescription: string;
-  /** A few lines on what this budget is meant to cover. */
-  budgetNotes: string;
   language: "en" | "ar";
 
   /** The one section the builder is showing. */
@@ -58,7 +56,6 @@ interface AppState {
   setClient: (client: string) => void;
   setProjectDate: (date: string) => void;
   setProjectDescription: (text: string) => void;
-  setBudgetNotes: (text: string) => void;
   setActiveSection: (key: string) => void;
   saveToHistory: (entry: Omit<BudgetHistoryEntry, "id" | "exportedAt">) => void;
   restoreFromHistory: (id: string) => void;
@@ -85,7 +82,6 @@ export const useStore = create<AppState>()(
       client: "",
       projectDate: "",
       projectDescription: "",
-      budgetNotes: "",
       language: "en",
       activeSection: initialData.sections[0]?.key ?? "",
       history: [],
@@ -169,7 +165,6 @@ export const useStore = create<AppState>()(
       setClient: (client) => set({ client }),
       setProjectDate: (projectDate) => set({ projectDate }),
       setProjectDescription: (projectDescription) => set({ projectDescription }),
-      setBudgetNotes: (budgetNotes) => set({ budgetNotes }),
 
       setActiveSection: (key) => set({ activeSection: key }),
 
@@ -224,7 +219,6 @@ export const useStore = create<AppState>()(
         client: state.client,
         projectDate: state.projectDate,
         projectDescription: state.projectDescription,
-        budgetNotes: state.budgetNotes,
         language: state.language,
         history: state.history,
       }),

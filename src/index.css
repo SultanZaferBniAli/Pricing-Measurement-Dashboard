@@ -71,6 +71,42 @@ body {
   display: inline-block;
 }
 
+/*
+ * Date fields. The native control cannot be restyled wholesale, but
+ * color-scheme makes Chrome draw its calendar dark, and the picker icon is
+ * inverted from black to the brand's lavender so it stops being a black square
+ * on a dark field.
+ */
+input[type="date"] {
+  color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.5;
+  /* black glyph -> lavender-light (#B7B2F9) */
+  filter: invert(78%) sepia(24%) saturate(900%) hue-rotate(201deg) brightness(101%)
+    contrast(96%);
+  transition: opacity 150ms ease-out;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+input[type="date"]::-webkit-datetime-edit {
+  color: #ffffff;
+}
+/* an unset date reads as a placeholder, not as real content */
+input[type="date"].is-empty::-webkit-datetime-edit {
+  color: rgba(183, 178, 249, 0.35);
+}
+input[type="date"]::-webkit-datetime-edit-year-field:focus,
+input[type="date"]::-webkit-datetime-edit-month-field:focus,
+input[type="date"]::-webkit-datetime-edit-day-field:focus {
+  background-color: #5e45ff;
+  border-radius: 3px;
+  color: #ffffff;
+}
+
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;

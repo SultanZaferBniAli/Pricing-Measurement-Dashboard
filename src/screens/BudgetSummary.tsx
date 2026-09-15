@@ -11,7 +11,7 @@ import {
 import { SECTION_ACCENT } from "../components/BudgetBar";
 import { RfpCheck } from "../components/RfpCheck";
 import { QtyStepper } from "../components/QtyStepper";
-import { Badge, Button, Card, Diamond, MatchBadge } from "../components/ui";
+import { Badge, Button, Card, Diamond, MatchBadge, cx } from "../components/ui";
 import { money, sar } from "../lib/format";
 import { useT } from "../lib/i18n";
 import { sumLines } from "../lib/pricing";
@@ -32,8 +32,6 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const setProjectDate = useStore((s) => s.setProjectDate);
   const projectDescription = useStore((s) => s.projectDescription);
   const setProjectDescription = useStore((s) => s.setProjectDescription);
-  const budgetNotes = useStore((s) => s.budgetNotes);
-  const setBudgetNotes = useStore((s) => s.setBudgetNotes);
   const setQty = useStore((s) => s.setQty);
   const setNote = useStore((s) => s.setNote);
   const toggleItem = useStore((s) => s.toggleItem);
@@ -62,7 +60,6 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         client,
         projectDate,
         projectDescription,
-        budgetNotes,
       });
       // A downloaded budget is one worth keeping, so the export is what files it
       // into the sidebar's history. Selections are stored whole so it reopens.
@@ -147,20 +144,13 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
             type="date"
           />
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-4">
           <AreaField
             id="budget-project-desc"
             label={t("projectDescLabel")}
             value={projectDescription}
             onChange={setProjectDescription}
             placeholder={t("projectDescPlaceholder")}
-          />
-          <AreaField
-            id="budget-notes"
-            label={t("budgetNotesLabel")}
-            value={budgetNotes}
-            onChange={setBudgetNotes}
-            placeholder={t("budgetNotesPlaceholder")}
           />
         </div>
       </Card>
@@ -450,7 +440,10 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-0.5 block w-full rounded-lg border border-white/10 bg-navy/50 px-3 py-2 text-sm text-white placeholder:text-lavender-light/30 focus:border-electric focus:outline-none"
+        className={cx(
+          "mt-0.5 block w-full rounded-lg border border-white/10 bg-navy/50 px-3 py-2 text-sm text-white placeholder:text-lavender-light/30 focus:border-electric focus:outline-none",
+          type === "date" && !value && "is-empty"
+        )}
       />
     </div>
   );

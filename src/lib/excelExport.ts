@@ -17,7 +17,6 @@ export interface BudgetBrief {
   client?: string;
   projectDate?: string;
   projectDescription?: string;
-  budgetNotes?: string;
 }
 
 // Brand colours as ARGB (ExcelJS wants no leading #)
@@ -68,8 +67,7 @@ export async function buildWorkbook(
   dateStr: string,
   brief: BudgetBrief = {}
 ): Promise<ExcelJS.Buffer> {
-  const { client = "", projectDate = "", projectDescription = "", budgetNotes = "" } =
-    brief;
+  const { client = "", projectDate = "", projectDescription = "" } = brief;
   const wb = new ExcelJS.Workbook();
   wb.creator = "TAM Scope-Based Budget Builder";
   wb.created = new Date(dateStr);
@@ -96,10 +94,6 @@ export async function buildWorkbook(
   s1.addRow(["Unpriced (excluded)", unpriced.length]);
   if (projectDescription) {
     const r = s1.addRow(["Project description", projectDescription]);
-    r.getCell(2).alignment = { wrapText: true, vertical: "top" };
-  }
-  if (budgetNotes) {
-    const r = s1.addRow(["Budget notes", budgetNotes]);
     r.getCell(2).alignment = { wrapText: true, vertical: "top" };
   }
   s1.addRow([]);
