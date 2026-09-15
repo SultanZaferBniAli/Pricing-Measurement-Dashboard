@@ -46,7 +46,6 @@ const en = {
   // ---- budget summary header ----
   clientLabel: "Client",
   clientPlaceholder: "Who is this budget for?",
-  titlePlaceholder: "Name this budget",
   backToBuilder: "Back to builder",
   addMoreItems: "Add more items",
 
@@ -104,7 +103,6 @@ const en = {
   // ---- budget summary ----
   emptyTitle: "Your budget is empty",
   emptyBody: "Head into a section and select the scope items you need.",
-  budgetTitleLabel: "Budget title",
   print: "Print",
   clearAll: "Clear all",
   exportExcel: "Export to Excel",
@@ -126,6 +124,58 @@ const en = {
   excludedTitle: "Needs a price",
   percentOfBudgetBase: "{rate}% of the budget base ({base})",
   percentOfSectionBase: "{rate}% of the section base ({base})",
+
+  // ---- vendors ----
+  navVendors: "Vendors",
+  vendorsTitle: "Who priced what",
+  vendorsSub:
+    "Every price in the catalog comes from somewhere. This is where each one came from, and how much of the current budget rests on a price that was agreed with a supplier rather than benchmarked.",
+  vendorsVerifiedTitle: "Agreed prices in this budget",
+  vendorsVerifiedBody: "{pct}% of the budget uses a price agreed with TAM or a supplier. The rest is benchmark or composed pricing.",
+  vendorsVerifiedEmpty: "Select items to see how much of the budget rests on agreed pricing.",
+  vendorsAgreed: "Agreed",
+  vendorsBenchmark: "Benchmark",
+  vendorsPricesLines: "lines priced",
+  vendorsInBudget: "in this budget",
+  vendorsValue: "value (SAR)",
+  vendorsNoSource: "No source on file",
+  vendorsNoSourceBody: "Lines the scope file left without a price or a source. They stay out of the totals until someone sets a price.",
+  vendorsNoPriced: "No priced lines",
+
+  // ---- project brief ----
+  reviewTitle: "Review budget",
+  briefTitle: "Project brief",
+  projectLabel: "Project / RFP",
+  projectPlaceholder: "What are we proposing for?",
+  dateLabel: "Established",
+  projectDescLabel: "About the project",
+  projectDescPlaceholder: "A few lines on what the project involves.",
+  budgetNotesLabel: "About this budget",
+  budgetNotesPlaceholder: "What this budget is meant to cover, and anything the client should know.",
+
+  // ---- RFP scope check ----
+  rfpTitle: "Check against the RFP",
+  rfpSub:
+    "Upload the RFP and this compares its wording against the catalog, then suggests lines to add or drop. It matches terms rather than reading meaning, so every suggestion shows the words it found. Nothing changes until you accept it. The files stay on this machine.",
+  rfpDrop: "Drop the RFP here, or click to browse",
+  rfpFormats: "PDF, Word (.docx), or plain text · up to 5 files",
+  rfpAnalyse: "Analyse",
+  rfpAnalysing: "Reading...",
+  rfpRemoveFile: "Remove file",
+  rfpUnreadable:
+    "No text could be read from those files. A scanned PDF holds pictures of text, not text, so it needs to be run through OCR first.",
+  rfpRead: "Read {n} file(s), {chars} characters",
+  rfpConfirmed: "{n} selected lines appear in the RFP",
+  rfpNothingToChange: "Nothing to change. Every selected line appears in the RFP, and nothing obvious is missing.",
+  rfpMissingTitle: "{n} lines the RFP asks for",
+  rfpMissingBody: "These appear in the RFP but are not in the budget.",
+  rfpExtraTitle: "{n} lines the RFP does not mention",
+  rfpExtraBody: "These are in the budget but nothing in the RFP refers to them. That may be correct: check before dropping.",
+  rfpMatchedOn: "Found:",
+  rfpAdd: "Add",
+  rfpRemove: "Remove",
+  rfpDismiss: "Ignore",
+  rfpKeep: "Keep",
 
   // ---- admin ----
   adminTitle: "Data Admin",
@@ -183,7 +233,6 @@ const ar: Record<StringKey, string> = {
   // ---- budget summary header ----
   clientLabel: "العميل",
   clientPlaceholder: "لمن هذه الميزانية؟",
-  titlePlaceholder: "سمّ هذه الميزانية",
   backToBuilder: "العودة إلى الأداة",
   addMoreItems: "إضافة بنود أخرى",
 
@@ -241,7 +290,6 @@ const ar: Record<StringKey, string> = {
   // ---- budget summary ----
   emptyTitle: "ميزانيتك فارغة",
   emptyBody: "انتقل إلى أحد الأقسام وحدد بنود نطاق العمل التي تحتاجها.",
-  budgetTitleLabel: "عنوان الميزانية",
   print: "طباعة",
   clearAll: "مسح الكل",
   exportExcel: "تصدير إلى إكسل",
@@ -263,6 +311,58 @@ const ar: Record<StringKey, string> = {
   excludedTitle: "بحاجة إلى سعر",
   percentOfBudgetBase: "{rate}٪ من أساس الميزانية ({base})",
   percentOfSectionBase: "{rate}٪ من أساس القسم ({base})",
+
+  // ---- vendors ----
+  navVendors: "المورّدون",
+  vendorsTitle: "من سعّر ماذا",
+  vendorsSub:
+    "لكل سعر في الكتالوج مصدر. هنا تجد مصدر كل سعر، وكم من الميزانية الحالية يستند إلى سعر متفق عليه مع مورّد بدلاً من سعر استرشادي.",
+  vendorsVerifiedTitle: "الأسعار المتفق عليها في هذه الميزانية",
+  vendorsVerifiedBody: "‏{pct}٪ من الميزانية تستخدم سعراً متفقاً عليه مع تام أو أحد المورّدين. الباقي أسعار استرشادية أو مركّبة.",
+  vendorsVerifiedEmpty: "حدد بنوداً لمعرفة نسبة الميزانية المستندة إلى أسعار متفق عليها.",
+  vendorsAgreed: "متفق عليه",
+  vendorsBenchmark: "استرشادي",
+  vendorsPricesLines: "بند مسعّر",
+  vendorsInBudget: "في هذه الميزانية",
+  vendorsValue: "القيمة (ريال)",
+  vendorsNoSource: "بلا مصدر مسجل",
+  vendorsNoSourceBody: "بنود تركها ملف نطاق العمل بلا سعر وبلا مصدر. تبقى خارج الإجماليات حتى يُحدد لها سعر.",
+  vendorsNoPriced: "لا توجد بنود مسعّرة",
+
+  // ---- project brief ----
+  reviewTitle: "مراجعة الميزانية",
+  briefTitle: "موجز المشروع",
+  projectLabel: "المشروع / كراسة الشروط",
+  projectPlaceholder: "ما الذي نقدّم عرضاً له؟",
+  dateLabel: "تاريخ الإنشاء",
+  projectDescLabel: "عن المشروع",
+  projectDescPlaceholder: "سطور قليلة عمّا يتضمنه المشروع.",
+  budgetNotesLabel: "عن هذه الميزانية",
+  budgetNotesPlaceholder: "ما الذي تغطيه هذه الميزانية، وأي ملاحظات يحتاج العميل لمعرفتها.",
+
+  // ---- RFP scope check ----
+  rfpTitle: "المطابقة مع كراسة الشروط",
+  rfpSub:
+    "ارفع كراسة الشروط ليقارن النظام نصّها بالكتالوج، ثم يقترح بنوداً للإضافة أو الحذف. المطابقة تعتمد على المصطلحات لا على فهم المعنى، لذا يعرض كل اقتراح الكلمات التي وجدها. لا يتغير شيء حتى توافق. تبقى الملفات على هذا الجهاز.",
+  rfpDrop: "أفلِت كراسة الشروط هنا، أو اضغط للاستعراض",
+  rfpFormats: "‏PDF أو وورد (.docx) أو نص عادي · حتى ٥ ملفات",
+  rfpAnalyse: "تحليل",
+  rfpAnalysing: "جارٍ القراءة...",
+  rfpRemoveFile: "إزالة الملف",
+  rfpUnreadable:
+    "تعذّرت قراءة أي نص من هذه الملفات. ملف PDF الممسوح ضوئياً يحتوي صوراً للنص لا نصاً، ويحتاج إلى معالجة تعرّف ضوئي أولاً.",
+  rfpRead: "قُرئ {n} ملف، {chars} حرف",
+  rfpConfirmed: "{n} من البنود المحددة تظهر في كراسة الشروط",
+  rfpNothingToChange: "لا شيء يحتاج تعديلاً. كل بند محدد يظهر في كراسة الشروط، ولا ينقص شيء واضح.",
+  rfpMissingTitle: "{n} بنداً تطلبها كراسة الشروط",
+  rfpMissingBody: "تظهر هذه البنود في كراسة الشروط لكنها ليست ضمن الميزانية.",
+  rfpExtraTitle: "{n} بنداً لا تذكرها كراسة الشروط",
+  rfpExtraBody: "هذه البنود ضمن الميزانية لكن لا شيء في كراسة الشروط يشير إليها. قد يكون ذلك صحيحاً: تحقق قبل الحذف.",
+  rfpMatchedOn: "وُجد:",
+  rfpAdd: "إضافة",
+  rfpRemove: "حذف",
+  rfpDismiss: "تجاهل",
+  rfpKeep: "إبقاء",
 
   // ---- admin ----
   adminTitle: "إدارة البيانات",

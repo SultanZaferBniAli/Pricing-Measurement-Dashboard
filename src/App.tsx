@@ -15,6 +15,7 @@ import { useBudget } from "./lib/useTotals";
 import { Admin } from "./screens/Admin";
 import { BudgetSummary } from "./screens/BudgetSummary";
 import { Dashboard } from "./screens/Dashboard";
+import { Vendors } from "./screens/Vendors";
 
 export default function App() {
   const [view, setView] = useState<View>("builder");
@@ -80,6 +81,7 @@ export default function App() {
 
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
           {view === "builder" && <Dashboard budget={budget} />}
+          {view === "vendors" && <Vendors />}
           {view === "summary" && <BudgetSummary onBrowse={() => nav("builder")} />}
           {view === "admin" && <Admin />}
         </main>

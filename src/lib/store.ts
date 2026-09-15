@@ -30,6 +30,12 @@ interface AppState {
   budgetTitle: string;
   /** Who the budget is being prepared for. Appears on the export. */
   client: string;
+  /** Date the project or RFP was established (ISO yyyy-mm-dd). */
+  projectDate: string;
+  /** A few lines on what the project is. */
+  projectDescription: string;
+  /** A few lines on what this budget is meant to cover. */
+  budgetNotes: string;
   language: "en" | "ar";
 
   /** The one section the builder is showing. */
@@ -50,6 +56,9 @@ interface AppState {
   // ---- meta actions ----
   setBudgetTitle: (title: string) => void;
   setClient: (client: string) => void;
+  setProjectDate: (date: string) => void;
+  setProjectDescription: (text: string) => void;
+  setBudgetNotes: (text: string) => void;
   setActiveSection: (key: string) => void;
   saveToHistory: (entry: Omit<BudgetHistoryEntry, "id" | "exportedAt">) => void;
   restoreFromHistory: (id: string) => void;
@@ -74,6 +83,9 @@ export const useStore = create<AppState>()(
       selections: {},
       budgetTitle: "",
       client: "",
+      projectDate: "",
+      projectDescription: "",
+      budgetNotes: "",
       language: "en",
       activeSection: initialData.sections[0]?.key ?? "",
       history: [],
@@ -155,6 +167,9 @@ export const useStore = create<AppState>()(
 
       setBudgetTitle: (title) => set({ budgetTitle: title }),
       setClient: (client) => set({ client }),
+      setProjectDate: (projectDate) => set({ projectDate }),
+      setProjectDescription: (projectDescription) => set({ projectDescription }),
+      setBudgetNotes: (budgetNotes) => set({ budgetNotes }),
 
       setActiveSection: (key) => set({ activeSection: key }),
 
@@ -207,6 +222,9 @@ export const useStore = create<AppState>()(
         selections: state.selections,
         budgetTitle: state.budgetTitle,
         client: state.client,
+        projectDate: state.projectDate,
+        projectDescription: state.projectDescription,
+        budgetNotes: state.budgetNotes,
         language: state.language,
         history: state.history,
       }),

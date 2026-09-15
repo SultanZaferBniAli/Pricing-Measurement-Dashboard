@@ -12,6 +12,14 @@ import { FEE_RATE } from "./format";
 import { allSelectedLines, sumLines } from "./pricing";
 import type { ComputedLine, ScopeData, Selection } from "./types";
 
+/** The project brief captured on the review page, carried onto the export. */
+export interface BudgetBrief {
+  client?: string;
+  projectDate?: string;
+  projectDescription?: string;
+  budgetNotes?: string;
+}
+
 // Brand colours as ARGB (ExcelJS wants no leading #)
 const NAVY = "FF222242";
 const ELECTRIC = "FF5E45FF";
@@ -58,8 +66,10 @@ export async function buildWorkbook(
   selections: Record<string, Selection>,
   budgetTitle: string,
   dateStr: string,
-  client = ""
+  brief: BudgetBrief = {}
 ): Promise<ExcelJS.Buffer> {
+  const { client = "", projectDate = "", projectDescription = "", budgetNotes = "" } =
+    brief;
   const wb = new ExcelJS.Workbook();
   wb.creator = "TAM Scope-Based Budget Builder";
   wb.created = new Date(dateStr);
@@ -76,13 +86,22 @@ export async function buildWorkbook(
   s1.columns = [{ width: 34 }, { width: 20 }, { width: 20 }, { width: 20 }];
   titleRow(s1, "TAM Development Company Budget Summary", 4);
   s1.addRow([]);
-  s1.addRow(["Budget Title", budgetTitle]);
+  s1.addRow(["Project", budgetTitle || "-"]);
   s1.addRow(["Client", client || "-"]);
+  s1.addRow(["Established", projectDate || "-"]);
   s1.addRow(["Export Date", dateStr]);
   s1.addRow(["Currency", data.meta.currency]);
   s1.addRow(["Fee Rate", `${FEE_RATE * 100}%`]);
   s1.addRow(["Selected Items", priced.length + unpriced.length]);
   s1.addRow(["Unpriced (excluded)", unpriced.length]);
+  if (projectDescription) {
+    const r = s1.addRow(["Project description", projectDescription]);
+    r.getCell(2).alignment = { wrapText: true, vertical: "top" };
+  }
+  if (budgetNotes) {
+    const r = s1.addRow(["Budget notes", budgetNotes]);
+    r.getCell(2).alignment = { wrapText: true, vertical: "top" };
+  }
   s1.addRow([]);
 
   headerRow(s1, ["Grand Totals", "Amount (SAR)", "", ""]);
@@ -268,10 +287,10 @@ export async function downloadBudget(
   data: ScopeData,
   selections: Record<string, Selection>,
   budgetTitle: string,
-  client = ""
+  brief: BudgetBrief = {}
 ) {
   const dateStr = new Date().toISOString().slice(0, 10);
-  const buffer = await buildWorkbook(data, selections, budgetTitle, dateStr, client);
+  const buffer = await buildWorkbook(data, selections, budgetTitle, dateStr, brief);
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
@@ -279,7 +298,7 @@ export async function downloadBudget(
   const a = document.createElement("a");
   a.href = url;
   const slug = (v: string) => v.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
-  const safe = [client, budgetTitle]
+  const safe = [brief.client ?? "", budgetTitle]
     .filter(Boolean)
     .map((v) => slug(v).slice(0, 30))
     .filter(Boolean)

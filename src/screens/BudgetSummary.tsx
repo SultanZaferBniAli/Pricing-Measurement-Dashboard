@@ -9,6 +9,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { SECTION_ACCENT } from "../components/BudgetBar";
+import { RfpCheck } from "../components/RfpCheck";
 import { QtyStepper } from "../components/QtyStepper";
 import { Badge, Button, Card, Diamond, MatchBadge } from "../components/ui";
 import { money, sar } from "../lib/format";
@@ -27,6 +28,12 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const setBudgetTitle = useStore((s) => s.setBudgetTitle);
   const client = useStore((s) => s.client);
   const setClient = useStore((s) => s.setClient);
+  const projectDate = useStore((s) => s.projectDate);
+  const setProjectDate = useStore((s) => s.setProjectDate);
+  const projectDescription = useStore((s) => s.projectDescription);
+  const setProjectDescription = useStore((s) => s.setProjectDescription);
+  const budgetNotes = useStore((s) => s.budgetNotes);
+  const setBudgetNotes = useStore((s) => s.setBudgetNotes);
   const setQty = useStore((s) => s.setQty);
   const setNote = useStore((s) => s.setNote);
   const toggleItem = useStore((s) => s.toggleItem);
@@ -51,7 +58,12 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
     try {
       // Lazy-load the ExcelJS-backed export so it stays out of the main bundle.
       const { downloadBudget } = await import("../lib/excelExport");
-      await downloadBudget(data, selections, budgetTitle, client);
+      await downloadBudget(data, selections, budgetTitle, {
+        client,
+        projectDate,
+        projectDescription,
+        budgetNotes,
+      });
       // A downloaded budget is one worth keeping, so the export is what files it
       // into the sidebar's history. Selections are stored whole so it reopens.
       saveToHistory({
@@ -88,39 +100,8 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   return (
     <div className="space-y-5 animate-fade-in print:space-y-3">
       {/* header + actions */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-          <Diamond className="mt-3 shrink-0" />
-          <div className="min-w-0 flex-1 space-y-2">
-            <div>
-              <label
-                htmlFor="budget-title"
-                className="text-xs text-lavender-light/50"
-              >
-                {t("budgetTitleLabel")}
-              </label>
-              <input
-                id="budget-title"
-                value={budgetTitle}
-                onChange={(e) => setBudgetTitle(e.target.value)}
-                placeholder={t("titlePlaceholder")}
-                className="block w-full border-b border-white/10 bg-transparent text-2xl font-bold text-white placeholder:text-lavender-light/30 hover:border-white/20 focus:border-electric focus:outline-none"
-              />
-            </div>
-            <div>
-              <label htmlFor="budget-client" className="text-xs text-lavender-light/50">
-                {t("clientLabel")}
-              </label>
-              <input
-                id="budget-client"
-                value={client}
-                onChange={(e) => setClient(e.target.value)}
-                placeholder={t("clientPlaceholder")}
-                className="block w-full max-w-md border-b border-white/10 bg-transparent text-base text-lavender-light placeholder:text-lavender-light/30 hover:border-white/20 focus:border-electric focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <h1 className="text-2xl font-bold text-white">{t("reviewTitle")}</h1>
         <div className="flex items-center gap-2 print:hidden">
           <Button variant="secondary" size="sm" onClick={onBrowse}>
             <Plus size={15} /> {t("addMoreItems")}
@@ -135,6 +116,57 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
             <Download size={16} /> {exporting ? t("exporting") : t("exportExcel")}
           </Button>
         </div>
+      </div>
+
+      {/* the brief: what this budget is for, and for whom */}
+      <Card className="p-5">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+          <Diamond />
+          {t("briefTitle")}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field
+            id="budget-title"
+            label={t("projectLabel")}
+            value={budgetTitle}
+            onChange={setBudgetTitle}
+            placeholder={t("projectPlaceholder")}
+          />
+          <Field
+            id="budget-client"
+            label={t("clientLabel")}
+            value={client}
+            onChange={setClient}
+            placeholder={t("clientPlaceholder")}
+          />
+          <Field
+            id="budget-date"
+            label={t("dateLabel")}
+            value={projectDate}
+            onChange={setProjectDate}
+            type="date"
+          />
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <AreaField
+            id="budget-project-desc"
+            label={t("projectDescLabel")}
+            value={projectDescription}
+            onChange={setProjectDescription}
+            placeholder={t("projectDescPlaceholder")}
+          />
+          <AreaField
+            id="budget-notes"
+            label={t("budgetNotesLabel")}
+            value={budgetNotes}
+            onChange={setBudgetNotes}
+            placeholder={t("budgetNotesPlaceholder")}
+          />
+        </div>
+      </Card>
+
+      <div className="print:hidden">
+        <RfpCheck />
       </div>
 
       {/* totals */}
@@ -387,6 +419,70 @@ function UnpricedRow({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** A labelled single-line field in the brief. */
+function Field({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="text-xs text-lavender-light/50">
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-0.5 block w-full rounded-lg border border-white/10 bg-navy/50 px-3 py-2 text-sm text-white placeholder:text-lavender-light/30 focus:border-electric focus:outline-none"
+      />
+    </div>
+  );
+}
+
+/** A labelled multi-line field in the brief. */
+function AreaField({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="text-xs text-lavender-light/50">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        rows={3}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="mt-0.5 block w-full resize-y rounded-lg border border-white/10 bg-navy/50 px-3 py-2 text-sm leading-relaxed text-white placeholder:text-lavender-light/30 focus:border-electric focus:outline-none"
+      />
     </div>
   );
 }

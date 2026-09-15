@@ -11,6 +11,7 @@
 import { useState } from "react";
 import {
   History,
+  Handshake,
   LayoutGrid,
   Languages,
   Settings2,
@@ -25,7 +26,7 @@ import { useT } from "../lib/i18n";
 import { useStore } from "../lib/store";
 import type { BudgetSummary } from "../lib/useTotals";
 
-export type View = "builder" | "summary" | "admin";
+export type View = "builder" | "vendors" | "summary" | "admin";
 
 export function Sidebar({
   view,
@@ -81,6 +82,13 @@ export function Sidebar({
           icon={<LayoutGrid size={16} />}
         >
           {t("navOverview")}
+        </RailButton>
+        <RailButton
+          active={view === "vendors"}
+          onClick={() => go("vendors")}
+          icon={<Handshake size={16} />}
+        >
+          {t("navVendors")}
         </RailButton>
 
         <p className="flex items-center gap-2 px-3 pb-2 pt-5 text-xs font-medium text-lavender-light/40">

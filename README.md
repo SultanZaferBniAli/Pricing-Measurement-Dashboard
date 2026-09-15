@@ -29,21 +29,65 @@ Requires Node 18+. Python 3 with `openpyxl` is only needed if you want to
 
 ## What's in the box
 
-A top bar switches between three views: **Dashboard**, **Budget**, and **Admin**,
-plus an **English / Arabic** toggle.
+A persistent **sidebar** (right-hand side in Arabic) holds navigation, the
+budgets you have already exported, and the running grand total. An **English /
+Arabic** toggle sits in its footer.
 
 | View | What it does |
 | --- | --- |
-| **Dashboard** | The builder. Overview KPI cards (sections, priced / unpriced counts, selected count, live Base / Fees / Grand totals), a spend-by-section chart, a filter toolbar, and the four departments as **inline accordions**. Click a section to expand it in place, then select items, set quantities, and set prices for unpriced lines. "Select all" per sub-category and "Expand / Collapse all". |
-| **Budget** | Every selected line in one place: editable quantity, optional per-line note, remove button, section-aware totals, an unpriced-items callout, **Export to Excel**, and Print. |
+| **Overview** | The builder. The four departments sit side by side as **tabs**, and only the chosen one's items are on screen, so picking items in Logistics never means scrolling past everything in Marketing. Each tab carries its own selected count and subtotal. Above them: a stacked bar showing how the budget splits across sections, and a search / filter row that applies to every section. |
+| **Vendors** | Who priced what. One row per price source, with how many lines it prices, which sections it covers, and how much of the current budget rests on an agreed price rather than a benchmark. |
+| **Budget** | The project brief, the RFP check, then every selected line grouped by section with its own subtotal: editable quantity, optional per-line note, remove button, **Export to Excel**, and Print. |
 | **Admin** | Drag-and-drop re-upload of an updated `Scope_of_Work_Priced_QTY.xlsx` to re-parse the catalog at runtime. |
 
-The filter toolbar (search + priced / unpriced + price source + match type)
-applies across all sections at once, and searching auto-expands only the sections
-that contain matches. A sticky bottom bar keeps the running **Base / Fees / Grand
-Total** and a "Review Budget" button visible. Selections, the budget title and
-the chosen language persist to `localStorage`, so a work-in-progress budget
-survives a refresh.
+There is no "Budget" nav item: the sidebar's **Review budget** button already
+goes there. The running Base / Fees / Grand total appears exactly once, in the
+sidebar, and nowhere else on the page.
+
+Quantities use a stepper that is still a real text field, so 100 is one
+keystroke rather than a hundred clicks, and clicking anywhere on a line toggles
+it rather than only its checkbox.
+
+Selections, the brief, the language and the exported-budget history persist to
+`localStorage`, so a work-in-progress budget survives a refresh.
+
+### Exported budgets
+
+Exporting to Excel files the budget in the sidebar under its title, with its
+client, date and grand total. Clicking one loads it back, selections and all, so
+a past budget can be reopened and revised rather than rebuilt. Re-exporting the
+same title replaces that entry instead of piling up near-identical rows, the list
+caps at 30, and deleting asks for a second click.
+
+### Project brief and the RFP check
+
+The Budget view opens with a **project brief**: project / RFP, client, established
+date, and short descriptions of the project and of what the budget covers. All of
+it persists and all of it lands on the export's summary sheet.
+
+Below that sits **Check against the RFP** (`src/lib/rfp.ts` + `components/RfpCheck.tsx`).
+Drop in the RFP as PDF, Word, or plain text; it extracts the text in the browser
+and compares it against all 116 catalog lines, then proposes two lists: lines the
+RFP asks for that are not in the budget, and selected lines the RFP never
+mentions.
+
+**What it is, precisely.** A rules-based first pass, not comprehension. It scores
+each item on how much of *its own name* appears in the RFP. Category words
+(sub-category, master category) deliberately count for almost nothing on their
+own, because "accommodation" appearing in an RFP is not evidence that it asked
+for glamping. Every suggestion shows the exact terms it found, so a wrong call
+takes a second to spot, and nothing is applied until you accept it line by line.
+It cannot read intent, negation, or anything implied rather than written.
+
+The RFP never leaves the machine: extraction and matching both run in the browser,
+with pdf.js and JSZip lazy-loaded only when a PDF or .docx is opened.
+
+**Swapping in a model.** `analyseRfp` is the only entry point the UI calls and
+`ScopeSuggestion` the only shape it returns, so a model-backed implementation
+needs to satisfy that signature and nothing else. It would need a backend to hold
+the API key, and a decision that confidential client RFPs may leave TAM's network.
+Whatever the engine, keep `matchedTerms` populated: a suggestion nobody can check
+is a suggestion nobody should trust.
 
 ### Arabic / RTL
 
