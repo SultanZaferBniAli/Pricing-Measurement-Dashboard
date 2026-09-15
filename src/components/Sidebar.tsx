@@ -1,16 +1,23 @@
 /**
  * The app's left rail (right, in Arabic).
  *
- * It does two jobs at once: it navigates, and it reports. Each section row
- * carries its own selected count and subtotal, so the shape of the budget is
- * readable without opening anything. The running grand total lives in the
- * footer, and it is the ONLY place in the app that figure appears, which is why
- * there is no sticky bar along the bottom of the builder any more.
+ * It holds navigation, the budgets that have already been exported, and the
+ * running grand total. The total is the ONLY place in the app that figure
+ * appears, which is why there is no sticky bar along the bottom of the builder.
  *
  * "Budget" is deliberately not a nav item. The footer's "Review budget" button
  * already goes there, and two controls for one destination is one too many.
  */
-import { LayoutGrid, Languages, Settings2, ShoppingCart, X } from "lucide-react";
+import { useState } from "react";
+import {
+  History,
+  LayoutGrid,
+  Languages,
+  Settings2,
+  ShoppingCart,
+  Trash2,
+  X,
+} from "lucide-react";
 import { TamLogo } from "./TamLogo";
 import { Button, cx } from "./ui";
 import { money } from "../lib/format";
@@ -19,14 +26,6 @@ import { useStore } from "../lib/store";
 import type { BudgetSummary } from "../lib/useTotals";
 
 export type View = "builder" | "summary" | "admin";
-
-/** Accent per section, matching the spend chart so the two read as one system. */
-const SECTION_DOT: Record<string, string> = {
-  MARKETING: "#5E45FF",
-  "EVENT MANAGEMENT": "#8A87F4",
-  LOGISTICS: "#EBA036",
-  "VIDEO PRODUCTIONS": "#6256F3",
-};
 
 export function Sidebar({
   view,
@@ -39,24 +38,26 @@ export function Sidebar({
   budget: BudgetSummary;
   onCloseMobile?: () => void;
 }) {
-  const { t, lang, tSection } = useT();
+  const { t, lang } = useT();
   const setLanguage = useStore((s) => s.setLanguage);
-  const focusSection = useStore((s) => s.focusSection);
-  const expanded = useStore((s) => s.expanded);
-
-  const goToSection = (key: string) => {
-    onNavigate("builder");
-    focusSection(key);
-    onCloseMobile?.();
-  };
+  const history = useStore((s) => s.history);
+  const restoreFromHistory = useStore((s) => s.restoreFromHistory);
+  const removeFromHistory = useStore((s) => s.removeFromHistory);
+  const budgetTitle = useStore((s) => s.budgetTitle);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const go = (v: View) => {
     onNavigate(v);
     onCloseMobile?.();
   };
 
+  const restore = (id: string) => {
+    restoreFromHistory(id);
+    go("summary");
+  };
+
   return (
-    <div className="flex h-full flex-col bg-surface/60 border-e border-white/5">
+    <div className="flex h-full flex-col border-e border-white/5 bg-surface/60">
       {/* brand */}
       <div className="flex items-center justify-between gap-2 px-5 py-4">
         <button onClick={() => go("builder")} aria-label={t("appHome")}>
@@ -66,7 +67,7 @@ export function Sidebar({
           <button
             onClick={onCloseMobile}
             aria-label={t("closeMenu")}
-            className="lg:hidden rounded-lg p-1.5 text-lavender-light/60 hover:bg-white/5 hover:text-white"
+            className="rounded-lg p-1.5 text-lavender-light/60 hover:bg-white/5 hover:text-white lg:hidden"
           >
             <X size={18} />
           </button>
@@ -82,47 +83,68 @@ export function Sidebar({
           {t("navOverview")}
         </RailButton>
 
-        <p className="px-3 pt-5 pb-2 text-xs font-medium text-lavender-light/40">
-          {t("navSections")}
+        <p className="flex items-center gap-2 px-3 pb-2 pt-5 text-xs font-medium text-lavender-light/40">
+          <History size={13} />
+          {t("navHistory")}
         </p>
 
-        <ul className="space-y-0.5">
-          {budget.bySection.map((s) => {
-            const open = view === "builder" && expanded.includes(s.section.key);
-            return (
-              <li key={s.section.key}>
-                <button
-                  onClick={() => goToSection(s.section.key)}
-                  className={cx(
-                    "group w-full rounded-xl px-3 py-2 text-start transition-colors",
-                    open ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"
-                  )}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <span
-                      className="tam-diamond shrink-0"
-                      style={{ backgroundColor: SECTION_DOT[s.section.key] ?? "#8A87F4" }}
-                    />
-                    <span className="min-w-0 flex-1 truncate text-sm text-lavender-light group-hover:text-white">
-                      {tSection(s.section.name)}
+        {history.length === 0 ? (
+          <p className="px-3 text-xs leading-relaxed text-lavender-light/35">
+            {t("historyEmpty")}
+          </p>
+        ) : (
+          <ul className="space-y-0.5">
+            {history.map((h) => {
+              const isCurrent = h.title.trim() === budgetTitle.trim();
+              return (
+                <li key={h.id} className="group relative">
+                  <button
+                    onClick={() => restore(h.id)}
+                    title={t("historyRestore")}
+                    className={cx(
+                      "w-full rounded-xl px-3 py-2 pe-8 text-start transition-colors",
+                      isCurrent ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"
+                    )}
+                  >
+                    <span className="block truncate text-sm text-lavender-light group-hover:text-white">
+                      {h.title || t("untitledBudget")}
                     </span>
-                    {s.selectedCount > 0 && (
-                      <span className="num shrink-0 rounded-full bg-electric/25 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                        {s.selectedCount}
+                    <span className="mt-0.5 flex items-baseline justify-between gap-2">
+                      <span className="num truncate text-xs text-gold/80">
+                        {money(h.grand)}
+                      </span>
+                      <span className="num shrink-0 text-[10px] text-lavender-light/40">
+                        {h.exportedAt.slice(0, 10)}
+                      </span>
+                    </span>
+                    {h.client && (
+                      <span className="block truncate text-[11px] text-lavender-light/45">
+                        {h.client}
                       </span>
                     )}
-                  </span>
-                  {/* the subtotal only earns its line once there is one */}
-                  {s.totals.grand > 0 && (
-                    <span className="num mt-0.5 block ps-[18px] text-xs text-gold/80">
-                      {money(s.totals.grand)}
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      confirmId === h.id ? removeFromHistory(h.id) : setConfirmId(h.id)
+                    }
+                    onBlur={() => setConfirmId(null)}
+                    aria-label={t("historyDelete")}
+                    title={confirmId === h.id ? t("historyConfirm") : t("historyDelete")}
+                    className={cx(
+                      "absolute end-1.5 top-2 rounded-md p-1.5 transition-colors",
+                      confirmId === h.id
+                        ? "bg-red-500/20 text-red-300"
+                        : "text-lavender-light/30 opacity-0 hover:text-red-400 focus:opacity-100 group-hover:opacity-100"
+                    )}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </nav>
 
       {/* running total: the single home for this figure */}

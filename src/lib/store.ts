@@ -6,14 +6,19 @@
  * budget survives a page refresh. Admin re-uploads can replace the scope data
  * at runtime.
  *
- * Which sections are open is UI state shared by the sidebar and the builder, so
- * it lives here too, but it is deliberately NOT persisted.
+ * The builder shows one section at a time, so `activeSection` is UI state and is
+ * deliberately NOT persisted. Exported budgets are, in `history`.
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import rawData from "../data/scopeData.json";
 import { enrichScopeData } from "./enrich";
-import type { ScopeData, Section, Selection } from "./types";
+import type {
+  BudgetHistoryEntry,
+  ScopeData,
+  Section,
+  Selection,
+} from "./types";
 
 // Layer research pricing (flights + transport) onto the bundled catalog.
 const initialData = enrichScopeData(rawData as unknown as ScopeData);
@@ -27,13 +32,10 @@ interface AppState {
   client: string;
   language: "en" | "ar";
 
-  /** Section keys currently expanded in the builder. */
-  expanded: string[];
-  /**
-   * Bumped when the sidebar asks the builder to jump to a section. The builder
-   * watches the counter so repeat clicks on the same section still scroll.
-   */
-  focus: { key: string; nonce: number } | null;
+  /** The one section the builder is showing. */
+  activeSection: string;
+  /** Budgets that have been exported, newest first. */
+  history: BudgetHistoryEntry[];
 
   // ---- selection actions ----
   toggleItem: (id: string, defaultQty?: number) => void;
@@ -48,9 +50,10 @@ interface AppState {
   // ---- meta actions ----
   setBudgetTitle: (title: string) => void;
   setClient: (client: string) => void;
-  toggleSection: (key: string) => void;
-  setExpanded: (keys: string[]) => void;
-  focusSection: (key: string) => void;
+  setActiveSection: (key: string) => void;
+  saveToHistory: (entry: Omit<BudgetHistoryEntry, "id" | "exportedAt">) => void;
+  restoreFromHistory: (id: string) => void;
+  removeFromHistory: (id: string) => void;
   setLanguage: (lang: "en" | "ar") => void;
   replaceData: (data: ScopeData) => void;
 
@@ -72,8 +75,8 @@ export const useStore = create<AppState>()(
       budgetTitle: initialData.meta.project,
       client: "",
       language: "en",
-      expanded: [],
-      focus: null,
+      activeSection: initialData.sections[0]?.key ?? "",
+      history: [],
 
       toggleItem: (id, defaultQty) =>
         set((state) => {
@@ -153,25 +156,46 @@ export const useStore = create<AppState>()(
       setBudgetTitle: (title) => set({ budgetTitle: title }),
       setClient: (client) => set({ client }),
 
-      toggleSection: (key) =>
-        set((state) => ({
-          expanded: state.expanded.includes(key)
-            ? state.expanded.filter((k) => k !== key)
-            : [...state.expanded, key],
-        })),
+      setActiveSection: (key) => set({ activeSection: key }),
 
-      setExpanded: (keys) => set({ expanded: keys }),
+      saveToHistory: (entry) =>
+        set((state) => {
+          const next: BudgetHistoryEntry = {
+            ...entry,
+            id:
+              globalThis.crypto?.randomUUID?.() ??
+              `b-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            exportedAt: new Date().toISOString(),
+          };
+          // Re-exporting the same title replaces that entry rather than piling
+          // up near-identical rows, and the list is capped so it stays scannable.
+          const rest = state.history.filter(
+            (h) => h.title.trim().toLowerCase() !== next.title.trim().toLowerCase()
+          );
+          return { history: [next, ...rest].slice(0, 30) };
+        }),
 
-      focusSection: (key) =>
-        set((state) => ({
-          expanded: state.expanded.includes(key)
-            ? state.expanded
-            : [...state.expanded, key],
-          focus: { key, nonce: (state.focus?.nonce ?? 0) + 1 },
-        })),
+      restoreFromHistory: (id) =>
+        set((state) => {
+          const entry = state.history.find((h) => h.id === id);
+          if (!entry) return {};
+          return {
+            selections: { ...entry.selections },
+            budgetTitle: entry.title,
+            client: entry.client,
+          };
+        }),
+
+      removeFromHistory: (id) =>
+        set((state) => ({ history: state.history.filter((h) => h.id !== id) })),
       setLanguage: (language) => set({ language }),
       replaceData: (data) =>
-        set({ data, selections: {}, budgetTitle: data.meta.project, expanded: [] }),
+        set({
+          data,
+          selections: {},
+          budgetTitle: data.meta.project,
+          activeSection: data.sections[0]?.key ?? "",
+        }),
 
       sections: () => get().data.sections,
       isSelected: (id) => Boolean(get().selections[id]),
@@ -184,6 +208,7 @@ export const useStore = create<AppState>()(
         budgetTitle: state.budgetTitle,
         client: state.client,
         language: state.language,
+        history: state.history,
       }),
     }
   )

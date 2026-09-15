@@ -24,7 +24,14 @@ const en = {
 
   // ---- sidebar ----
   navOverview: "Overview",
-  navSections: "Sections",
+  navHistory: "Exported budgets",
+  historyEmpty: "Budgets you export to Excel are saved here, so you can reopen one later.",
+  historyRestore: "Open this budget",
+  historyDelete: "Remove from history",
+  historyConfirm: "Click again to remove",
+  untitledBudget: "Untitled budget",
+  buildSubTabs: "Pick a section, then choose the items you need.",
+  countMatching: "{n} matching",
   sidebarTotalLabel: "Grand total",
   sidebarBaseFee: "{base} base + {fee} fee",
   sidebarEmpty: "Nothing selected yet",
@@ -36,7 +43,6 @@ const en = {
   statPriced: "priced",
   statUnpriced: "unpriced",
   statSelected: "selected",
-  statFee: "fee",
   kpiNeedPrice: "{n} need a price",
 
   // ---- quantity stepper ----
@@ -49,7 +55,6 @@ const en = {
   titlePlaceholder: "Name this budget",
   backToBuilder: "Back to builder",
 
-
   // ---- chart ----
   chartTitle: "Spend by Section",
   chartSub: "Grand total incl. 15% fee",
@@ -57,9 +62,6 @@ const en = {
 
   // ---- builder toolbar ----
   buildTitle: "Build your budget",
-  buildSub: "Click a section to expand it and select items",
-  expandAll: "Expand all",
-  collapseAll: "Collapse all",
   searchPlaceholder: "Search all items...",
   filterAllPrices: "All prices",
   filterPricedOnly: "Priced only",
@@ -72,7 +74,6 @@ const en = {
   matchDerived: "Derived",
   matchNotInMaster: "Not in master",
   clear: "Clear",
-  noMatches: "No items match “{q}”.",
   clearFilters: "Clear filters",
 
   // ---- section accordion ----
@@ -80,7 +81,6 @@ const en = {
   countPriced: "{n} priced",
   countSelected: "{n} selected",
   countNeedPrice: "{n} need price",
-  subtotalInclFee: "Subtotal (incl. fee)",
   colItem: "Item",
   colQty: "Qty",
   colRate: "Rate",
@@ -165,7 +165,14 @@ const ar: Record<StringKey, string> = {
 
   // ---- sidebar ----
   navOverview: "نظرة عامة",
-  navSections: "الأقسام",
+  navHistory: "الميزانيات المصدَّرة",
+  historyEmpty: "تُحفظ هنا الميزانيات التي تصدّرها إلى إكسل، لتتمكن من فتحها لاحقاً.",
+  historyRestore: "فتح هذه الميزانية",
+  historyDelete: "إزالة من السجل",
+  historyConfirm: "اضغط مرة أخرى للإزالة",
+  untitledBudget: "ميزانية بلا عنوان",
+  buildSubTabs: "اختر القسم، ثم حدد البنود التي تحتاجها.",
+  countMatching: "{n} مطابق",
   sidebarTotalLabel: "الإجمالي الكلي",
   sidebarBaseFee: "{base} أساسي + {fee} رسوم",
   sidebarEmpty: "لم تحدد أي بند بعد",
@@ -177,7 +184,6 @@ const ar: Record<StringKey, string> = {
   statPriced: "مسعّر",
   statUnpriced: "غير مسعّر",
   statSelected: "محدد",
-  statFee: "رسوم",
   kpiNeedPrice: "{n} بحاجة إلى سعر",
 
   // ---- quantity stepper ----
@@ -190,7 +196,6 @@ const ar: Record<StringKey, string> = {
   titlePlaceholder: "سمّ هذه الميزانية",
   backToBuilder: "العودة إلى الأداة",
 
-
   // ---- chart ----
   chartTitle: "الإنفاق حسب القسم",
   chartSub: "الإجمالي الكلي شامل رسوم ١٥٪",
@@ -198,9 +203,6 @@ const ar: Record<StringKey, string> = {
 
   // ---- builder toolbar ----
   buildTitle: "ابنِ ميزانيتك",
-  buildSub: "اضغط على القسم لتوسيعه واختيار البنود",
-  expandAll: "توسيع الكل",
-  collapseAll: "طي الكل",
   searchPlaceholder: "ابحث في جميع البنود...",
   filterAllPrices: "جميع الأسعار",
   filterPricedOnly: "المسعّرة فقط",
@@ -213,7 +215,6 @@ const ar: Record<StringKey, string> = {
   matchDerived: "مشتق",
   matchNotInMaster: "غير موجود في السجل الرئيسي",
   clear: "مسح",
-  noMatches: "لا توجد بنود تطابق «{q}».",
   clearFilters: "مسح عوامل التصفية",
 
   // ---- section accordion ----
@@ -221,7 +222,6 @@ const ar: Record<StringKey, string> = {
   countPriced: "{n} مسعّر",
   countSelected: "{n} محدد",
   countNeedPrice: "{n} بحاجة إلى سعر",
-  subtotalInclFee: "المجموع الفرعي (شامل الرسوم)",
   colItem: "البند",
   colQty: "الكمية",
   colRate: "النسبة",

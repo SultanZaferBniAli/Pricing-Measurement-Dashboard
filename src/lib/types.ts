@@ -115,6 +115,24 @@ export interface ComputedLine {
   percentOfBase?: number;
 }
 
+/**
+ * A budget as it stood when it was exported. Saved so the sidebar can list past
+ * budgets by title and load one back for a second pass. The selections are kept
+ * whole, which is what makes an entry restorable rather than just a receipt.
+ */
+export interface BudgetHistoryEntry {
+  id: string;
+  title: string;
+  client: string;
+  /** ISO timestamp of the export that created this entry. */
+  exportedAt: string;
+  base: number;
+  fee: number;
+  grand: number;
+  itemCount: number;
+  selections: Record<string, Selection>;
+}
+
 export interface SectionTotals {
   base: number;
   fee: number;

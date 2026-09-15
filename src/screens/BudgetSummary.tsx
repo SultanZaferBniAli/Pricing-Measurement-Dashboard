@@ -27,6 +27,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const setNote = useStore((s) => s.setNote);
   const toggleItem = useStore((s) => s.toggleItem);
   const clearAll = useStore((s) => s.clearAll);
+  const saveToHistory = useStore((s) => s.saveToHistory);
   const [exporting, setExporting] = useState(false);
 
   const { lines, priced, unpricedSelected, totals } = budget;
@@ -37,6 +38,17 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
       // Lazy-load the ExcelJS-backed export so it stays out of the main bundle.
       const { downloadBudget } = await import("../lib/excelExport");
       await downloadBudget(data, selections, budgetTitle, client);
+      // A downloaded budget is one worth keeping, so the export is what files it
+      // into the sidebar's history. Selections are stored whole so it reopens.
+      saveToHistory({
+        title: budgetTitle,
+        client,
+        base: totals.base,
+        fee: totals.fee,
+        grand: totals.grand,
+        itemCount: lines.length,
+        selections,
+      });
     } finally {
       setExporting(false);
     }

@@ -1,20 +1,16 @@
 /**
- * The builder. Catalog stats as a single strip, the spend chart, a filter bar,
- * and the four sections as inline accordions.
+ * The builder. One section at a time, chosen from a tab strip, so picking items
+ * in Logistics never means scrolling past everything in Marketing first.
  *
- * The running Base / Fees / Grand total is NOT here. It lives once, in the
+ * The running Base / Fees / Grand total is not here. It lives once, in the
  * sidebar, so the same figures are never shown twice on one screen.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ChevronsDownUp,
-  ChevronsUpDown,
-  Search,
-  X,
-} from "lucide-react";
-import { SectionAccordion } from "../components/SectionAccordion";
+import { useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+import { SectionPanel } from "../components/SectionPanel";
 import { SectionBarChart } from "../components/SectionBarChart";
 import { Card, cx } from "../components/ui";
+import { money } from "../lib/format";
 import { useT } from "../lib/i18n";
 import { useStore } from "../lib/store";
 import type { ScopeItem } from "../lib/types";
@@ -22,13 +18,19 @@ import type { BudgetSummary } from "../lib/useTotals";
 
 type PriceFilter = "all" | "priced" | "unpriced";
 
+/** Accent per section, shared with the spend chart so the two read as one. */
+const SECTION_ACCENT: Record<string, string> = {
+  MARKETING: "#5E45FF",
+  "EVENT MANAGEMENT": "#8A87F4",
+  LOGISTICS: "#EBA036",
+  "VIDEO PRODUCTIONS": "#6256F3",
+};
+
 export function Dashboard({ budget }: { budget: BudgetSummary }) {
   const data = useStore((s) => s.data);
-  const expanded = useStore((s) => s.expanded);
-  const setExpanded = useStore((s) => s.setExpanded);
-  const toggleSection = useStore((s) => s.toggleSection);
-  const focus = useStore((s) => s.focus);
-  const { t, tSource } = useT();
+  const activeSection = useStore((s) => s.activeSection);
+  const setActiveSection = useStore((s) => s.setActiveSection);
+  const { t, tSection, tSource } = useT();
   const { catalog, selectedCount, unpricedSelected } = budget;
 
   const [query, setQuery] = useState("");
@@ -36,29 +38,8 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
   const [source, setSource] = useState("all");
   const [match, setMatch] = useState("all");
 
-  /**
-   * While a filter is on, sections open automatically to reveal their matches.
-   * That used to override the header click entirely, so collapsing a section
-   * mid-filter did nothing. Now a click records an override for that section
-   * and the override wins until the filter itself changes.
-   */
-  const [openOverrides, setOpenOverrides] = useState<Record<string, boolean>>({});
-
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
   const filtering =
     query !== "" || priceFilter !== "all" || source !== "all" || match !== "all";
-
-  useEffect(() => {
-    setOpenOverrides({});
-  }, [query, priceFilter, source, match]);
-
-  // The sidebar asks for a section by bumping a nonce; scroll to it.
-  useEffect(() => {
-    if (!focus) return;
-    const el = sectionRefs.current[focus.key];
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [focus]);
 
   const sources = useMemo(
     () =>
@@ -80,36 +61,11 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
   const perSection = data.sections.map((s) => ({
     section: s,
     items: s.items.filter(filterItem),
+    rollup: budget.bySection.find((b) => b.section.key === s.key),
   }));
 
-  const isExpanded = (key: string, hasMatches: boolean) =>
-    filtering ? openOverrides[key] ?? hasMatches : expanded.includes(key);
-
-  const toggle = (key: string, hasMatches: boolean) => {
-    if (filtering) {
-      setOpenOverrides((prev) => ({
-        ...prev,
-        [key]: !(prev[key] ?? hasMatches),
-      }));
-    } else {
-      toggleSection(key);
-    }
-  };
-
-  const allKeys = data.sections.map((s) => s.key);
-  const allOpen = filtering
-    ? perSection.every(({ section, items }) => isExpanded(section.key, items.length > 0))
-    : allKeys.every((k) => expanded.includes(k));
-
-  const toggleAll = () => {
-    if (filtering) {
-      setOpenOverrides(
-        Object.fromEntries(allKeys.map((k) => [k, !allOpen]))
-      );
-    } else {
-      setExpanded(allOpen ? [] : allKeys);
-    }
-  };
+  const current =
+    perSection.find((p) => p.section.key === activeSection) ?? perSection[0];
 
   const clearFilters = () => {
     setQuery("");
@@ -118,13 +74,11 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
     setMatch("all");
   };
 
-  const noResults = filtering && perSection.every((p) => p.items.length === 0);
-
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-white md:text-3xl">{t("buildTitle")}</h1>
-        <p className="mt-1 text-sm text-lavender-light/70">{t("buildSub")}</p>
+        <p className="mt-1 text-sm text-lavender-light/70">{t("buildSubTabs")}</p>
       </div>
 
       {/* catalog facts, one line, no cards */}
@@ -139,18 +93,82 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
             {t("kpiNeedPrice", { n: unpricedSelected.length })}
           </span>
         )}
-        <span className="ms-auto text-xs text-lavender-light/50">
-          15% {t("statFee")}
-        </span>
       </div>
 
-      {/* An empty chart is just a large hole above the work, so it waits until
-          there is something to plot. */}
+      {/* An empty chart is a large hole above the work, so it waits for data. */}
       {selectedCount > 0 && <SectionBarChart budget={budget} />}
 
-      {/* filters */}
-      <div className="space-y-3">
-        <Card className="sticky top-2 z-20 p-3 lg:top-4">
+      {/* the four sections, side by side */}
+      <div>
+        <div
+          role="tablist"
+          aria-label={t("buildTitle")}
+          className="grid grid-cols-2 gap-2 lg:grid-cols-4"
+        >
+          {perSection.map(({ section, items, rollup }) => {
+            const active = section.key === current?.section.key;
+            const chosen = rollup?.selectedCount ?? 0;
+            const subtotal = rollup?.totals.grand ?? 0;
+            const accent = SECTION_ACCENT[section.key] ?? "#8A87F4";
+            return (
+              <button
+                key={section.key}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveSection(section.key)}
+                className={cx(
+                  "group relative overflow-hidden rounded-card border px-4 py-3 text-start transition-colors duration-150",
+                  active
+                    ? "border-electric/60 bg-surface"
+                    : "border-white/5 bg-surface/40 hover:border-white/15 hover:bg-surface/70"
+                )}
+              >
+                {/* the active tab is marked along its leading edge, not by a wash */}
+                <span
+                  className={cx(
+                    "absolute inset-y-0 start-0 w-[3px] transition-opacity duration-150",
+                    active ? "opacity-100" : "opacity-0 group-hover:opacity-40"
+                  )}
+                  style={{ backgroundColor: accent }}
+                />
+                <span className="flex items-center gap-2">
+                  <span
+                    className="tam-diamond shrink-0"
+                    style={{ backgroundColor: accent }}
+                  />
+                  <span
+                    className={cx(
+                      "min-w-0 flex-1 truncate text-sm font-semibold",
+                      active ? "text-white" : "text-lavender-light"
+                    )}
+                  >
+                    {tSection(section.name)}
+                  </span>
+                  {chosen > 0 && (
+                    <span className="num shrink-0 rounded-full bg-electric/25 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {chosen}
+                    </span>
+                  )}
+                </span>
+                <span className="mt-1 flex items-baseline justify-between gap-2">
+                  <span className="num text-xs text-lavender-light/45">
+                    {filtering
+                      ? t("countMatching", { n: items.length })
+                      : t("countItems", { n: section.items.length })}
+                  </span>
+                  {subtotal > 0 && (
+                    <span className="num text-sm font-bold text-gold">
+                      {money(subtotal)}
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* filters apply to whichever section is open */}
+        <Card className="sticky top-2 z-20 mt-3 p-3 lg:top-4">
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative min-w-[180px] flex-1">
               {/* logical inset so the icon follows the text direction */}
@@ -166,8 +184,7 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
               />
             </div>
 
-            {/* the filter people actually reach for, as one visible control */}
-            <Segmented
+            <FilterSelect
               value={priceFilter}
               onChange={(v) => setPriceFilter(v as PriceFilter)}
               options={[
@@ -176,7 +193,6 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                 ["unpriced", t("filterUnpricedOnly")],
               ]}
             />
-
             <FilterSelect
               value={source}
               onChange={setSource}
@@ -206,46 +222,18 @@ export function Dashboard({ budget }: { budget: BudgetSummary }) {
                 <X size={13} /> {t("clear")}
               </button>
             )}
-
-            <button
-              onClick={toggleAll}
-              className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-2 text-xs text-lavender-light/80 transition-colors hover:bg-white/5"
-            >
-              {allOpen ? <ChevronsDownUp size={14} /> : <ChevronsUpDown size={14} />}
-              <span className="hidden sm:inline">
-                {allOpen ? t("collapseAll") : t("expandAll")}
-              </span>
-            </button>
           </div>
         </Card>
 
-        {/* sections */}
-        <div className="space-y-3">
-          {perSection.map(({ section, items }) => {
-            if (filtering && items.length === 0) return null;
-            return (
-              <div
-                key={section.key}
-                ref={(el) => (sectionRefs.current[section.key] = el)}
-                className="scroll-mt-24"
-              >
-                <SectionAccordion
-                  section={section}
-                  visibleItems={items}
-                  expanded={isExpanded(section.key, items.length > 0)}
-                  onToggle={() => toggle(section.key, items.length > 0)}
-                />
-              </div>
-            );
-          })}
-
-          {noResults && (
-            <Card className="p-8 text-center text-lavender-light/50">
-              {query ? t("noMatches", { q: query }) : t("noFilterMatches")}{" "}
-              <button className="text-electric underline" onClick={clearFilters}>
-                {t("clearFilters")}
-              </button>
-            </Card>
+        <div className="mt-4">
+          {current && (
+            <SectionPanel
+              key={current.section.key}
+              section={current.section}
+              visibleItems={current.items}
+              filtering={filtering}
+              onClearFilters={clearFilters}
+            />
           )}
         </div>
       </div>
@@ -267,37 +255,6 @@ function Stat({
       <span className={cx("num text-base font-bold", tone)}>{value}</span>
       <span className="text-xs text-lavender-light/50">{label}</span>
     </span>
-  );
-}
-
-/** Three mutually exclusive states worth showing at once, so not a dropdown. */
-function Segmented({
-  value,
-  onChange,
-  options,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: [string, string][];
-}) {
-  return (
-    <div className="flex rounded-xl border border-white/10 bg-navy/60 p-0.5">
-      {options.map(([v, label]) => (
-        <button
-          key={v}
-          onClick={() => onChange(v)}
-          aria-pressed={value === v}
-          className={cx(
-            "rounded-[10px] px-2.5 py-1.5 text-xs font-medium transition-colors duration-150",
-            value === v
-              ? "bg-electric text-white"
-              : "text-lavender-light/70 hover:text-white"
-          )}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
   );
 }
 
