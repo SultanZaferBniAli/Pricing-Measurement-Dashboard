@@ -8,7 +8,7 @@
  *   Sheet 4: Source Reference - pricing-master provenance for each line
  */
 import ExcelJS from "exceljs";
-import { FEE_RATE } from "./format";
+import { FEE_RATE, VAT_RATE } from "./format";
 import { allSelectedLines, sumLines } from "./pricing";
 import type { ComputedLine, ScopeData, Selection } from "./types";
 
@@ -90,6 +90,7 @@ export async function buildWorkbook(
   s1.addRow(["Export Date", dateStr]);
   s1.addRow(["Currency", data.meta.currency]);
   s1.addRow(["Fee Rate", `${FEE_RATE * 100}%`]);
+  s1.addRow(["VAT Rate", `${VAT_RATE * 100}%`]);
   s1.addRow(["Selected Items", priced.length + unpriced.length]);
   s1.addRow(["Unpriced (excluded)", unpriced.length]);
   if (projectDescription) {
@@ -103,15 +104,19 @@ export async function buildWorkbook(
   money(t1.getCell(2));
   const t2 = s1.addRow(["Total Fees (15%)", totals.fee]);
   money(t2.getCell(2));
-  const t3 = s1.addRow(["Grand Total", totals.grand]);
+  const t3 = s1.addRow(["Subtotal (incl. fee)", totals.grand]);
   money(t3.getCell(2));
-  t3.eachCell((c) => {
+  const t4 = s1.addRow([`VAT (${VAT_RATE * 100}%)`, totals.vat]);
+  money(t4.getCell(2));
+  const t5 = s1.addRow(["Final Total", totals.total]);
+  money(t5.getCell(2));
+  t5.eachCell((c) => {
     c.font = { bold: true, color: { argb: NAVY } };
     c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: GOLD } };
   });
   s1.addRow([]);
 
-  headerRow(s1, ["Section", "Base Cost", "Fees (15%)", "Grand Total"]);
+  headerRow(s1, ["Section", "Base Cost", "Fees (15%)", "Subtotal (incl. fee)"]);
   for (const section of data.sections) {
     const sl = lines.filter(
       (l) => l.item.sectionKey === section.key && !l.isUnpriced
@@ -165,6 +170,14 @@ export async function buildWorkbook(
   foot.eachCell((c) => {
     c.font = { bold: true, color: { argb: WHITE } };
     c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: SURFACE } };
+  });
+  const vatRow = s2.addRow(["", "", "", "", "", `VAT (${VAT_RATE * 100}%)`, "", "", totals.vat]);
+  money(vatRow.getCell(9));
+  const finalRow = s2.addRow(["", "", "", "", "", "FINAL TOTAL", "", "", totals.total]);
+  money(finalRow.getCell(9));
+  finalRow.eachCell((c) => {
+    c.font = { bold: true, color: { argb: NAVY } };
+    c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: GOLD } };
   });
 
   // ---------- Sheet 3: Unpriced / Excluded ----------

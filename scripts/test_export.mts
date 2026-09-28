@@ -85,7 +85,10 @@ const totals = sumLines(resolved.lines.filter((l) => !l.isUnpriced));
 const expectedBase = mBase + lBase + lBase * 0.1 + (mBase + lBase) * 0.05;
 eq(totals.base, expectedBase, "grand base");
 eq(totals.fee, expectedBase * 0.15, "fee at 15%");
-eq(totals.grand, expectedBase * 1.15, "grand total");
+eq(totals.grand, expectedBase * 1.15, "subtotal incl. fee");
+// VAT applies to the fee as well as the scope, so it is 15% of base+fee
+eq(totals.vat, expectedBase * 1.15 * 0.15, "VAT at 15% of subtotal");
+eq(totals.total, expectedBase * 1.15 * 1.15, "final total incl. VAT");
 
 // An unset rate must keep the line out of the totals.
 const noRate = resolveBudget(d.sections, {

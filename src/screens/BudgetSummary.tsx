@@ -76,6 +76,8 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         base: totals.base,
         fee: totals.fee,
         grand: totals.grand,
+        vat: totals.vat,
+        total: totals.total,
         itemCount: lines.length,
         selections,
       });
@@ -170,29 +172,20 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         <RfpCheck />
       </div>
 
-      {/* totals */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider text-ink-2">
-            {t("totalBaseCost")}
+      {/* totals: base, fee, tax, then the one figure the client pays */}
+      <Card className="overflow-hidden">
+        <dl className="divide-y divide-line">
+          <SummaryRow label={t("totalBaseCost")} value={money(totals.base)} />
+          <SummaryRow label={t("totalFees")} value={money(totals.fee)} />
+          <SummaryRow label={t("totalVat")} value={money(totals.vat)} />
+          <div className="flex flex-wrap items-baseline justify-between gap-3 bg-active px-5 py-4">
+            <dt className="text-sm font-semibold text-ink">{t("finalTotal")}</dt>
+            <dd className="num text-2xl font-bold text-brand">
+              {sar(totals.total)}
+            </dd>
           </div>
-          <div className="mt-1 text-2xl font-bold text-ink num">{money(totals.base)}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider text-ink-2">
-            {t("totalFees")}
-          </div>
-          <div className="mt-1 text-2xl font-bold text-ink-2 num">
-            {money(totals.fee)}
-          </div>
-        </Card>
-        <Card className="p-4 bg-brand border-brand/40">
-          <div className="text-xs uppercase tracking-wider text-ink-2">
-            {t("grandTotal")}
-          </div>
-          <div className="mt-1 text-2xl font-bold text-ink num">{sar(totals.grand)}</div>
-        </Card>
-      </div>
+        </dl>
+      </Card>
 
       {unpricedSelected.length > 0 && (
         <div className="rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 flex items-start gap-3">
@@ -487,6 +480,16 @@ function AreaField({
         placeholder={placeholder}
         className="mt-0.5 block w-full resize-y rounded-lg border border-line bg-bg/50 px-3 py-2 text-sm leading-relaxed text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none"
       />
+    </div>
+  );
+}
+
+/** One line of the budget summary. */
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 px-5 py-2.5">
+      <dt className="text-sm text-ink-2">{label}</dt>
+      <dd className="num text-sm font-medium text-ink">{value}</dd>
     </div>
   );
 }

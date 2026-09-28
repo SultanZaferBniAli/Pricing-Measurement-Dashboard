@@ -5,6 +5,8 @@
  *   Base Cost  = Qty × Unit Price
  *   Fee (15%)  = Base Cost × 0.15
  *   Total Cost = Base Cost + Fee
+ *   VAT (15%)  = Total Cost × 0.15   (tax applies to the fee too)
+ *   Final      = Total Cost + VAT
  *
  * Unpriced items (NOT IN MASTER / GAP / empty price) are NEVER invented.
  * They are excluded from totals unless the user supplies a custom price.
@@ -15,7 +17,7 @@
  * they are resolved in a second pass (`resolveBudget`) after every ordinary
  * line is known. A contingency never charges against another contingency.
  */
-import { FEE_RATE } from "./format";
+import { FEE_RATE, VAT_RATE } from "./format";
 import type {
   ComputedLine,
   ScopeItem,
@@ -98,7 +100,7 @@ export function computeLine(
 
 /** Roll a set of computed lines up into base / fee / grand totals. */
 export function sumLines(lines: ComputedLine[]): SectionTotals {
-  return lines.reduce<SectionTotals>(
+  const t = lines.reduce(
     (acc, l) => {
       acc.base += l.baseCost;
       acc.fee += l.fee;
@@ -109,6 +111,10 @@ export function sumLines(lines: ComputedLine[]): SectionTotals {
     },
     { base: 0, fee: 0, grand: 0, selectedCount: 0, unpricedSelectedCount: 0 }
   );
+  // VAT is charged on the invoice value, so it applies to the fee as well as
+  // the scope. It is summed here rather than per line to avoid rounding drift.
+  const vat = t.grand * VAT_RATE;
+  return { ...t, vat, total: t.grand + vat };
 }
 
 /** Every selected line, in section / sub-category order, grouped by section. */

@@ -16,11 +16,12 @@ import { useBudget } from "./lib/useTotals";
 import { Admin } from "./screens/Admin";
 import { BudgetSummary } from "./screens/BudgetSummary";
 import { Dashboard } from "./screens/Dashboard";
+import { Overview } from "./screens/Overview";
 import { HistoryView } from "./screens/HistoryView";
 import { Vendors } from "./screens/Vendors";
 
 export default function App() {
-  const [view, setView] = useState<View>({ name: "builder" });
+  const [view, setView] = useState<View>({ name: "home" });
   const [menuOpen, setMenuOpen] = useState(false);
   const budget = useBudget();
   const { t, lang, dir } = useT();
@@ -77,13 +78,22 @@ export default function App() {
           <TamLogo />
           {budget.selectedCount > 0 && (
             <span className="num ms-auto text-sm font-bold text-brand">
-              {money(budget.totals.grand)}
+              {money(budget.totals.total)}
             </span>
           )}
           <ThemeToggle className={budget.selectedCount > 0 ? "" : "ms-auto"} />
         </header>
 
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">
+          {view.name === "home" && (
+            <Overview
+              budget={budget}
+              onBuild={() => nav({ name: "builder" })}
+              onReview={() => nav({ name: "summary" })}
+              onVendors={() => nav({ name: "vendors" })}
+              onOpenHistory={(id) => nav({ name: "history", id })}
+            />
+          )}
           {view.name === "builder" && (
             <Dashboard
               budget={budget}

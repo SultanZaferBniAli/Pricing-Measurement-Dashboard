@@ -63,6 +63,7 @@ export default {
       },
       fontFamily: {
         sans: [
+          "Inter",
           '"Helvetica Neue LT Arabic"',
           '"Helvetica Neue"',
           "Arial",

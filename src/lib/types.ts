@@ -131,6 +131,8 @@ export interface BudgetHistoryEntry {
   base: number;
   fee: number;
   grand: number;
+  vat: number;
+  total: number;
   itemCount: number;
   selections: Record<string, Selection>;
   /**
@@ -144,9 +146,16 @@ export interface BudgetHistoryEntry {
 }
 
 export interface SectionTotals {
+  /** Scope cost before anything is added. */
   base: number;
+  /** TAM's 15% fee on the base. */
   fee: number;
+  /** base + fee. What TAM invoices before tax. */
   grand: number;
+  /** 15% VAT on `grand`, because the fee is taxable too. */
+  vat: number;
+  /** grand + vat. The figure the client actually pays. */
+  total: number;
   selectedCount: number;
   unpricedSelectedCount: number;
 }

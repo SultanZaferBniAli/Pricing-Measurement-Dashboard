@@ -2,6 +2,13 @@
 
 export const FEE_RATE = 0.15;
 
+/**
+ * Saudi VAT, charged on the whole invoice value: the scope cost plus TAM's fee.
+ * It is a pass-through tax, not revenue, which is why it sits apart from the
+ * fee in every total rather than being folded into it.
+ */
+export const VAT_RATE = 0.15;
+
 const sarFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 2,

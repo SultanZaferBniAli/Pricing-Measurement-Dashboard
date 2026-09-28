@@ -10,8 +10,10 @@
  */
 import { useState } from "react";
 import {
+  Boxes,
   History,
   Handshake,
+  Sparkles,
   LayoutGrid,
   Languages,
   Settings2,
@@ -28,6 +30,7 @@ import { useStore } from "../lib/store";
 import type { BudgetSummary } from "../lib/useTotals";
 
 export type View =
+  | { name: "home" }
   | { name: "builder" }
   | { name: "vendors" }
   | { name: "summary" }
@@ -63,8 +66,15 @@ export function Sidebar({
     <div className="flex h-full flex-col border-e border-line bg-rail">
       {/* brand */}
       <div className="flex items-center justify-between gap-2 px-5 py-4">
-        <button onClick={() => go({ name: "builder" })} aria-label={t("appHome")}>
+        <button
+          onClick={() => go({ name: "home" })}
+          aria-label={t("appHome")}
+          className="flex min-w-0 items-center gap-2.5 text-start"
+        >
           <TamLogo />
+          <span className="min-w-0 truncate text-[11px] font-medium leading-tight text-ink-2">
+            {t("productName")}
+          </span>
         </button>
         {onCloseMobile && (
           <button
@@ -79,11 +89,18 @@ export function Sidebar({
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
         <RailButton
-          active={view.name === "builder"}
-          onClick={() => go({ name: "builder" })}
+          active={view.name === "home"}
+          onClick={() => go({ name: "home" })}
           icon={<LayoutGrid size={16} />}
         >
-          {t("navOverview")}
+          {t("navHome")}
+        </RailButton>
+        <RailButton
+          active={view.name === "builder"}
+          onClick={() => go({ name: "builder" })}
+          icon={<Boxes size={16} />}
+        >
+          {t("navCatalog")}
         </RailButton>
         <RailButton
           active={view.name === "vendors"}
@@ -160,21 +177,32 @@ export function Sidebar({
         )}
       </nav>
 
+      {/* what the RFP tooling is for, said once */}
+      <div className="mx-3 mb-3 rounded-card border border-brand/20 bg-active p-3">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-brand">
+          <Sparkles size={13} /> {t("aiCardTitle")}
+        </p>
+        <p className="mt-1 text-[11px] leading-relaxed text-ink">
+          {t("aiCardBody")}
+        </p>
+      </div>
+
       {/* running total: the single home for this figure */}
       <div className="border-t border-line px-4 py-4">
-        <p className="text-xs text-ink-2">{t("sidebarTotalLabel")}</p>
+        <p className="text-xs text-ink-2">{t("finalTotal")}</p>
         {budget.selectedCount === 0 ? (
           <p className="mt-1 text-sm text-ink-muted">{t("sidebarEmpty")}</p>
         ) : (
           <>
             <p className="num mt-0.5 text-2xl font-bold text-ink">
-              {money(budget.totals.grand)}{" "}
+              {money(budget.totals.total)}{" "}
               <span className="text-sm font-normal text-ink-2">SAR</span>
             </p>
             <p className="num mt-0.5 text-xs text-ink-2">
-              {t("sidebarBaseFee", {
+              {t("sidebarBaseFeeVat", {
                 base: money(budget.totals.base),
                 fee: money(budget.totals.fee),
+                vat: money(budget.totals.vat),
               })}
             </p>
           </>
