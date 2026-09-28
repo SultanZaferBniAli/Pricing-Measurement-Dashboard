@@ -7,32 +7,32 @@ export function Kpi({
   value,
   sub,
   icon,
-  accent = "lavender",
+  accent = "brand-soft",
 }: {
   label: string;
   value: ReactNode;
   sub?: ReactNode;
   icon?: ReactNode;
-  accent?: "lavender" | "gold" | "electric" | "emerald";
+  accent?: "brand-soft" | "warn" | "brand" | "ok";
 }) {
   const accents: Record<string, string> = {
-    lavender: "text-lavender-light",
-    gold: "text-gold",
-    electric: "text-electric",
-    emerald: "text-emerald-300",
+    "brand-soft": "text-ink-2",
+    warn: "text-warn",
+    brand: "text-brand",
+    ok: "text-ok",
   };
   return (
     <Card className="p-4 relative overflow-hidden">
       {/* subtle corner wave accent */}
-      <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-electric/10 blur-xl" />
+      <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-brand/10 blur-xl" />
       <div className="flex items-start justify-between">
-        <span className="text-xs uppercase tracking-wider text-lavender-light/60">
+        <span className="text-xs uppercase tracking-wider text-ink-2">
           {label}
         </span>
         {icon && <span className={accents[accent]}>{icon}</span>}
       </div>
       <div className={`mt-2 text-2xl font-bold num ${accents[accent]}`}>{value}</div>
-      {sub && <div className="mt-1 text-xs text-lavender-light/60">{sub}</div>}
+      {sub && <div className="mt-1 text-xs text-ink-2">{sub}</div>}
     </Card>
   );
 }
@@ -50,15 +50,15 @@ export function MoneyKpi({
   return (
     <Card
       className={`p-4 ${
-        highlight ? "bg-tam-gradient border-electric/40" : ""
+        highlight ? "bg-brand border-brand/40" : ""
       }`}
     >
-      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-lavender-light/70">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-ink-2">
         <Diamond className="!h-2 !w-2" />
         {label}
       </div>
-      <div className="mt-2 text-2xl font-bold text-white num">
-        {value} <span className="text-sm font-normal text-lavender-light/70">SAR</span>
+      <div className="mt-2 text-2xl font-bold text-ink num">
+        {value} <span className="text-sm font-normal text-ink-2">SAR</span>
       </div>
     </Card>
   );

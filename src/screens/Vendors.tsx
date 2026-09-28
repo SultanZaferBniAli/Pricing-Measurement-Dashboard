@@ -61,30 +61,30 @@ export function Vendors() {
   return (
     <div className="space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-white md:text-3xl">{t("vendorsTitle")}</h1>
-        <p className="mt-1 max-w-2xl text-sm text-lavender-light/70">{t("vendorsSub")}</p>
+        <h1 className="text-2xl font-bold text-ink md:text-3xl">{t("vendorsTitle")}</h1>
+        <p className="mt-1 max-w-2xl text-sm text-ink-2">{t("vendorsSub")}</p>
       </div>
 
       {/* the headline: quoted against assumed */}
       <Card className="p-5">
         {total === 0 ? (
-          <p className="text-sm text-lavender-light/50">{t("vendorsVerifiedEmpty")}</p>
+          <p className="text-sm text-ink-2">{t("vendorsVerifiedEmpty")}</p>
         ) : (
           <>
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs text-lavender-light/55">{t("vendorsQuotedLabel")}</p>
-                <p className="num mt-0.5 text-3xl font-bold text-white">
+                <p className="text-xs text-ink-2">{t("vendorsQuotedLabel")}</p>
+                <p className="num mt-0.5 text-3xl font-bold text-ink">
                   {quotedPct.toFixed(0)}
-                  <span className="text-lg font-normal text-lavender-light/60">%</span>
+                  <span className="text-lg font-normal text-ink-2">%</span>
                 </p>
               </div>
-              <p className="num text-sm text-lavender-light/60">
+              <p className="num text-sm text-ink-2">
                 {money(quoted)} / {money(total)} SAR
               </p>
             </div>
 
-            <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-active">
               {rows
                 .filter((r) => r.value > 0)
                 .map((r) => (
@@ -100,7 +100,7 @@ export function Vendors() {
                   />
                 ))}
             </div>
-            <p className="mt-2 text-xs text-lavender-light/55">
+            <p className="mt-2 text-xs text-ink-2">
               {t("vendorsQuotedBody", {
                 quoted: quotedPct.toFixed(0),
                 assumed: (100 - quotedPct).toFixed(0),
@@ -123,14 +123,14 @@ export function Vendors() {
               className={cx(
                 "rounded-card border p-4 text-start transition-colors duration-150",
                 isOpen
-                  ? "border-electric/60 bg-surface"
-                  : "border-white/5 bg-surface/50 hover:border-white/15 hover:bg-surface/80"
+                  ? "border-brand/60 bg-surface"
+                  : "border-line bg-surface/50 hover:border-line hover:bg-surface/80"
               )}
             >
               <div className="flex items-start gap-3">
                 <VendorLogo vendor={r.vendor} />
                 <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-sm font-semibold text-white">
+                  <h2 className="truncate text-sm font-semibold text-ink">
                     {r.vendor.name}
                   </h2>
                   <Backing backing={r.vendor.backing} t={t} />
@@ -138,20 +138,20 @@ export function Vendors() {
                 <ChevronDown
                   size={16}
                   className={cx(
-                    "shrink-0 text-lavender-light/40 transition-transform duration-150",
+                    "shrink-0 text-ink-muted transition-transform duration-150",
                     isOpen && "rotate-180"
                   )}
                 />
               </div>
 
-              <p className="mt-2 text-[11px] leading-relaxed text-lavender-light/50">
+              <p className="mt-2 text-[11px] leading-relaxed text-ink-2">
                 {r.vendor.role}
               </p>
 
               <dl className="mt-3 flex items-baseline justify-between gap-2">
                 <div>
-                  <dd className="num text-base font-bold text-white">{r.catalogCount}</dd>
-                  <dt className="text-[10px] text-lavender-light/45">
+                  <dd className="num text-base font-bold text-ink">{r.catalogCount}</dd>
+                  <dt className="text-[10px] text-ink-muted">
                     {t("vendorsCatalogLines")}
                   </dt>
                 </div>
@@ -159,12 +159,12 @@ export function Vendors() {
                   <dd
                     className={cx(
                       "num text-base font-bold",
-                      r.value > 0 ? "text-gold" : "text-lavender-light/25"
+                      r.value > 0 ? "text-warn" : "text-ink-muted"
                     )}
                   >
                     {money(r.value)}
                   </dd>
-                  <dt className="text-[10px] text-lavender-light/45">
+                  <dt className="text-[10px] text-ink-muted">
                     {r.lines.length === 0
                       ? t("vendorsNotUsed")
                       : r.lines.length === 1
@@ -175,7 +175,7 @@ export function Vendors() {
               </dl>
 
               {r.value > 0 && (
-                <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-active">
                   <div
                     className="h-full transition-[width] duration-500 ease-out"
                     style={{ width: `${share}%`, backgroundColor: r.vendor.accent }}
@@ -212,7 +212,7 @@ function VendorLogo({ vendor }: { vendor: VendorProfile }) {
 
   return (
     <div
-      className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-navy/60"
+      className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-bg/60"
       style={showImage ? undefined : { backgroundColor: `${vendor.accent}22` }}
     >
       {showImage ? (
@@ -239,11 +239,11 @@ function Backing({
   t: (k: StringKey) => string;
 }) {
   return backing === "quoted" ? (
-    <span className="mt-0.5 inline-flex items-center gap-1 rounded-full border border-emerald-400/25 bg-emerald-400/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+    <span className="mt-0.5 inline-flex items-center gap-1 rounded-full border border-ok/25 bg-ok/15 px-2 py-0.5 text-[10px] font-medium text-ok">
       <ShieldCheck size={10} /> {t("vendorsQuoted")}
     </span>
   ) : (
-    <span className="mt-0.5 inline-flex items-center gap-1 rounded-full border border-gold/30 bg-gold/15 px-2 py-0.5 text-[10px] font-medium text-gold">
+    <span className="mt-0.5 inline-flex items-center gap-1 rounded-full border border-warn/30 bg-warn/15 px-2 py-0.5 text-[10px] font-medium text-warn">
       <TriangleAlert size={10} /> {t("vendorsAssumed")}
     </span>
   );
@@ -293,13 +293,13 @@ function VendorDetail({
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 bg-navy/40 px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-bg/40 px-5 py-3">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
             <span className="tam-diamond" style={{ backgroundColor: row.vendor.accent }} />
             {t("vendorsDetailTitle", { name: row.vendor.name })}
           </h2>
-          <p className="mt-0.5 text-xs text-lavender-light/50">
+          <p className="mt-0.5 text-xs text-ink-2">
             {t("vendorsDetailCounts", {
               total: row.catalogItems.length,
               used: row.lines.length,
@@ -315,30 +315,30 @@ function VendorDetail({
               className={cx(
                 "rounded-lg border px-2.5 py-1.5 text-xs transition-colors",
                 onlyInBudget
-                  ? "border-electric/50 bg-electric/15 text-white"
-                  : "border-white/10 text-lavender-light/70 hover:bg-white/5"
+                  ? "border-brand/50 bg-brand/15 text-ink"
+                  : "border-line text-ink-2 hover:bg-hover"
               )}
             >
               {t("vendorsOnlyInBudget")}
             </button>
           )}
           {row.value > 0 && (
-            <span className="num text-sm font-bold text-gold">{money(row.value)}</span>
+            <span className="num text-sm font-bold text-warn">{money(row.value)}</span>
           )}
         </div>
       </div>
 
       {shown === 0 ? (
-        <p className="px-5 py-8 text-center text-sm text-lavender-light/50">
+        <p className="px-5 py-8 text-center text-sm text-ink-2">
           {t("vendorsDetailEmpty", { name: row.vendor.name })}
         </p>
       ) : (
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-line">
           {bySection.map(([section, items]) => (
             <div key={section} className="px-5 py-3">
-              <h3 className="mb-2 text-xs font-semibold text-lavender-light/70">
+              <h3 className="mb-2 text-xs font-semibold text-ink-2">
                 {tSection(section)}
-                <span className="num ms-2 font-normal text-lavender-light/40">
+                <span className="num ms-2 font-normal text-ink-muted">
                   {items.length}
                 </span>
               </h3>
@@ -350,7 +350,7 @@ function VendorDetail({
                       key={item.id}
                       className={cx(
                         "flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg px-2 py-1.5",
-                        line ? "bg-electric/[0.09]" : ""
+                        line ? "bg-brand/[0.09]" : ""
                       )}
                     >
                       {/* a filled marker means this line is in the budget */}
@@ -366,31 +366,31 @@ function VendorDetail({
                         <span
                           className={cx(
                             "text-sm",
-                            line ? "font-medium text-white" : "text-lavender-light/80"
+                            line ? "font-medium text-ink" : "text-ink-2"
                           )}
                         >
                           {item.name}
                         </span>
-                        <span className="ms-2 text-[11px] text-lavender-light/45">
+                        <span className="ms-2 text-[11px] text-ink-muted">
                           {tSubCategory(item.subCategory)}
                         </span>
                       </div>
 
-                      <span className="num shrink-0 text-xs text-lavender-light/55">
+                      <span className="num shrink-0 text-xs text-ink-2">
                         {item.isPriced ? money(item.unitPrice) : t("badgeUnpriced")}
                       </span>
                       <span className="num w-28 shrink-0 text-end text-sm">
                         {line ? (
                           <>
-                            <span className="text-lavender-light/45">
+                            <span className="text-ink-muted">
                               {line.qty} x{" "}
                             </span>
-                            <span className="font-semibold text-white">
+                            <span className="font-semibold text-ink">
                               {money(line.totalCost)}
                             </span>
                           </>
                         ) : (
-                          <span className="text-lavender-light/25">
+                          <span className="text-ink-muted">
                             {t("vendorsNotSelected")}
                           </span>
                         )}

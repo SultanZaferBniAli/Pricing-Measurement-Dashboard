@@ -12,7 +12,7 @@
  */
 import { useMemo } from "react";
 import { ArrowLeft, Download, FileSpreadsheet, Printer, Trash2 } from "lucide-react";
-import { SECTION_ACCENT } from "../components/BudgetBar";
+import { SECTION_ACCENT, SECTION_FALLBACK } from "../components/BudgetBar";
 import { Badge, Button, Card } from "../components/ui";
 import { money, sar } from "../lib/format";
 import { useT } from "../lib/i18n";
@@ -54,8 +54,8 @@ export function HistoryView({
   if (!entry || !resolved) {
     return (
       <Card className="p-12 text-center animate-fade-in">
-        <FileSpreadsheet className="mx-auto mb-4 text-lavender-light/30" size={40} />
-        <p className="text-sm text-lavender-light/60">{t("historyGone")}</p>
+        <FileSpreadsheet className="mx-auto mb-4 text-ink-muted" size={40} />
+        <p className="text-sm text-ink-2">{t("historyGone")}</p>
         <Button className="mt-5" onClick={onBack}>
           {t("backToBuilder")}
         </Button>
@@ -74,11 +74,11 @@ export function HistoryView({
         <div className="min-w-0">
           <button
             onClick={onBack}
-            className="mb-1 flex items-center gap-1.5 text-xs text-lavender-light/60 transition-colors hover:text-white print:hidden"
+            className="mb-1 flex items-center gap-1.5 text-xs text-ink-2 transition-colors hover:text-ink print:hidden"
           >
             <ArrowLeft size={13} /> {t("backToBuilder")}
           </button>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-ink">
             {entry.title || t("untitledBudget")}
           </h1>
         </div>
@@ -119,14 +119,14 @@ export function HistoryView({
           />
         </dl>
         {entry.projectDescription && (
-          <p className="mt-4 border-t border-white/5 pt-3 text-sm leading-relaxed text-lavender-light/70">
+          <p className="mt-4 border-t border-line pt-3 text-sm leading-relaxed text-ink-2">
             {entry.projectDescription}
           </p>
         )}
       </Card>
 
       {drifted && (
-        <p className="rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold/90">
+        <p className="rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn">
           {t("historyDrift", {
             then: money(entry.grand),
             now: money(totals.grand),
@@ -139,25 +139,25 @@ export function HistoryView({
         const st = sumLines(lines.filter((l) => !l.isUnpriced));
         return (
           <Card key={section.key} className="overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-white/5 bg-navy/40 px-4 py-2.5">
-              <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
+            <div className="flex items-center justify-between gap-3 border-b border-line bg-bg/40 px-4 py-2.5">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <span
                   className="tam-diamond"
-                  style={{ backgroundColor: SECTION_ACCENT[section.key] ?? "#8A87F4" }}
+                  style={{ backgroundColor: SECTION_ACCENT[section.key] ?? SECTION_FALLBACK }}
                 />
                 {tSection(section.name)}
               </h2>
-              <span className="num text-sm font-bold text-gold">{money(st.grand)}</span>
+              <span className="num text-sm font-bold text-warn">{money(st.grand)}</span>
             </div>
 
-            <div className="hidden grid-cols-12 gap-2 border-b border-white/5 bg-navy/20 px-4 py-2 text-[10px] uppercase tracking-wider text-lavender-light/50 md:grid">
+            <div className="hidden grid-cols-12 gap-2 border-b border-line bg-bg/20 px-4 py-2 text-[10px] uppercase tracking-wider text-ink-2 md:grid">
               <div className="col-span-6">{t("colItem")}</div>
               <div className="col-span-1 text-center">{t("colQty")}</div>
               <div className="col-span-2 text-end">{t("colUnit")}</div>
               <div className="col-span-3 text-end">{t("colTotal")}</div>
             </div>
 
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-line">
               {lines.map((l) => (
                 <div
                   key={l.item.id}
@@ -165,33 +165,33 @@ export function HistoryView({
                 >
                   <div className="min-w-0 md:col-span-6">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm text-white">{l.item.name}</span>
+                      <span className="text-sm text-ink">{l.item.name}</span>
                       {l.isUnpriced && (
                         <Badge tone="missing">{t("excludedTitle")}</Badge>
                       )}
-                      {l.customPrice ? <Badge tone="gold">{t("badgeCustom")}</Badge> : null}
+                      {l.customPrice ? <Badge tone="warn">{t("badgeCustom")}</Badge> : null}
                     </div>
-                    <div className="text-[11px] text-lavender-light/50">
+                    <div className="text-[11px] text-ink-2">
                       {tSubCategory(l.item.subCategory)} · {tType(l.item.type)}
                     </div>
                     {l.note && (
-                      <p className="mt-0.5 text-[11px] italic text-lavender-light/45">
+                      <p className="mt-0.5 text-[11px] italic text-ink-muted">
                         {l.note}
                       </p>
                     )}
                   </div>
                   <Cell label={t("colQty")} className="md:col-span-1 md:justify-center">
-                    <span className="num text-sm text-lavender-light/70">
+                    <span className="num text-sm text-ink-2">
                       {isContingency(l.item) ? `${l.percentRate ?? 0}%` : l.qty}
                     </span>
                   </Cell>
                   <Cell label={t("colUnit")} className="md:col-span-2 md:justify-end">
-                    <span className="num text-sm text-lavender-light/70">
+                    <span className="num text-sm text-ink-2">
                       {l.unitPrice != null ? money(l.unitPrice) : "-"}
                     </span>
                   </Cell>
                   <Cell label={t("colTotal")} className="md:col-span-3 md:justify-end">
-                    <span className="num text-sm font-semibold text-white">
+                    <span className="num text-sm font-semibold text-ink">
                       {l.isUnpriced ? "-" : money(l.totalCost)}
                     </span>
                   </Cell>
@@ -204,13 +204,13 @@ export function HistoryView({
 
       {/* the bottom line */}
       <Card className="overflow-hidden">
-        <dl className="divide-y divide-white/5">
+        <dl className="divide-y divide-line">
           <TotalRow label={t("totalBaseCost")} value={money(totals.base)} />
           <TotalRow label={t("totalFees")} value={money(totals.fee)} />
           <TotalRow label={t("grandTotal")} value={sar(totals.grand)} strong />
         </dl>
         {unpriced.length > 0 && (
-          <p className="border-t border-white/5 bg-gold/[0.06] px-4 py-2.5 text-xs text-gold/80">
+          <p className="border-t border-line bg-warn/[0.06] px-4 py-2.5 text-xs text-warn">
             {t("historyUnpricedNote", { n: unpriced.length })}
           </p>
         )}
@@ -222,8 +222,8 @@ export function HistoryView({
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs text-lavender-light/50">{label}</dt>
-      <dd className="truncate text-sm text-white" title={value}>
+      <dt className="text-xs text-ink-2">{label}</dt>
+      <dd className="truncate text-sm text-ink" title={value}>
         {value}
       </dd>
     </div>
@@ -242,7 +242,7 @@ function Cell({
 }) {
   return (
     <div className={`flex items-baseline justify-between gap-2 ${className ?? ""}`}>
-      <span className="text-[10px] uppercase text-lavender-light/40 md:hidden">
+      <span className="text-[10px] uppercase text-ink-muted md:hidden">
         {label}
       </span>
       {children}
@@ -261,14 +261,14 @@ function TotalRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3 px-4 py-2.5">
-      <dt className={strong ? "text-sm font-semibold text-white" : "text-sm text-lavender-light/70"}>
+      <dt className={strong ? "text-sm font-semibold text-ink" : "text-sm text-ink-2"}>
         {label}
       </dt>
       <dd
         className={
           strong
-            ? "num text-lg font-bold text-gold"
-            : "num text-sm text-lavender-light/70"
+            ? "num text-lg font-bold text-warn"
+            : "num text-sm text-ink-2"
         }
       >
         {value}

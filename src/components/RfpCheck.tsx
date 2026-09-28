@@ -115,11 +115,11 @@ export function RfpCheck() {
     <Card className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-            <FileSearch size={16} className="text-electric" />
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+            <FileSearch size={16} className="text-brand" />
             {t("rfpTitle")}
           </h2>
-          <p className="mt-1 max-w-xl text-xs leading-relaxed text-lavender-light/60">
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-ink-2">
             {t("rfpSub")}
           </p>
         </div>
@@ -137,11 +137,11 @@ export function RfpCheck() {
           addFiles(e.dataTransfer.files);
         }}
         onClick={() => inputRef.current?.click()}
-        className="mt-4 cursor-pointer rounded-xl border border-dashed border-lavender/25 px-4 py-5 text-center transition-colors hover:border-electric/50"
+        className="mt-4 cursor-pointer rounded-xl border border-dashed border-brand-soft/25 px-4 py-5 text-center transition-colors hover:border-brand/50"
       >
-        <FileText className="mx-auto mb-2 text-lavender-light/50" size={22} />
-        <p className="text-sm text-white">{t("rfpDrop")}</p>
-        <p className="mt-0.5 text-xs text-lavender-light/45">{t("rfpFormats")}</p>
+        <FileText className="mx-auto mb-2 text-ink-2" size={22} />
+        <p className="text-sm text-ink">{t("rfpDrop")}</p>
+        <p className="mt-0.5 text-xs text-ink-muted">{t("rfpFormats")}</p>
         <input
           ref={inputRef}
           type="file"
@@ -157,9 +157,9 @@ export function RfpCheck() {
           {files.map((f, i) => (
             <li
               key={`${f.name}-${i}`}
-              className="flex items-center gap-2 rounded-lg border border-white/10 bg-navy/50 px-2.5 py-1.5 text-xs text-lavender-light"
+              className="flex items-center gap-2 rounded-lg border border-line bg-bg/50 px-2.5 py-1.5 text-xs text-ink-2"
             >
-              <FileText size={13} className="shrink-0 text-lavender-light/50" />
+              <FileText size={13} className="shrink-0 text-ink-2" />
               <span className="max-w-[220px] truncate">{f.name}</span>
               <button
                 onClick={(e) => {
@@ -167,7 +167,7 @@ export function RfpCheck() {
                   setFiles((prev) => prev.filter((_, j) => j !== i));
                 }}
                 aria-label={t("rfpRemoveFile")}
-                className="text-lavender-light/40 transition-colors hover:text-red-400"
+                className="text-ink-muted transition-colors hover:text-bad"
               >
                 <X size={13} />
               </button>
@@ -177,15 +177,15 @@ export function RfpCheck() {
       )}
 
       {error && (
-        <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+        <p className="mt-3 rounded-lg border border-bad/30 bg-bad/10 px-3 py-2 text-xs text-bad">
           {error}
         </p>
       )}
 
       {analysis && (
-        <div className="mt-5 space-y-4 border-t border-white/5 pt-4">
+        <div className="mt-5 space-y-4 border-t border-line pt-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-            <span className="text-lavender-light/70">
+            <span className="text-ink-2">
               {t("rfpRead", {
                 n: analysis.documents.length,
                 chars: analysis.documents
@@ -193,14 +193,14 @@ export function RfpCheck() {
                   .toLocaleString("en-US"),
               })}
             </span>
-            <span className="text-emerald-300">
+            <span className="text-ok">
               {t("rfpConfirmed", { n: analysis.confirmedCount })}
             </span>
           </div>
 
           {/* an Arabic RFP will barely match an English catalog: say so */}
           {rfpLang && rfpLang.lang !== "en" && (
-            <p className="rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-xs leading-relaxed text-gold/90">
+            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-xs leading-relaxed text-warn">
               <Languages size={12} className="me-1 inline" />
               {rfpLang.lang === "ar" ? t("rfpArabic") : t("rfpMixed")}
             </p>
@@ -216,7 +216,7 @@ export function RfpCheck() {
           )}
 
           {toAdd.length === 0 && toReview.length === 0 ? (
-            <p className="rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-xs text-emerald-200">
+            <p className="rounded-lg border border-ok/25 bg-ok/10 px-3 py-2 text-xs text-ok">
               {t("rfpNothingToChange")}
             </p>
           ) : (
@@ -292,13 +292,13 @@ function SuggestionGroup({
       <h3
         className={cx(
           "flex items-center gap-2 text-xs font-semibold",
-          tone === "add" ? "text-electric" : "text-gold"
+          tone === "add" ? "text-brand" : "text-warn"
         )}
       >
         {tone === "add" ? <Plus size={13} /> : <TriangleAlert size={13} />}
         {title}
       </h3>
-      <p className="mb-2 mt-0.5 text-[11px] text-lavender-light/50">{body}</p>
+      <p className="mb-2 mt-0.5 text-[11px] text-ink-2">{body}</p>
       <div className="space-y-1.5">{children}</div>
     </section>
   );
@@ -328,23 +328,23 @@ function SuggestionRow({
       className={cx(
         "flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2.5",
         s.kind === "add"
-          ? "border-electric/25 bg-electric/[0.06]"
-          : "border-gold/25 bg-gold/[0.06]"
+          ? "border-brand/25 bg-brand/[0.06]"
+          : "border-warn/25 bg-warn/[0.06]"
       )}
     >
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="truncate text-sm font-medium text-white">{s.item.name}</span>
+          <span className="truncate text-sm font-medium text-ink">{s.item.name}</span>
           <Badge tone="neutral">{sectionLabel}</Badge>
-          <span className="num text-xs text-lavender-light/60">{priceLabel}</span>
+          <span className="num text-xs text-ink-2">{priceLabel}</span>
         </div>
         {s.matchedTerms.length > 0 && (
-          <p className="mt-1 text-[11px] text-lavender-light/45">
+          <p className="mt-1 text-[11px] text-ink-muted">
             {matchedLabel}{" "}
             {s.matchedTerms.map((term) => (
               <span
                 key={term}
-                className="me-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-lavender-light/70"
+                className="me-1 rounded bg-active px-1.5 py-0.5 text-ink-2"
               >
                 {term}
               </span>
@@ -384,12 +384,12 @@ function Precedents({
   t: (k: StringKey, vars?: Record<string, string | number>) => string;
 }) {
   return (
-    <section className="rounded-xl border border-lavender/25 bg-lavender/[0.06] p-3">
-      <h3 className="flex items-center gap-2 text-xs font-semibold text-lavender-light">
+    <section className="rounded-xl border border-brand-soft/25 bg-brand-soft/[0.06] p-3">
+      <h3 className="flex items-center gap-2 text-xs font-semibold text-ink-2">
         <History size={13} />
         {t("precedentTitle", { n: matches.length })}
       </h3>
-      <p className="mb-2.5 mt-0.5 text-[11px] text-lavender-light/50">
+      <p className="mb-2.5 mt-0.5 text-[11px] text-ink-2">
         {t("precedentBody")}
       </p>
 
@@ -397,30 +397,30 @@ function Precedents({
         {matches.map((m) => (
           <div
             key={m.entry.id}
-            className="rounded-lg border border-white/10 bg-navy/40 px-3 py-2.5"
+            className="rounded-lg border border-line bg-bg/40 px-3 py-2.5"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="text-sm font-medium text-white">
+              <span className="text-sm font-medium text-ink">
                 {m.entry.title || t("untitledBudget")}
                 {m.entry.client && (
-                  <span className="ms-2 text-[11px] font-normal text-lavender-light/50">
+                  <span className="ms-2 text-[11px] font-normal text-ink-2">
                     {m.entry.client}
                   </span>
                 )}
               </span>
-              <span className="num text-xs text-lavender-light/60">
+              <span className="num text-xs text-ink-2">
                 {t("precedentSimilarity", { pct: Math.round(m.similarity * 100) })} ·{" "}
                 {money(m.entry.grand)}
               </span>
             </div>
 
             {m.sharedTerms.length > 0 && (
-              <p className="mt-1 text-[11px] text-lavender-light/45">
+              <p className="mt-1 text-[11px] text-ink-muted">
                 {t("rfpMatchedOn")}{" "}
                 {m.sharedTerms.map((w) => (
                   <span
                     key={w}
-                    className="me-1 rounded bg-white/[0.07] px-1.5 py-0.5 text-lavender-light/70"
+                    className="me-1 rounded bg-active px-1.5 py-0.5 text-ink-2"
                   >
                     {w}
                   </span>
@@ -428,7 +428,7 @@ function Precedents({
               </p>
             )}
 
-            <p className="mt-1.5 text-[11px] text-lavender-light/60">
+            <p className="mt-1.5 text-[11px] text-ink-2">
               {t("precedentDiff", {
                 same: m.overlap,
                 missing: m.missing.length,
@@ -441,12 +441,12 @@ function Precedents({
                 {m.missing.slice(0, 8).map((item) => (
                   <li
                     key={item.id}
-                    className="flex flex-wrap items-center gap-2 rounded-md bg-white/[0.03] px-2 py-1.5"
+                    className="flex flex-wrap items-center gap-2 rounded-md bg-raised px-2 py-1.5"
                   >
-                    <span className="min-w-0 flex-1 truncate text-xs text-lavender-light">
+                    <span className="min-w-0 flex-1 truncate text-xs text-ink-2">
                       {item.name}
                     </span>
-                    <span className="num text-[11px] text-lavender-light/50">
+                    <span className="num text-[11px] text-ink-2">
                       {item.isPriced ? money(item.unitPrice) : t("badgeUnpriced")}
                     </span>
                     <Button
@@ -460,7 +460,7 @@ function Precedents({
                   </li>
                 ))}
                 {m.missing.length > 8 && (
-                  <li className="px-2 text-[11px] text-lavender-light/40">
+                  <li className="px-2 text-[11px] text-ink-muted">
                     {t("precedentMore", { n: m.missing.length - 8 })}
                   </li>
                 )}

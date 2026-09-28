@@ -17,12 +17,12 @@ export function TamLogo({ className }: { className?: string }) {
         <img
           src="/tam-logo.webp"
           alt="TAM"
-          className="h-8 w-auto md:h-9 select-none"
+          className="tam-wordmark h-8 w-auto select-none md:h-9"
           draggable={false}
           onError={() => setOk(false)}
         />
       ) : (
-        <span className="text-2xl font-extrabold tracking-tight text-white">
+        <span className="text-2xl font-extrabold tracking-tight text-ink">
           TAM
         </span>
       )}

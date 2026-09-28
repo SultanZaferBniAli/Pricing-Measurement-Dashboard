@@ -8,7 +8,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
-import { SECTION_ACCENT } from "../components/BudgetBar";
+import { SECTION_ACCENT, SECTION_FALLBACK } from "../components/BudgetBar";
 import { RfpCheck } from "../components/RfpCheck";
 import { QtyStepper } from "../components/QtyStepper";
 import { Badge, Button, Card, Diamond, MatchBadge, cx } from "../components/ui";
@@ -92,9 +92,9 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
     return (
       <div className="animate-fade-in">
         <Card className="p-12 text-center">
-          <FileSpreadsheet className="mx-auto text-lavender-light/30 mb-4" size={40} />
-          <h2 className="text-lg font-semibold text-white">{t("emptyTitle")}</h2>
-          <p className="mt-1 text-sm text-lavender-light/60">
+          <FileSpreadsheet className="mx-auto text-ink-muted mb-4" size={40} />
+          <h2 className="text-lg font-semibold text-ink">{t("emptyTitle")}</h2>
+          <p className="mt-1 text-sm text-ink-2">
             {t("emptyBody")}
           </p>
           <Button className="mt-5" onClick={onBrowse}>
@@ -109,7 +109,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
     <div className="space-y-5 animate-fade-in print:space-y-3">
       {/* header + actions */}
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <h1 className="text-2xl font-bold text-white">{t("reviewTitle")}</h1>
+        <h1 className="text-2xl font-bold text-ink">{t("reviewTitle")}</h1>
         <div className="flex items-center gap-2 print:hidden">
           <Button variant="secondary" size="sm" onClick={onBrowse}>
             <Plus size={15} /> {t("addMoreItems")}
@@ -120,7 +120,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
           <Button variant="ghost" size="sm" onClick={clearAll}>
             <Trash2 size={15} /> {t("clearAll")}
           </Button>
-          <Button variant="gold" onClick={handleExport} disabled={exporting}>
+          <Button variant="warn" onClick={handleExport} disabled={exporting}>
             <Download size={16} /> {exporting ? t("exporting") : t("exportExcel")}
           </Button>
         </div>
@@ -128,7 +128,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
 
       {/* the brief: what this budget is for, and for whom */}
       <Card className="p-5">
-        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-white">
+        <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink">
           <Diamond />
           {t("briefTitle")}
         </h2>
@@ -173,31 +173,31 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
       {/* totals */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider text-lavender-light/60">
+          <div className="text-xs uppercase tracking-wider text-ink-2">
             {t("totalBaseCost")}
           </div>
-          <div className="mt-1 text-2xl font-bold text-white num">{money(totals.base)}</div>
+          <div className="mt-1 text-2xl font-bold text-ink num">{money(totals.base)}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider text-lavender-light/60">
+          <div className="text-xs uppercase tracking-wider text-ink-2">
             {t("totalFees")}
           </div>
-          <div className="mt-1 text-2xl font-bold text-lavender-light num">
+          <div className="mt-1 text-2xl font-bold text-ink-2 num">
             {money(totals.fee)}
           </div>
         </Card>
-        <Card className="p-4 bg-tam-gradient border-electric/40">
-          <div className="text-xs uppercase tracking-wider text-lavender-light/80">
+        <Card className="p-4 bg-brand border-brand/40">
+          <div className="text-xs uppercase tracking-wider text-ink-2">
             {t("grandTotal")}
           </div>
-          <div className="mt-1 text-2xl font-bold text-white num">{sar(totals.grand)}</div>
+          <div className="mt-1 text-2xl font-bold text-ink num">{sar(totals.grand)}</div>
         </Card>
       </div>
 
       {unpricedSelected.length > 0 && (
-        <div className="rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 flex items-start gap-3">
-          <TriangleAlert size={18} className="text-gold mt-0.5 shrink-0" />
-          <div className="text-sm text-gold/90">
+        <div className="rounded-xl border border-warn/30 bg-warn/10 px-4 py-3 flex items-start gap-3">
+          <TriangleAlert size={18} className="text-warn mt-0.5 shrink-0" />
+          <div className="text-sm text-warn">
             <span className="font-semibold">
               {unpricedSelected.length === 1
                 ? t("unpricedCalloutOne")
@@ -215,17 +215,17 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         const st = sumLines(sectionLines);
         return (
         <Card key={section.key} className="overflow-hidden">
-          <div className="flex items-center justify-between gap-3 border-b border-white/5 bg-navy/40 px-4 py-2.5">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+          <div className="flex items-center justify-between gap-3 border-b border-line bg-bg/40 px-4 py-2.5">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
               <span
                 className="tam-diamond"
-                style={{ backgroundColor: SECTION_ACCENT[section.key] ?? "#8A87F4" }}
+                style={{ backgroundColor: SECTION_ACCENT[section.key] ?? SECTION_FALLBACK }}
               />
               {tSection(section.name)}
             </h3>
-            <span className="num text-sm font-bold text-gold">{money(st.grand)}</span>
+            <span className="num text-sm font-bold text-warn">{money(st.grand)}</span>
           </div>
-        <div className="hidden md:grid grid-cols-12 gap-2 px-4 py-3 bg-navy/60 text-[10px] uppercase tracking-wider text-lavender-light/50 border-b border-white/5">
+        <div className="hidden md:grid grid-cols-12 gap-2 px-4 py-3 bg-bg/60 text-[10px] uppercase tracking-wider text-ink-2 border-b border-line">
           <div className="col-span-6">{t("colItem")}</div>
           <div className="col-span-1 text-center">{t("colQty")}</div>
           <div className="col-span-1 text-end">{t("colUnit")}</div>
@@ -234,21 +234,21 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
           <div className="col-span-1 text-end">{t("colTotal")}</div>
           <div className="col-span-1" />
         </div>
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-line">
           {sectionLines.map((l) => (
             <div key={l.item.id} className="px-4 py-3">
               <div className="flex flex-col gap-2 md:grid md:grid-cols-12 md:items-center">
                 <div className="md:col-span-6 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white truncate">
+                    <span className="text-sm font-medium text-ink truncate">
                       {l.item.name}
                     </span>
-                    {l.customPrice ? <Badge tone="gold">{t("badgeCustom")}</Badge> : null}
+                    {l.customPrice ? <Badge tone="warn">{t("badgeCustom")}</Badge> : null}
                     {l.item.percentBasis ? (
-                      <Badge tone="gold">{l.percentRate}%</Badge>
+                      <Badge tone="warn">{l.percentRate}%</Badge>
                     ) : null}
                   </div>
-                  <div className="text-[11px] text-lavender-light/50">
+                  <div className="text-[11px] text-ink-2">
                     {l.item.percentBasis
                       ? `${tSubCategory(l.item.subCategory)} · ${t(
                           l.item.percentBasis === "budget"
@@ -266,18 +266,18 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 md:col-span-1 md:justify-center">
-                  <span className="text-[10px] uppercase text-lavender-light/40 md:hidden">
+                  <span className="text-[10px] uppercase text-ink-muted md:hidden">
                     {t("colQty")}
                   </span>
                   {l.item.percentBasis ? (
                     // A contingency is a single percentage line: quantity does
                     // not apply, so there is nothing to edit here.
-                    <span className="num text-sm text-lavender-light/40">-</span>
+                    <span className="num text-sm text-ink-muted">-</span>
                   ) : (
                     <QtyStepper value={l.qty} onChange={(n) => setQty(l.item.id, n)} />
                   )}
                 </div>
-                <div className="num hidden text-sm text-lavender-light/70 text-end md:col-span-1 md:block">
+                <div className="num hidden text-sm text-ink-2 text-end md:col-span-1 md:block">
                   {money(l.unitPrice)}
                 </div>
                 <MoneyCell label={t("colBase")} value={money(l.baseCost)} />
@@ -286,7 +286,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
                 <div className="flex justify-end md:col-span-1 print:hidden">
                   <button
                     onClick={() => toggleItem(l.item.id)}
-                    className="text-lavender-light/40 hover:text-red-400 transition-colors"
+                    className="text-ink-muted hover:text-bad transition-colors"
                     title={t("removeItem")}
                   >
                     <Trash2 size={15} />
@@ -298,7 +298,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
                 value={l.note ?? ""}
                 onChange={(e) => setNote(l.item.id, e.target.value)}
                 placeholder={t("notePlaceholder")}
-                className="mt-2 w-full bg-transparent text-xs text-lavender-light/70 placeholder:text-lavender-light/30 border-b border-transparent hover:border-white/10 focus:border-electric/40 focus:outline-none py-1 print:hidden"
+                className="mt-2 w-full bg-transparent text-xs text-ink-2 placeholder:text-ink-muted border-b border-transparent hover:border-line focus:border-brand/40 focus:outline-none py-1 print:hidden"
               />
             </div>
           ))}
@@ -341,14 +341,14 @@ function MoneyCell({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-2 md:col-span-1 md:justify-end">
-      <span className="text-[10px] uppercase text-lavender-light/40 md:hidden">
+      <span className="text-[10px] uppercase text-ink-muted md:hidden">
         {label}
       </span>
       <span
         className={
           strong
-            ? "num text-sm font-semibold text-white text-end"
-            : "num text-sm text-lavender-light/70 text-end"
+            ? "num text-sm font-semibold text-ink text-end"
+            : "num text-sm text-ink-2 text-end"
         }
       >
         {value}
@@ -373,47 +373,47 @@ function UnpricedRow({
 }) {
   const isPercent = line.item.percentBasis != null;
   return (
-    <div className="bg-gold/[0.04] px-4 py-3">
+    <div className="bg-warn/[0.04] px-4 py-3">
       <div className="flex flex-col gap-2 md:grid md:grid-cols-12 md:items-center">
         <div className="min-w-0 md:col-span-6">
           <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium text-white">
+            <span className="truncate text-sm font-medium text-ink">
               {line.item.name}
             </span>
             <Badge tone="missing">
               <TriangleAlert size={11} /> {labels.excluded}
             </Badge>
           </div>
-          <div className="text-[11px] text-lavender-light/50">{labels.meta}</div>
+          <div className="text-[11px] text-ink-2">{labels.meta}</div>
           {line.item.mappingNote && (
-            <p className="mt-1 text-[11px] leading-snug text-lavender-light/40">
+            <p className="mt-1 text-[11px] leading-snug text-ink-muted">
               {line.item.mappingNote}
             </p>
           )}
         </div>
         <div className="flex items-center gap-2 md:col-span-1 md:justify-center">
-          <span className="text-[10px] uppercase text-lavender-light/40 md:hidden">
+          <span className="text-[10px] uppercase text-ink-muted md:hidden">
             {labels.qty}
           </span>
-          <span className="num text-sm text-lavender-light/50">
+          <span className="num text-sm text-ink-2">
             {isPercent ? "-" : line.qty}
           </span>
         </div>
         {/* the three money columns stay empty: this line contributes nothing */}
         <div className="hidden text-end md:col-span-1 md:block" />
-        <div className="num hidden text-end text-sm text-lavender-light/30 md:col-span-1 md:block">
+        <div className="num hidden text-end text-sm text-ink-muted md:col-span-1 md:block">
           -
         </div>
-        <div className="num hidden text-end text-sm text-lavender-light/30 md:col-span-1 md:block">
+        <div className="num hidden text-end text-sm text-ink-muted md:col-span-1 md:block">
           -
         </div>
-        <div className="num hidden text-end text-sm text-lavender-light/30 md:col-span-1 md:block">
+        <div className="num hidden text-end text-sm text-ink-muted md:col-span-1 md:block">
           -
         </div>
         <div className="flex justify-end md:col-span-1 print:hidden">
           <button
             onClick={onRemove}
-            className="text-lavender-light/40 transition-colors hover:text-red-400"
+            className="text-ink-muted transition-colors hover:text-bad"
             title={labels.remove}
           >
             <Trash2 size={15} />
@@ -442,7 +442,7 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="text-xs text-lavender-light/50">
+      <label htmlFor={id} className="text-xs text-ink-2">
         {label}
       </label>
       <input
@@ -452,7 +452,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cx(
-          "mt-0.5 block w-full rounded-lg border border-white/10 bg-navy/50 px-3 py-2 text-sm text-white placeholder:text-lavender-light/30 focus:border-electric focus:outline-none",
+          "mt-0.5 block w-full rounded-lg border border-line bg-bg/50 px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none",
           type === "date" && !value && "is-empty"
         )}
       />
@@ -476,7 +476,7 @@ function AreaField({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="text-xs text-lavender-light/50">
+      <label htmlFor={id} className="text-xs text-ink-2">
         {label}
       </label>
       <textarea
@@ -485,7 +485,7 @@ function AreaField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-0.5 block w-full resize-y rounded-lg border border-white/10 bg-navy/50 px-3 py-2 text-sm leading-relaxed text-white placeholder:text-lavender-light/30 focus:border-electric focus:outline-none"
+        className="mt-0.5 block w-full resize-y rounded-lg border border-line bg-bg/50 px-3 py-2 text-sm leading-relaxed text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none"
       />
     </div>
   );

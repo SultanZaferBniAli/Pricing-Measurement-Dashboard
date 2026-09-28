@@ -2,8 +2,117 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens.
+ *
+ * Every colour in the app resolves to one of these. They are stored as
+ * space-separated RGB channels rather than hex so Tailwind's opacity modifiers
+ * (`bg-surface/60`) keep working: the config wraps each one as
+ * `rgb(var(--token) / <alpha-value>)`.
+ *
+ * Light is the default. Dark is the same system with different values: same
+ * names, same roles, same component structure, so there is one dashboard here
+ * and not two.
+ */
 :root {
+  color-scheme: light;
+
+  /* surfaces */
+  --bg: 248 247 252;          /* #F8F7FC page */
+  --surface: 255 255 255;     /* #FFFFFF card */
+  --raised: 250 249 254;      /* subtle row / inset */
+  --hover: 243 240 255;       /* #F3F0FF */
+  --active: 238 233 255;      /* #EEE9FF */
+  --line: 232 229 242;        /* #E8E5F2 */
+
+  /* text */
+  --ink: 23 19 47;            /* #17132F */
+  --ink-2: 111 106 134;       /* #6F6A86 */
+  --ink-muted: 114 109 140;   /* #726D8C. The brief's #948FA8 measured 3.0:1 on
+                                 the page ground; this is the lightest tint of it
+                                 that still clears AA (4.6:1) at 10-12px. */
+  --on-brand: 255 255 255;    /* text on a brand-filled surface */
+
+  /* brand */
+  --brand: 94 69 255;         /* #5E45FF TAM violet, as a fill */
+  --brand-text: 87 62 240;    /* the same violet as type, on a light ground */
+  --brand-strong: 57 48 133;  /* #393085 */
+  --brand-soft: 159 147 236;  /* #9F93EC */
+
+  /* status: secondary to the brand, never decorative */
+  --ok: 17 109 71;
+  --ok-bg: 226 246 237;
+  --warn: 140 86 6;           /* darkened so 11px badge text clears AA */
+  --warn-bg: 253 243 222;
+  --bad: 176 38 38;
+  --bad-bg: 253 232 232;
+
+  /* categories, as one purple family rather than six unrelated hues */
+  --c1: 57 48 133;            /* #393085 */
+  --c2: 94 69 255;            /* #5E45FF */
+  --c3: 118 101 255;          /* #7665FF */
+  --c4: 159 147 236;          /* #9F93EC */
+  --c5: 197 190 255;          /* #C5BEFF */
+
+  --ring: 94 69 255;
+  --shadow-card: 0 1px 2px rgb(23 19 47 / 0.04), 0 8px 24px -12px rgb(23 19 47 / 0.12);
+}
+
+:root[data-theme="dark"] {
   color-scheme: dark;
+
+  --bg: 15 16 32;             /* #0F1020 */
+  --surface: 23 25 47;        /* #17192F */
+  --raised: 29 32 56;         /* #1D2038 */
+  --hover: 34 37 65;          /* #222541 */
+  --active: 42 36 82;         /* #2A2452 */
+  --line: 42 45 71;           /* #2A2D47 */
+
+  --ink: 245 244 255;         /* #F5F4FF */
+  --ink-2: 199 195 218;       /* #C7C3DA */
+  --ink-muted: 154 150 179;   /* #9A96B3 */
+  --on-brand: 255 255 255;
+
+  --brand: 103 84 232;        /* #6754E8 fill: white label clears AA on it */
+  --brand-text: 167 155 255;  /* #A79BFF as type, readable on dark surfaces */
+  --brand-strong: 167 155 255;/* #A79BFF */
+  --brand-soft: 200 193 255;  /* #C8C1FF */
+
+  --ok: 109 219 165;
+  --ok-bg: 21 56 43;
+  --warn: 240 187 98;
+  --warn-bg: 62 47 21;
+  --bad: 248 148 148;
+  --bad-bg: 66 30 30;
+
+  --c1: 167 155 255;
+  --c2: 124 107 255;
+  --c3: 149 134 255;
+  --c4: 200 193 255;
+  --c5: 224 220 255;
+
+  --ring: 167 155 255;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.55);
+}
+
+/* the sidebar sits a shade apart from the page in both themes */
+:root {
+  --rail: 255 255 255;
+}
+:root[data-theme="dark"] {
+  --rail: 19 21 42;           /* #13152A */
+}
+
+/*
+ * Held off for the duration of a theme swap. See ThemeToggle: Chrome will not
+ * re-resolve a var()-based colour on an element that has a transition for that
+ * property, which left rows stranded in the outgoing palette.
+ */
+:root.theme-instant *,
+:root.theme-instant *::before,
+:root.theme-instant *::after {
+  transition: none !important;
+  animation: none !important;
 }
 
 html,
@@ -14,8 +123,8 @@ body,
 
 body {
   margin: 0;
-  background-color: #222242;
-  color: #ffffff;
+  background-color: rgb(var(--bg));
+  color: rgb(var(--ink));
   font-family: "Helvetica Neue LT Arabic", "Helvetica Neue", Arial,
     "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -53,14 +162,22 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #222242;
+  background: rgb(var(--bg));
 }
 ::-webkit-scrollbar-thumb {
-  background: #33306a;
+  background: rgb(var(--line));
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #5e45ff;
+  background: rgb(var(--brand-soft));
+}
+
+/*
+ * The TAM wordmark asset is a white cutout, which disappears on a light rail.
+ * Inverting it in light mode reads as the dark mark; dark mode uses it as-is.
+ */
+:root:not([data-theme="dark"]) .tam-wordmark {
+  filter: invert(1) brightness(0.18);
 }
 
 /* Subtle geometric wave / diamond accents reused across screens */
@@ -78,33 +195,35 @@ body {
  * on a dark field.
  */
 input[type="date"] {
-  color-scheme: dark;
+  color-scheme: inherit;
 }
 input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.5;
-  /* black glyph -> lavender-light (#B7B2F9) */
-  filter: invert(78%) sepia(24%) saturate(900%) hue-rotate(201deg) brightness(101%)
-    contrast(96%);
+  /* the native glyph is black; only dark mode needs it lifted */
+  filter: none;
   transition: opacity 150ms ease-out;
 }
 input[type="date"]::-webkit-calendar-picker-indicator:hover,
 input[type="date"]:focus::-webkit-calendar-picker-indicator {
   opacity: 1;
 }
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(90%) sepia(10%) saturate(600%) hue-rotate(201deg);
+}
 input[type="date"]::-webkit-datetime-edit {
-  color: #ffffff;
+  color: rgb(var(--ink));
 }
 /* an unset date reads as a placeholder, not as real content */
 input[type="date"].is-empty::-webkit-datetime-edit {
-  color: rgba(183, 178, 249, 0.35);
+  color: rgb(var(--ink-muted));
 }
 input[type="date"]::-webkit-datetime-edit-year-field:focus,
 input[type="date"]::-webkit-datetime-edit-month-field:focus,
 input[type="date"]::-webkit-datetime-edit-day-field:focus {
-  background-color: #5e45ff;
+  background-color: rgb(var(--brand));
   border-radius: 3px;
-  color: #ffffff;
+  color: rgb(var(--on-brand));
 }
 
 input[type="number"]::-webkit-outer-spin-button,

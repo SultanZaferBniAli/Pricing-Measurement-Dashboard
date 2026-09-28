@@ -32,7 +32,7 @@ export const VENDORS: VendorProfile[] = [
     role: "In-house rate card. Priced by TAM and owned by TAM.",
     backing: "quoted",
     logo: "/tam-logo.webp",
-    accent: "#5E45FF",
+    accent: "rgb(var(--c2))",
   },
   {
     source: "Threelines",
@@ -40,7 +40,7 @@ export const VENDORS: VendorProfile[] = [
     role: "Contracted supplier. Prices taken from their rate card.",
     backing: "quoted",
     logo: "/vendors/threelines.png",
-    accent: "#8A87F4",
+    accent: "rgb(var(--c3))",
   },
   {
     source: "Pricing_V1",
@@ -48,7 +48,7 @@ export const VENDORS: VendorProfile[] = [
     role: "An earlier internal price list. Agreed, but worth re-confirming.",
     backing: "quoted",
     logo: null,
-    accent: "#6256F3",
+    accent: "rgb(var(--c1))",
   },
   {
     source: "Research",
@@ -56,7 +56,7 @@ export const VENDORS: VendorProfile[] = [
     role: "Benchmark figures from the travel and transport studies. Nobody has quoted these.",
     backing: "assumed",
     logo: null,
-    accent: "#EBA036",
+    accent: "rgb(var(--warn))",
   },
   {
     source: "Derived",
@@ -64,7 +64,7 @@ export const VENDORS: VendorProfile[] = [
     role: "Built by summing Pricing Master rows. The components are real; the bundle is our own.",
     backing: "assumed",
     logo: null,
-    accent: "#EBA036",
+    accent: "rgb(var(--warn))",
   },
 ];
 
@@ -77,7 +77,7 @@ export const UNSOURCED: VendorProfile = {
   role: "The scope file left these without a price or a supplier. Any figure here is one you typed.",
   backing: "assumed",
   logo: null,
-  accent: "#4b4870",
+  accent: "rgb(var(--ink-muted))",
 };
 
 export function vendorFor(priceSource: string): VendorProfile {

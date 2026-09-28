@@ -45,10 +45,10 @@ export function SectionPanel({
 
   if (groups.length === 0) {
     return (
-      <Card className="p-10 text-center text-sm text-lavender-light/50">
+      <Card className="p-10 text-center text-sm text-ink-2">
         {t("noFilterMatches")}{" "}
         {filtering && (
-          <button className="text-electric underline" onClick={onClearFilters}>
+          <button className="text-brand underline" onClick={onClearFilters}>
             {t("clearFilters")}
           </button>
         )}
@@ -67,9 +67,9 @@ export function SectionPanel({
         return (
           <section key={sub}>
             <div className="mb-2 flex items-center justify-between gap-3 px-1">
-              <h3 className="flex items-baseline gap-2 text-sm font-semibold text-white">
+              <h3 className="flex items-baseline gap-2 text-sm font-semibold text-ink">
                 {tSubCategory(sub)}
-                <span className="num text-xs font-normal text-lavender-light/40">
+                <span className="num text-xs font-normal text-ink-muted">
                   {chosen > 0 ? `${chosen}/${items.length}` : items.length}
                 </span>
               </h3>
@@ -80,8 +80,8 @@ export function SectionPanel({
                 className={cx(
                   "flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition-colors",
                   allSelected
-                    ? "border-white/10 text-lavender-light/60 hover:bg-white/5"
-                    : "border-electric/30 text-lavender-light hover:bg-electric/10"
+                    ? "border-line text-ink-2 hover:bg-hover"
+                    : "border-brand/30 text-ink-2 hover:bg-brand/10"
                 )}
               >
                 <CheckCheck size={13} />
@@ -91,7 +91,7 @@ export function SectionPanel({
 
             <Card className="p-2">
               {/* column headings sit with the rows they describe */}
-              <div className="hidden grid-cols-12 gap-2 px-3 pb-1 pt-1 text-[10px] text-lavender-light/40 md:grid">
+              <div className="hidden grid-cols-12 gap-2 px-3 pb-1 pt-1 text-[10px] text-ink-muted md:grid">
                 <div className="col-span-5">{t("colItem")}</div>
                 <div className="col-span-2 ps-3">{t("colQty")}</div>
                 <div className="col-span-2 text-end">{t("colUnitPrice")}</div>

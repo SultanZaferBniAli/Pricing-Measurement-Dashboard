@@ -16,7 +16,7 @@ export function Card({ className, ...props }: DivProps) {
   return (
     <div
       className={cx(
-        "rounded-card bg-surface/90 border border-white/5 shadow-card",
+        "rounded-card bg-surface/90 border border-line shadow-card",
         className
       )}
       {...props}
@@ -28,14 +28,14 @@ export function Card({ className, ...props }: DivProps) {
 export function Diamond({ className }: { className?: string }) {
   return (
     <span
-      className={cx("tam-diamond bg-gold", className)}
+      className={cx("tam-diamond bg-warn", className)}
       aria-hidden="true"
     />
   );
 }
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "ghost" | "gold";
+  variant?: "primary" | "secondary" | "ghost" | "warn";
   size?: "sm" | "md";
 };
 
@@ -48,15 +48,14 @@ export function Button({
   // emil-design-eng: name exact properties (never `transition: all`), give an
   // instant `:active` press response, and keep a visible keyboard focus ring.
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-[transform,background-color,box-shadow,border-color] duration-150 ease-out active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-lavender/60 focus-visible:ring-offset-2 focus-visible:ring-offset-navy disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100";
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-[transform,background-color,box-shadow,border-color] duration-150 ease-out active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100";
   const sizes = { sm: "text-sm px-3 py-1.5", md: "text-sm px-4 py-2.5" };
   const variants = {
     primary:
-      "bg-electric hover:bg-electric/90 text-white shadow-[0_6px_20px_-8px_rgba(94,69,255,0.9)]",
-    secondary:
-      "bg-transparent border border-lavender/40 text-lavender-light hover:bg-white/5",
-    ghost: "bg-transparent text-lavender-light hover:bg-white/5",
-    gold: "bg-gold hover:bg-gold/90 text-navy font-semibold",
+      "bg-brand text-on-brand hover:bg-brand/90 shadow-[0_6px_20px_-8px_rgb(var(--brand)/0.55)]",
+    secondary: "border border-line bg-surface text-ink hover:bg-hover",
+    ghost: "bg-transparent text-ink-2 hover:bg-hover hover:text-ink",
+    warn: "bg-warn text-on-brand hover:bg-warn/90 font-semibold",
   };
   return (
     <button className={cx(base, sizes[size], variants[variant], className)} {...props} />
@@ -70,16 +69,16 @@ export function Badge({
   className,
 }: {
   children: React.ReactNode;
-  tone?: "neutral" | "exact" | "close" | "missing" | "gold" | "source";
+  tone?: "neutral" | "exact" | "close" | "missing" | "warn" | "source";
   className?: string;
 }) {
   const tones = {
-    neutral: "bg-white/8 text-lavender-light border-white/10",
-    exact: "bg-emerald-400/15 text-emerald-300 border-emerald-400/25",
-    close: "bg-lavender/15 text-lavender-light border-lavender/30",
-    missing: "bg-gold/15 text-gold border-gold/30",
-    gold: "bg-gold/20 text-gold border-gold/40",
-    source: "bg-electric/15 text-lavender-light border-electric/30",
+    neutral: "bg-raised text-ink-2 border-line",
+    exact: "bg-ok-bg text-ok border-ok/25",
+    close: "bg-active text-brand border-brand/25",
+    missing: "bg-warn-bg text-warn border-warn/30",
+    warn: "bg-warn-bg text-warn border-warn/40",
+    source: "bg-active text-brand border-brand/25",
   };
   return (
     <span
@@ -116,8 +115,8 @@ export function SectionHeading({
     <div className="flex items-center gap-3">
       <Diamond />
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-white">{children}</h2>
-        {sub && <p className="text-sm text-lavender-light/70">{sub}</p>}
+        <h2 className="text-lg font-semibold tracking-tight text-ink">{children}</h2>
+        {sub && <p className="text-sm text-ink-2">{sub}</p>}
       </div>
     </div>
   );
@@ -147,8 +146,8 @@ export function SelectToggle({
         // emil-design-eng: specific transitions + a quick press response.
         "h-5 w-5 shrink-0 rounded-md border transition-[background-color,border-color,transform] duration-150 ease-out active:scale-90 flex items-center justify-center",
         checked
-          ? "bg-electric border-electric"
-          : "bg-transparent border-lavender/40 hover:border-lavender"
+          ? "bg-brand border-brand"
+          : "bg-transparent border-brand-soft/40 hover:border-brand-soft"
       )}
     >
       {checked && (

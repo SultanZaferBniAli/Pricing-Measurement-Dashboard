@@ -44,8 +44,8 @@ export function Admin() {
       <div className="flex items-center gap-3">
         <Diamond />
         <div>
-          <h1 className="text-2xl font-bold text-white">{t("adminTitle")}</h1>
-          <p className="text-sm text-lavender-light/70">
+          <h1 className="text-2xl font-bold text-ink">{t("adminTitle")}</h1>
+          <p className="text-sm text-ink-2">
             {t("adminSub")}
           </p>
         </div>
@@ -59,12 +59,12 @@ export function Admin() {
             const f = e.dataTransfer.files?.[0];
             if (f) onFile(f);
           }}
-          className="rounded-card border-2 border-dashed border-lavender/25 hover:border-electric/50 transition-colors p-10 text-center cursor-pointer"
+          className="rounded-card border-2 border-dashed border-brand-soft/25 hover:border-brand/50 transition-colors p-10 text-center cursor-pointer"
           onClick={() => inputRef.current?.click()}
         >
-          <Upload className="mx-auto text-lavender-light/60 mb-3" size={32} />
-          <p className="text-white font-medium">{t("adminDrop")}</p>
-          <p className="text-xs text-lavender-light/50 mt-1">
+          <Upload className="mx-auto text-ink-2 mb-3" size={32} />
+          <p className="text-ink font-medium">{t("adminDrop")}</p>
+          <p className="text-xs text-ink-2 mt-1">
             {t("adminExpects")}
           </p>
           <input
@@ -83,10 +83,10 @@ export function Admin() {
           <div
             className={`mt-4 rounded-xl px-4 py-3 text-sm flex items-start gap-2 ${
               status.kind === "error"
-                ? "bg-red-500/10 text-red-300 border border-red-500/30"
+                ? "bg-bad/10 text-bad border border-bad/30"
                 : status.kind === "ok"
-                ? "bg-emerald-400/10 text-emerald-300 border border-emerald-400/30"
-                : "bg-white/5 text-lavender-light"
+                ? "bg-ok/10 text-ok border border-ok/30"
+                : "bg-raised text-ink-2"
             }`}
           >
             {status.kind === "ok" && <CheckCircle2 size={16} className="mt-0.5" />}
@@ -94,10 +94,10 @@ export function Admin() {
           </div>
         ) : null}
 
-        <div className="mt-6 flex items-center justify-between text-xs text-lavender-light/60">
+        <div className="mt-6 flex items-center justify-between text-xs text-ink-2">
           <span>
-            {t("adminCurrent")} <b className="text-white">{data.meta.counts.items}</b>{" "}
-            {t("adminItemsWord")} · <b className="text-white">{data.meta.counts.sections}</b>{" "}
+            {t("adminCurrent")} <b className="text-ink">{data.meta.counts.items}</b>{" "}
+            {t("adminItemsWord")} · <b className="text-ink">{data.meta.counts.sections}</b>{" "}
             {t("adminSectionsWord")}
           </span>
           <Button
@@ -111,8 +111,8 @@ export function Admin() {
       </Card>
 
       <Card className="p-6">
-        <h3 className="font-semibold text-white mb-2">{t("adminRulesTitle")}</h3>
-        <ul className="space-y-1.5 text-sm text-lavender-light/70 list-disc list-inside marker:text-lavender-light/40">
+        <h3 className="font-semibold text-ink mb-2">{t("adminRulesTitle")}</h3>
+        <ul className="space-y-1.5 text-sm text-ink-2 list-disc list-inside marker:text-ink-muted">
           <li>{t("adminRule1")}</li>
           <li>{t("adminRule2")}</li>
           <li>{t("adminRule3")}</li>

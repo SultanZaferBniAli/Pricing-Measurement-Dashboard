@@ -21,6 +21,8 @@ const en = {
   barReview: "Review Budget",
   langToggle: "العربية",
   langToggleLabel: "Switch to Arabic",
+  themeToDark: "Switch to dark mode",
+  themeToLight: "Switch to light mode",
 
   // ---- sidebar ----
   navOverview: "Overview",
@@ -233,6 +235,8 @@ const ar: Record<StringKey, string> = {
   barReview: "مراجعة الميزانية",
   langToggle: "English",
   langToggleLabel: "التحويل إلى الإنجليزية",
+  themeToDark: "التحويل إلى الوضع الداكن",
+  themeToLight: "التحويل إلى الوضع الفاتح",
 
   // ---- sidebar ----
   navOverview: "نظرة عامة",

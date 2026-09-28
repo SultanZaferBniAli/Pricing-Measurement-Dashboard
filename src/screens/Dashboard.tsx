@@ -11,7 +11,7 @@
  */
 import { useMemo, useState } from "react";
 import { CheckCircle2, Search, X } from "lucide-react";
-import { BudgetBar, SECTION_ACCENT } from "../components/BudgetBar";
+import { BudgetBar, SECTION_ACCENT, SECTION_FALLBACK } from "../components/BudgetBar";
 import { SectionPanel } from "../components/SectionPanel";
 import { Card, cx } from "../components/ui";
 import { money } from "../lib/format";
@@ -79,12 +79,12 @@ export function Dashboard({
   return (
     <div className="space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-white md:text-3xl">{t("buildTitle")}</h1>
+        <h1 className="text-2xl font-bold text-ink md:text-3xl">{t("buildTitle")}</h1>
       </div>
 
       {/* the previous budget did not vanish: say where it went */}
       {lastExport && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-4 py-2.5 text-sm text-emerald-200">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-ok/25 bg-ok/10 px-4 py-2.5 text-sm text-ok">
           <CheckCircle2 size={16} className="shrink-0" />
           <span className="min-w-0 flex-1">
             {t("exportedNotice", {
@@ -93,14 +93,14 @@ export function Dashboard({
           </span>
           <button
             onClick={() => onOpenExport(lastExport.id)}
-            className="shrink-0 underline underline-offset-2 hover:text-white"
+            className="shrink-0 underline underline-offset-2 hover:text-ink"
           >
             {t("exportedView")}
           </button>
           <button
             onClick={dismissLastExport}
             aria-label={t("clear")}
-            className="shrink-0 rounded-md p-1 text-emerald-200/60 transition-colors hover:text-white"
+            className="shrink-0 rounded-md p-1 text-ok transition-colors hover:text-ink"
           >
             <X size={14} />
           </button>
@@ -116,13 +116,13 @@ export function Dashboard({
             {/* logical inset so the icon follows the text direction */}
             <Search
               size={16}
-              className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-lavender-light/50"
+              className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-ink-2"
             />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("searchPlaceholder")}
-              className="w-full rounded-xl border border-white/10 bg-navy/60 py-2 pe-3 ps-9 text-sm text-white placeholder:text-lavender-light/40 focus:border-electric focus:outline-none"
+              className="w-full rounded-xl border border-line bg-bg/60 py-2 pe-3 ps-9 text-sm text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none"
             />
           </div>
 
@@ -159,7 +159,7 @@ export function Dashboard({
           {filtering && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-lavender-light/60 transition-colors hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-1 rounded-lg px-2 py-2 text-xs text-ink-2 transition-colors hover:bg-hover hover:text-ink"
             >
               <X size={13} /> {t("clear")}
             </button>
@@ -178,7 +178,7 @@ export function Dashboard({
             const active = section.key === current?.section.key;
             const chosen = rollup?.selectedCount ?? 0;
             const subtotal = rollup?.totals.grand ?? 0;
-            const accent = SECTION_ACCENT[section.key] ?? "#8A87F4";
+            const accent = SECTION_ACCENT[section.key] ?? SECTION_FALLBACK;
             return (
               <button
                 key={section.key}
@@ -188,8 +188,8 @@ export function Dashboard({
                 className={cx(
                   "group relative overflow-hidden rounded-card border px-4 py-3 text-start transition-colors duration-150",
                   active
-                    ? "border-electric/60 bg-surface"
-                    : "border-white/5 bg-surface/40 hover:border-white/15 hover:bg-surface/70"
+                    ? "border-brand/60 bg-surface"
+                    : "border-line bg-surface/40 hover:border-line hover:bg-surface/70"
                 )}
               >
                 {/* the active tab is marked along its leading edge, not by a wash */}
@@ -205,25 +205,25 @@ export function Dashboard({
                   <span
                     className={cx(
                       "min-w-0 flex-1 truncate text-sm font-semibold",
-                      active ? "text-white" : "text-lavender-light"
+                      active ? "text-ink" : "text-ink-2"
                     )}
                   >
                     {tSection(section.name)}
                   </span>
                   {chosen > 0 && (
-                    <span className="num shrink-0 rounded-full bg-electric/25 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    <span className="num shrink-0 rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-on-brand">
                       {chosen}
                     </span>
                   )}
                 </span>
                 <span className="mt-1 flex items-baseline justify-between gap-2">
-                  <span className="num text-xs text-lavender-light/45">
+                  <span className="num text-xs text-ink-muted">
                     {filtering
                       ? t("countMatching", { n: items.length })
                       : t("countItems", { n: section.items.length })}
                   </span>
                   {subtotal > 0 && (
-                    <span className="num text-sm font-bold text-gold">{money(subtotal)}</span>
+                    <span className="num text-sm font-bold text-warn">{money(subtotal)}</span>
                   )}
                 </span>
               </button>
@@ -264,12 +264,12 @@ function FilterSelect({
       className={cx(
         "cursor-pointer rounded-xl border px-2.5 py-2 text-xs focus:outline-none",
         active
-          ? "border-electric/50 bg-electric/10 text-white"
-          : "border-white/10 bg-navy/60 text-lavender-light/80"
+          ? "border-brand/50 bg-brand/10 text-ink"
+          : "border-line bg-bg/60 text-ink-2"
       )}
     >
       {options.map(([v, label]) => (
-        <option key={v} value={v} className="bg-navy text-white">
+        <option key={v} value={v} className="bg-bg text-ink">
           {label}
         </option>
       ))}

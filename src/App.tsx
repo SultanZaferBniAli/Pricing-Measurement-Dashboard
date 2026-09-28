@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { Sidebar, type View } from "./components/Sidebar";
+import { ThemeToggle, useThemeEffect } from "./components/ThemeToggle";
 import { TamLogo } from "./components/TamLogo";
 import { money } from "./lib/format";
 import { useT } from "./lib/i18n";
@@ -23,6 +24,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const budget = useBudget();
   const { t, lang, dir } = useT();
+  useThemeEffect();
 
   // Mirror the whole document, so Tailwind's logical properties, form controls
   // and the native scrollbar all flip with the language.
@@ -37,7 +39,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-navy text-white">
+    <div className="min-h-screen bg-bg text-ink">
       {/* desktop rail */}
       <aside className="fixed inset-y-0 start-0 z-30 hidden w-64 lg:block print:hidden">
         <Sidebar view={view} onNavigate={nav} budget={budget} />
@@ -47,7 +49,7 @@ export default function App() {
       {menuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden print:hidden">
           <button
-            className="absolute inset-0 bg-navy/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-bg/80 backdrop-blur-sm"
             aria-label={t("closeMenu")}
             onClick={() => setMenuOpen(false)}
           />
@@ -64,20 +66,21 @@ export default function App() {
 
       <div className="lg:ms-64">
         {/* mobile top bar: the rail is a drawer below lg */}
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/5 bg-navy/85 px-4 py-3 backdrop-blur-md lg:hidden print:hidden">
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-surface/85 px-4 py-3 backdrop-blur-md lg:hidden print:hidden">
           <button
             onClick={() => setMenuOpen(true)}
             aria-label={t("openMenu")}
-            className="rounded-lg p-1.5 text-lavender-light/80 hover:bg-white/5 hover:text-white"
+            className="rounded-lg p-1.5 text-ink-2 hover:bg-hover hover:text-ink"
           >
             <Menu size={20} />
           </button>
           <TamLogo />
           {budget.selectedCount > 0 && (
-            <span className="num ms-auto text-sm font-bold text-gold">
+            <span className="num ms-auto text-sm font-bold text-brand">
               {money(budget.totals.grand)}
             </span>
           )}
+          <ThemeToggle className={budget.selectedCount > 0 ? "" : "ms-auto"} />
         </header>
 
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">

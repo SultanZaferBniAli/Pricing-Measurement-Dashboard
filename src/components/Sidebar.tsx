@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { TamLogo } from "./TamLogo";
+import { ThemeToggle } from "./ThemeToggle";
 import { Button, cx } from "./ui";
 import { money } from "../lib/format";
 import { useT } from "../lib/i18n";
@@ -59,7 +60,7 @@ export function Sidebar({
   const openEntry = (id: string) => go({ name: "history", id });
 
   return (
-    <div className="flex h-full flex-col border-e border-white/5 bg-surface/60">
+    <div className="flex h-full flex-col border-e border-line bg-rail">
       {/* brand */}
       <div className="flex items-center justify-between gap-2 px-5 py-4">
         <button onClick={() => go({ name: "builder" })} aria-label={t("appHome")}>
@@ -69,7 +70,7 @@ export function Sidebar({
           <button
             onClick={onCloseMobile}
             aria-label={t("closeMenu")}
-            className="rounded-lg p-1.5 text-lavender-light/60 hover:bg-white/5 hover:text-white lg:hidden"
+            className="rounded-lg p-1.5 text-ink-2 hover:bg-hover hover:text-ink lg:hidden"
           >
             <X size={18} />
           </button>
@@ -92,13 +93,13 @@ export function Sidebar({
           {t("navVendors")}
         </RailButton>
 
-        <p className="flex items-center gap-2 px-3 pb-2 pt-5 text-xs font-medium text-lavender-light/40">
+        <p className="flex items-center gap-2 px-3 pb-2 pt-5 text-xs font-medium text-ink-muted">
           <History size={13} />
           {t("navHistory")}
         </p>
 
         {history.length === 0 ? (
-          <p className="px-3 text-xs leading-relaxed text-lavender-light/35">
+          <p className="px-3 text-xs leading-relaxed text-ink-muted">
             {t("historyEmpty")}
           </p>
         ) : (
@@ -115,22 +116,22 @@ export function Sidebar({
                     title={t("historyOpen")}
                     className={cx(
                       "w-full rounded-xl px-3 py-2 pe-8 text-start transition-colors",
-                      isCurrent ? "bg-white/[0.06]" : "hover:bg-white/[0.04]"
+                      isCurrent ? "bg-active" : "hover:bg-hover"
                     )}
                   >
-                    <span className="block truncate text-sm text-lavender-light group-hover:text-white">
+                    <span className="block truncate text-sm text-ink-2 group-hover:text-ink">
                       {h.title || t("untitledBudget")}
                     </span>
                     <span className="mt-0.5 flex items-baseline justify-between gap-2">
-                      <span className="num truncate text-xs text-gold/80">
+                      <span className="num truncate text-xs text-warn">
                         {money(h.grand)}
                       </span>
-                      <span className="num shrink-0 text-[10px] text-lavender-light/40">
+                      <span className="num shrink-0 text-[10px] text-ink-muted">
                         {h.exportedAt.slice(0, 10)}
                       </span>
                     </span>
                     {h.client && (
-                      <span className="block truncate text-[11px] text-lavender-light/45">
+                      <span className="block truncate text-[11px] text-ink-muted">
                         {h.client}
                       </span>
                     )}
@@ -146,8 +147,8 @@ export function Sidebar({
                     className={cx(
                       "absolute end-1.5 top-2 rounded-md p-1.5 transition-colors",
                       confirmId === h.id
-                        ? "bg-red-500/20 text-red-300"
-                        : "text-lavender-light/30 opacity-0 hover:text-red-400 focus:opacity-100 group-hover:opacity-100"
+                        ? "bg-bad/20 text-bad"
+                        : "text-ink-muted opacity-0 hover:text-bad focus:opacity-100 group-hover:opacity-100"
                     )}
                   >
                     <Trash2 size={13} />
@@ -160,17 +161,17 @@ export function Sidebar({
       </nav>
 
       {/* running total: the single home for this figure */}
-      <div className="border-t border-white/5 px-4 py-4">
-        <p className="text-xs text-lavender-light/50">{t("sidebarTotalLabel")}</p>
+      <div className="border-t border-line px-4 py-4">
+        <p className="text-xs text-ink-2">{t("sidebarTotalLabel")}</p>
         {budget.selectedCount === 0 ? (
-          <p className="mt-1 text-sm text-lavender-light/40">{t("sidebarEmpty")}</p>
+          <p className="mt-1 text-sm text-ink-muted">{t("sidebarEmpty")}</p>
         ) : (
           <>
-            <p className="num mt-0.5 text-2xl font-bold text-white">
+            <p className="num mt-0.5 text-2xl font-bold text-ink">
               {money(budget.totals.grand)}{" "}
-              <span className="text-sm font-normal text-lavender-light/60">SAR</span>
+              <span className="text-sm font-normal text-ink-2">SAR</span>
             </p>
-            <p className="num mt-0.5 text-xs text-lavender-light/50">
+            <p className="num mt-0.5 text-xs text-ink-2">
               {t("sidebarBaseFee", {
                 base: money(budget.totals.base),
                 fee: money(budget.totals.fee),
@@ -186,7 +187,7 @@ export function Sidebar({
           <ShoppingCart size={16} /> {t("barReview")}
         </Button>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-3 flex items-center justify-between gap-2">
           <RailButton
             active={view.name === "admin"}
             onClick={() => go({ name: "admin" })}
@@ -195,15 +196,18 @@ export function Sidebar({
           >
             {t("navAdmin")}
           </RailButton>
-          <button
-            onClick={() => setLanguage(lang === "ar" ? "en" : "ar")}
-            aria-label={t("langToggleLabel")}
-            title={t("langToggleLabel")}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-lavender-light/70 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <Languages size={15} />
-            {t("langToggle")}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setLanguage(lang === "ar" ? "en" : "ar")}
+              aria-label={t("langToggleLabel")}
+              title={t("langToggleLabel")}
+              className="flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm text-ink-2 transition-colors hover:bg-hover hover:text-ink"
+            >
+              <Languages size={15} />
+              {t("langToggle")}
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </div>
@@ -230,8 +234,8 @@ function RailButton({
         "flex items-center gap-2.5 rounded-xl text-sm font-medium transition-colors",
         compact ? "px-2.5 py-2" : "w-full px-3 py-2.5",
         active
-          ? "bg-electric/20 text-white"
-          : "text-lavender-light/70 hover:bg-white/5 hover:text-white"
+          ? "bg-active text-brand"
+          : "text-ink-2 hover:bg-hover hover:text-ink"
       )}
     >
       {icon}

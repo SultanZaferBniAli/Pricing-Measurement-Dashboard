@@ -42,6 +42,8 @@ interface AppState {
   rfpText: string;
   rfpFiles: string[];
   language: "en" | "ar";
+  /** Light is the default; the choice persists. */
+  theme: "light" | "dark";
 
   /** The one section the builder is showing. */
   activeSection: string;
@@ -77,6 +79,7 @@ interface AppState {
   startNewBudget: () => void;
   dismissLastExport: () => void;
   setLanguage: (lang: "en" | "ar") => void;
+  setTheme: (theme: "light" | "dark") => void;
   replaceData: (data: ScopeData) => void;
 
   // ---- selectors ----
@@ -101,6 +104,7 @@ export const useStore = create<AppState>()(
       rfpText: "",
       rfpFiles: [],
       language: "en",
+      theme: "light",
       activeSection: initialData.sections[0]?.key ?? "",
       history: [],
       lastExport: null,
@@ -241,6 +245,7 @@ export const useStore = create<AppState>()(
       removeFromHistory: (id) =>
         set((state) => ({ history: state.history.filter((h) => h.id !== id) })),
       setLanguage: (language) => set({ language }),
+      setTheme: (theme) => set({ theme }),
       replaceData: (data) =>
         set({
           data,
@@ -264,6 +269,7 @@ export const useStore = create<AppState>()(
         rfpText: state.rfpText,
         rfpFiles: state.rfpFiles,
         language: state.language,
+        theme: state.theme,
         history: state.history,
       }),
     }

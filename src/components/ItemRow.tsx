@@ -52,10 +52,10 @@ export function ItemRow({
       }}
       className={cx(
         "grid cursor-pointer grid-cols-12 items-center gap-2 rounded-xl border px-3 py-2.5 transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lavender/50",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50",
         selected
-          ? "border-electric/30 bg-electric/10"
-          : "border-transparent bg-white/[0.02] hover:bg-white/[0.06]"
+          ? "border-brand/30 bg-brand/10"
+          : "border-transparent bg-raised hover:bg-hover"
       )}
     >
       {/* select + name */}
@@ -72,7 +72,7 @@ export function ItemRow({
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-white truncate">{item.name}</span>
+            <span className="text-sm font-medium text-ink truncate">{item.name}</span>
             {showsUnpriced && (
               <Badge tone="missing">
                 <AlertTriangle size={11} />{" "}
@@ -80,7 +80,7 @@ export function ItemRow({
               </Badge>
             )}
             {isPercent && !showsUnpriced && (
-              <Badge tone="gold">
+              <Badge tone="warn">
                 <Percent size={11} />{" "}
                 {item.percentBasis === "budget"
                   ? t("ofBudgetBase")
@@ -88,7 +88,7 @@ export function ItemRow({
               </Badge>
             )}
           </div>
-          <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px] text-lavender-light/60">
+          <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px] text-ink-2">
             <span>{tSubCategory(item.subCategory)}</span>
             <span className="opacity-40">·</span>
             <span>{tType(item.type)}</span>
@@ -101,7 +101,7 @@ export function ItemRow({
             <MatchBadge status={item.matchStatus} />
           </div>
           {item.mappingNote && (
-            <p className="mt-1 text-[11px] leading-snug text-lavender-light/40 max-w-xl">
+            <p className="mt-1 text-[11px] leading-snug text-ink-muted max-w-xl">
               {item.mappingNote}
             </p>
           )}
@@ -110,11 +110,11 @@ export function ItemRow({
 
       {/* qty (a contingency is always a single line, so no quantity applies) */}
       <div className="col-span-5 md:col-span-2 flex flex-col gap-1 md:ps-3">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
+        <span className="md:hidden text-[10px] uppercase text-ink-muted">
           {isPercent ? t("colRate") : t("colQty")}
         </span>
         {isPercent ? (
-          <span className="num text-sm text-lavender-light/40 text-center">-</span>
+          <span className="num text-sm text-ink-muted text-center">-</span>
         ) : (
           <QtyStepper
             value={selected ? selection!.qty : item.defaultQty || 1}
@@ -126,7 +126,7 @@ export function ItemRow({
 
       {/* unit price, a custom price for unpriced lines, or a % rate */}
       <div className="col-span-7 md:col-span-2 flex flex-col gap-1">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">
+        <span className="md:hidden text-[10px] uppercase text-ink-muted">
           {isPercent ? t("colRatePct") : t("colUnitPrice")}
         </span>
         {isPercent ? (
@@ -145,13 +145,13 @@ export function ItemRow({
                 )
               }
               onClick={(e) => e.stopPropagation()}
-              className="num w-20 rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
+              className="num w-20 rounded-lg bg-warn/10 border border-warn/30 px-2 py-1 text-sm text-warn text-end placeholder:text-warn focus:border-warn focus:outline-none"
               title={t("percentHint")}
             />
-            <span className="text-xs text-gold/70">%</span>
+            <span className="text-xs text-warn">%</span>
           </div>
         ) : item.isPriced ? (
-          <span className="num text-sm text-lavender-light text-end">
+          <span className="num text-sm text-ink-2 text-end">
             {money(item.unitPrice)}
           </span>
         ) : (
@@ -164,7 +164,7 @@ export function ItemRow({
               setCustomPrice(item.id, e.target.value === "" ? null : parseFloat(e.target.value))
             }
             onClick={(e) => e.stopPropagation()}
-            className="num w-24 self-end rounded-lg bg-gold/10 border border-gold/30 px-2 py-1 text-sm text-gold text-end placeholder:text-gold/40 focus:border-gold focus:outline-none"
+            className="num w-24 self-end rounded-lg bg-warn/10 border border-warn/30 px-2 py-1 text-sm text-warn text-end placeholder:text-warn focus:border-warn focus:outline-none"
             title={t("customPriceHint")}
           />
         )}
@@ -172,19 +172,19 @@ export function ItemRow({
 
       {/* fee */}
       <div className="col-span-5 md:col-span-1 flex flex-col gap-1">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">{t("colFee")}</span>
-        <span className="num text-sm text-lavender-light/70 text-end">
+        <span className="md:hidden text-[10px] uppercase text-ink-muted">{t("colFee")}</span>
+        <span className="num text-sm text-ink-2 text-end">
           {selected && !showsUnpriced ? money(line.fee) : "-"}
         </span>
       </div>
 
       {/* total */}
       <div className="col-span-7 md:col-span-2 flex flex-col gap-1">
-        <span className="md:hidden text-[10px] uppercase text-lavender-light/40">{t("colTotal")}</span>
+        <span className="md:hidden text-[10px] uppercase text-ink-muted">{t("colTotal")}</span>
         <span
           className={cx(
             "num text-sm font-semibold text-end",
-            selected && !showsUnpriced ? "text-white" : "text-lavender-light/40"
+            selected && !showsUnpriced ? "text-ink" : "text-ink-muted"
           )}
         >
           {selected && !showsUnpriced ? money(line.totalCost) : "-"}

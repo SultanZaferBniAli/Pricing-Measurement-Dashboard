@@ -43,7 +43,7 @@ export function QtyStepper({
     <div
       className={cx(
         // self-start, or the flex column this sits in stretches it edge to edge
-        "inline-flex w-fit shrink-0 self-start items-center rounded-lg border border-white/10 bg-navy/60",
+        "inline-flex w-fit shrink-0 self-start items-center rounded-lg border border-line bg-bg/60",
         disabled && "opacity-40"
       )}
       onClick={(e) => e.stopPropagation()}
@@ -75,7 +75,7 @@ export function QtyStepper({
             step(-1);
           }
         }}
-        className="num w-10 border-x border-white/10 bg-transparent py-1 text-center text-sm text-white focus:outline-none focus:ring-1 focus:ring-inset focus:ring-electric disabled:cursor-not-allowed"
+        className="num w-10 border-x border-line bg-transparent py-1 text-center text-sm text-ink focus:outline-none focus:ring-1 focus:ring-inset focus:ring-brand disabled:cursor-not-allowed"
       />
 
       <StepButton label={t("increase")} disabled={disabled} onClick={() => step(1)}>
@@ -102,7 +102,7 @@ function StepButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="px-1.5 py-1.5 text-lavender-light/70 transition-colors duration-150 hover:text-white active:scale-90 disabled:cursor-not-allowed disabled:opacity-30 disabled:active:scale-100"
+      className="px-1.5 py-1.5 text-ink-2 transition-colors duration-150 hover:text-ink active:scale-90 disabled:cursor-not-allowed disabled:opacity-30 disabled:active:scale-100"
     >
       {children}
     </button>
