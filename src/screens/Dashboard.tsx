@@ -113,7 +113,7 @@ export function Dashboard({
       <BudgetBar budget={budget} />
 
       {/* the catalog on the left, what you have chosen on the right */}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_23rem] 2xl:grid-cols-[minmax(0,1fr)_26rem]">
         <div className="min-w-0 space-y-4">
       {/* search and filters apply across every section, so they lead */}
       <Card className="sticky top-2 z-20 p-3 lg:top-4">

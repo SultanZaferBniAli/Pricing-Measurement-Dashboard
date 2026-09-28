@@ -13,20 +13,30 @@ import { cx } from "./ui";
 import type { BudgetSummary } from "../lib/useTotals";
 
 /**
- * Accent per section, shared with the section tabs so the two read as one.
+ * Accent per section, as the bare token name.
  *
- * These are token references rather than hex, so the palette shifts with the
- * theme. One purple family, varied by depth: six unrelated hues would make a
- * budget look like a pie chart competition.
+ * Kept as the token rather than a finished colour so callers can compose an
+ * alpha off it: a solid marker and a 14% tint of the same hue have to come
+ * from one source or the section stops reading as one thing.
  */
-export const SECTION_ACCENT: Record<string, string> = {
-  MARKETING: "rgb(var(--c2))",
-  "EVENT MANAGEMENT": "rgb(var(--c3))",
-  LOGISTICS: "rgb(var(--c4))",
-  "VIDEO PRODUCTIONS": "rgb(var(--c1))",
+export const SECTION_TOKEN: Record<string, string> = {
+  MARKETING: "c2",
+  "EVENT MANAGEMENT": "c3",
+  LOGISTICS: "c4",
+  "VIDEO PRODUCTIONS": "c1",
 };
 
-/** Fallback for a section the palette does not name. */
+/** Solid accent, for markers, bars and chart arcs. */
+export const SECTION_ACCENT: Record<string, string> = Object.fromEntries(
+  Object.entries(SECTION_TOKEN).map(([k, v]) => [k, `rgb(var(--${v}))`])
+);
+
+/** The same hue at an arbitrary alpha, for tinted grounds. */
+export function sectionTint(sectionKey: string, alpha: number): string {
+  const token = SECTION_TOKEN[sectionKey] ?? "c5";
+  return `rgb(var(--${token}) / ${alpha})`;
+}
+
 export const SECTION_FALLBACK = "rgb(var(--c5))";
 
 export function BudgetBar({ budget }: { budget: BudgetSummary }) {

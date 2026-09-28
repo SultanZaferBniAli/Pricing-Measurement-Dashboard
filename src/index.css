@@ -27,10 +27,15 @@
 
   /* text */
   --ink: 23 19 47;            /* #17132F */
-  --ink-2: 111 106 134;       /* #6F6A86 */
-  --ink-muted: 114 109 140;   /* #726D8C. The brief's #948FA8 measured 3.0:1 on
-                                 the page ground; this is the lightest tint of it
-                                 that still clears AA (4.6:1) at 10-12px. */
+  --ink-2: 105 100 127;       /* #69647F. The brief's #6F6A86 clears AA on a
+                                 white card but drops to 4.42 once a row carries
+                                 a selection tint. Two shades darker holds
+                                 everywhere and is indistinguishable by eye. */
+  --ink-muted: 107 102 127;   /* #6B667F. The brief's #948FA8 measured 3.0:1 on
+                                 the page. This clears AA on the raised card
+                                 ground too, which the page value did not: on
+                                 white there is not much room between a readable
+                                 muted grey and the secondary one. */
   --on-brand: 255 255 255;    /* text on a brand-filled surface */
 
   /* brand */
@@ -48,11 +53,11 @@
   --bad-bg: 253 232 232;
 
   /* categories, as one purple family rather than six unrelated hues */
-  --c1: 57 48 133;            /* #393085 */
-  --c2: 94 69 255;            /* #5E45FF */
-  --c3: 118 101 255;          /* #7665FF */
-  --c4: 159 147 236;          /* #9F93EC */
-  --c5: 197 190 255;          /* #C5BEFF */
+  --c1: 45 37 112;            /* #2D2570 deep indigo */
+  --c2: 94 69 255;            /* #5E45FF TAM violet */
+  --c3: 140 124 255;          /* #8C7CFF */
+  --c4: 179 169 245;          /* #B3A9F5 */
+  --c5: 215 210 255;          /* #D7D2FF */
 
   --ring: 94 69 255;
   --shadow-card: 0 1px 2px rgb(23 19 47 / 0.04), 0 8px 24px -12px rgb(23 19 47 / 0.12);
@@ -85,11 +90,11 @@
   --bad: 248 148 148;
   --bad-bg: 66 30 30;
 
-  --c1: 167 155 255;
-  --c2: 124 107 255;
-  --c3: 149 134 255;
-  --c4: 200 193 255;
-  --c5: 224 220 255;
+  --c1: 196 187 255;          /* the ramp inverts in dark: light to deep */
+  --c2: 150 133 255;
+  --c3: 118 101 240;
+  --c4: 94 80 200;
+  --c5: 74 64 160;
 
   --ring: 167 155 255;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.55);

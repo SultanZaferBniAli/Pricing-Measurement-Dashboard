@@ -10,9 +10,10 @@
  */
 import { useMemo, useState } from "react";
 import { ArrowRight, ChevronDown, ShoppingCart, Trash2, X } from "lucide-react";
-import { SECTION_ACCENT, SECTION_FALLBACK } from "./BudgetBar";
+import { SECTION_ACCENT, SECTION_FALLBACK, sectionTint } from "./BudgetBar";
 import { Button, cx } from "./ui";
 import { money } from "../lib/format";
+import { sumLines } from "../lib/pricing";
 import { useT } from "../lib/i18n";
 import { isContingency } from "../lib/pricing";
 import { useStore } from "../lib/store";
@@ -51,65 +52,82 @@ export function SelectionPanel({
           {t("panelEmpty")}
         </p>
       ) : (
-        <ul className="max-h-[min(52vh,26rem)] overflow-y-auto">
-          {bySection.map(([key, sectionLines]) => (
-            <li key={key}>
-              <button
-                onClick={() => setActiveSection(key)}
-                className="flex w-full items-center gap-2 px-4 pb-1 pt-3 text-start"
-                title={t("panelJump")}
-              >
-                <span
-                  className="tam-diamond shrink-0"
-                  style={{ backgroundColor: SECTION_ACCENT[key] ?? SECTION_FALLBACK }}
-                />
-                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-ink-2">
-                  {tSection(sectionLines[0].item.section)}
-                </span>
-                <span className="num text-xs text-ink-muted">
-                  {sectionLines.length}
-                </span>
-              </button>
+        <ul className="max-h-[min(52vh,28rem)] overflow-y-auto">
+          {bySection.map(([key, sectionLines]) => {
+            const accent = SECTION_ACCENT[key] ?? SECTION_FALLBACK;
+            const st = sumLines(sectionLines.filter((l) => !l.isUnpriced));
+            return (
+              <li key={key}>
+                {/* a tinted band and a solid edge, both off the section's own
+                    hue, so the group reads as one block at a glance */}
+                <button
+                  onClick={() => setActiveSection(key)}
+                  title={t("panelJump")}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-start transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: sectionTint(key, 0.22) }}
+                >
+                  <span
+                    className="h-3.5 w-1.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: accent }}
+                  />
+                  <span className="min-w-0 flex-1 text-xs font-semibold text-ink">
+                    {tSection(sectionLines[0].item.section)}
+                  </span>
+                  <span className="num shrink-0 text-[11px] font-medium text-ink">
+                    {sectionLines.length}
+                  </span>
+                  {st.grand > 0 && (
+                    <span className="num shrink-0 text-xs font-semibold text-ink">
+                      {money(st.grand)}
+                    </span>
+                  )}
+                </button>
 
-              <ul>
-                {sectionLines.map((l) => (
-                  <li
-                    key={l.item.id}
-                    className="group flex items-center gap-2 px-4 py-1.5 transition-colors hover:bg-hover"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13px] text-ink">
-                        {l.item.name}
-                      </span>
-                      <span className="num block text-[11px] text-ink-muted">
-                        {isContingency(l.item)
-                          ? `${l.percentRate ?? 0}%`
-                          : `${l.qty} x ${
-                              l.unitPrice != null ? money(l.unitPrice) : "-"
-                            }`}
-                      </span>
-                    </span>
-                    <span
-                      className={cx(
-                        "num shrink-0 text-xs font-semibold",
-                        l.isUnpriced ? "text-warn" : "text-ink"
-                      )}
+                <ul
+                  className="border-s-4"
+                  style={{ borderInlineStartColor: accent }}
+                >
+                  {sectionLines.map((l) => (
+                    <li
+                      key={l.item.id}
+                      className="group flex items-start gap-2 px-3 py-2 transition-colors hover:bg-hover"
                     >
-                      {l.isUnpriced ? t("badgeUnpriced") : money(l.totalCost)}
-                    </span>
-                    <button
-                      onClick={() => toggleItem(l.item.id)}
-                      aria-label={t("panelRemove", { name: l.item.name })}
-                      title={t("panelRemove", { name: l.item.name })}
-                      className="shrink-0 rounded-md p-1 text-ink-muted opacity-0 transition-colors hover:bg-bad-bg hover:text-bad focus:opacity-100 group-hover:opacity-100"
-                    >
-                      <X size={14} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
+                      <span className="min-w-0 flex-1">
+                        {/* wraps rather than truncates: the point of the panel
+                            is knowing which line you are about to drop */}
+                        <span className="block text-[13px] leading-snug text-ink">
+                          {l.item.name}
+                        </span>
+                        <span className="num mt-0.5 block text-[11px] text-ink-muted">
+                          {isContingency(l.item)
+                            ? `${l.percentRate ?? 0}%`
+                            : `${l.qty} x ${
+                                l.unitPrice != null ? money(l.unitPrice) : "-"
+                              }`}
+                        </span>
+                      </span>
+                      <span
+                        className={cx(
+                          "num shrink-0 pt-0.5 text-xs font-semibold",
+                          l.isUnpriced ? "text-warn" : "text-ink"
+                        )}
+                      >
+                        {l.isUnpriced ? t("badgeUnpriced") : money(l.totalCost)}
+                      </span>
+                      <button
+                        onClick={() => toggleItem(l.item.id)}
+                        aria-label={t("panelRemove", { name: l.item.name })}
+                        title={t("panelRemove", { name: l.item.name })}
+                        className="shrink-0 rounded-md p-1 text-ink-muted opacity-0 transition-colors hover:bg-bad-bg hover:text-bad focus:opacity-100 group-hover:opacity-100"
+                      >
+                        <X size={14} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
         </ul>
       )}
 
