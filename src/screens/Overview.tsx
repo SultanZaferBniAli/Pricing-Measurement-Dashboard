@@ -56,6 +56,24 @@ export function Overview({
   const data = useStore((s) => s.data);
   const history = useStore((s) => s.history);
   const [breakdown, setBreakdown] = useState<Breakdown>("section");
+  const [confirmNew, setConfirmNew] = useState(false);
+  const startNewBudget = useStore((s) => s.startNewBudget);
+
+  /**
+   * "New budget" used only to navigate, so the previous client, title and
+   * selections were still sitting there. It now actually starts one. Work that
+   * has not been exported is not on disk anywhere, so an in-progress budget is
+   * confirmed before it goes.
+   */
+  const newBudget = () => {
+    if (selectedCount > 0 && !confirmNew) {
+      setConfirmNew(true);
+      return;
+    }
+    startNewBudget();
+    setConfirmNew(false);
+    onBuild();
+  };
 
   const { catalog, totals, selectedCount, unpricedSelected, priced } = budget;
 
@@ -104,10 +122,25 @@ export function Overview({
           </h1>
           <p className="mt-1 text-sm text-ink-2">{t("overviewSub")}</p>
         </div>
-        <Button onClick={onBuild}>
+        <Button onClick={newBudget}>
           <Plus size={16} /> {t("overviewNewBudget")}
         </Button>
       </div>
+
+      {confirmNew && (
+        <div className="flex flex-wrap items-center gap-3 rounded-card border border-warn/30 bg-warn-bg px-4 py-3">
+          <TriangleAlert size={16} className="shrink-0 text-warn" />
+          <p className="min-w-0 flex-1 text-sm text-warn">
+            {t("newBudgetConfirm", { n: selectedCount })}
+          </p>
+          <Button size="sm" variant="ghost" onClick={() => setConfirmNew(false)}>
+            {t("newBudgetKeep")}
+          </Button>
+          <Button size="sm" onClick={newBudget}>
+            {t("newBudgetDiscard")}
+          </Button>
+        </div>
+      )}
 
       {/* KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">

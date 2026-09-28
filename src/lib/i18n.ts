@@ -206,6 +206,15 @@ const en = {
 
   // ---- overview ----
   navHome: "Dashboard",
+  panelTitle: "Your selection",
+  panelEmpty: "Nothing picked yet. Tick items on the left and they appear here.",
+  panelJump: "Go to this section",
+  panelRemove: "Remove {name}",
+  panelClearConfirm: "Click again to clear all",
+  newBudgetConfirm:
+    "You have {n} items in the current budget that have not been exported. Starting a new one clears them.",
+  newBudgetKeep: "Keep working",
+  newBudgetDiscard: "Start new",
   productName: "Pricing Intelligence",
   aiCardTitle: "AI-assisted pricing",
   aiCardBody: "Turn an RFP into an accurate budget, faster.",
@@ -462,6 +471,15 @@ const ar: Record<StringKey, string> = {
 
   // ---- overview ----
   navHome: "لوحة التحكم",
+  panelTitle: "اختيارك",
+  panelEmpty: "لم تحدد شيئاً بعد. حدد بنوداً من اليمين لتظهر هنا.",
+  panelJump: "الانتقال إلى هذا القسم",
+  panelRemove: "إزالة {name}",
+  panelClearConfirm: "اضغط مرة أخرى لمسح الكل",
+  newBudgetConfirm:
+    "لديك {n} بنداً في الميزانية الحالية لم تُصدَّر بعد. بدء ميزانية جديدة سيمسحها.",
+  newBudgetKeep: "متابعة العمل",
+  newBudgetDiscard: "بدء جديدة",
   productName: "منصة التسعير",
   aiCardTitle: "تسعير بمساعدة الذكاء الاصطناعي",
   aiCardBody: "حوّل كراسة الشروط إلى ميزانية دقيقة، بوقت أقل.",

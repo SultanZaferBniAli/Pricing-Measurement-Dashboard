@@ -98,6 +98,7 @@ export default function App() {
             <Dashboard
               budget={budget}
               onOpenExport={(id) => nav({ name: "history", id })}
+              onReview={() => nav({ name: "summary" })}
             />
           )}
           {view.name === "vendors" && <Vendors />}

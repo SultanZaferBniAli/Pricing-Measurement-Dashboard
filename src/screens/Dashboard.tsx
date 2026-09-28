@@ -13,6 +13,7 @@ import { useMemo, useState } from "react";
 import { CheckCircle2, Search, X } from "lucide-react";
 import { BudgetBar, SECTION_ACCENT, SECTION_FALLBACK } from "../components/BudgetBar";
 import { SectionPanel } from "../components/SectionPanel";
+import { SelectionPanel } from "../components/SelectionPanel";
 import { Card, cx } from "../components/ui";
 import { money } from "../lib/format";
 import { useT } from "../lib/i18n";
@@ -25,9 +26,11 @@ type PriceFilter = "all" | "priced" | "unpriced";
 export function Dashboard({
   budget,
   onOpenExport,
+  onReview,
 }: {
   budget: BudgetSummary;
   onOpenExport: (id: string) => void;
+  onReview: () => void;
 }) {
   const data = useStore((s) => s.data);
   const activeSection = useStore((s) => s.activeSection);
@@ -109,6 +112,9 @@ export function Dashboard({
 
       <BudgetBar budget={budget} />
 
+      {/* the catalog on the left, what you have chosen on the right */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-4">
       {/* search and filters apply across every section, so they lead */}
       <Card className="sticky top-2 z-20 p-3 lg:top-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -242,6 +248,10 @@ export function Dashboard({
             />
           )}
         </div>
+      </div>
+        </div>
+
+        <SelectionPanel budget={budget} onReview={onReview} />
       </div>
     </div>
   );

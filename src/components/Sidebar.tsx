@@ -17,13 +17,12 @@ import {
   LayoutGrid,
   Languages,
   Settings2,
-  ShoppingCart,
   Trash2,
   X,
 } from "lucide-react";
 import { TamLogo } from "./TamLogo";
 import { ThemeToggle } from "./ThemeToggle";
-import { Button, cx } from "./ui";
+import { cx } from "./ui";
 import { money } from "../lib/format";
 import { useT } from "../lib/i18n";
 import { useStore } from "../lib/store";
@@ -207,14 +206,6 @@ export function Sidebar({
             </p>
           </>
         )}
-        <Button
-          className="mt-3 w-full"
-          onClick={() => go({ name: "summary" })}
-          disabled={!budget.selectedCount}
-        >
-          <ShoppingCart size={16} /> {t("barReview")}
-        </Button>
-
         <div className="mt-3 flex items-center justify-between gap-2">
           <RailButton
             active={view.name === "admin"}
