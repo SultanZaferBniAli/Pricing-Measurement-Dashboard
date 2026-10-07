@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Card, cx } from "../components/ui";
 import { VENDORS, UNSOURCED, initials, type VendorProfile } from "../data/vendors";
+import { assetUrl } from "../lib/asset";
 import { money } from "../lib/format";
 import { useT, type StringKey } from "../lib/i18n";
 import { useStore } from "../lib/store";
@@ -217,7 +218,7 @@ function VendorLogo({ vendor }: { vendor: VendorProfile }) {
     >
       {showImage ? (
         <img
-          src={vendor.logo!}
+          src={assetUrl(vendor.logo!)}
           alt={vendor.name}
           className="h-7 w-auto max-w-[34px] object-contain"
           onError={() => setFailed(true)}

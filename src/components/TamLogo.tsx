@@ -7,6 +7,7 @@
  * nav bar is never broken.
  */
 import { useState } from "react";
+import { assetUrl } from "../lib/asset";
 
 export function TamLogo({ className }: { className?: string }) {
   const [ok, setOk] = useState(true);
@@ -15,7 +16,7 @@ export function TamLogo({ className }: { className?: string }) {
     <div className={className}>
       {ok ? (
         <img
-          src="/tam-logo.webp"
+          src={assetUrl("tam-logo.webp")}
           alt="TAM"
           className="tam-wordmark h-8 w-auto select-none md:h-9"
           draggable={false}
