@@ -6,7 +6,8 @@
  * from the same parts rather than each inventing its own card. Everything here
  * is theme-agnostic: colours come from the tokens, so light and dark are free.
  */
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { SlidingHighlight, useSlidingHighlight } from "./SlidingHighlight";
 import { cx } from "./ui";
 
 /* ------------------------------------------------------------------ panel */
@@ -300,22 +301,25 @@ export function FilterTabs<T extends string>({
   onChange: (v: T) => void;
   options: readonly (readonly [T, string])[];
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const highlight = useSlidingHighlight(ref, value);
   return (
     <div
+      ref={ref}
       role="tablist"
-      className="flex flex-wrap gap-1 rounded-control bg-raised p-1"
+      className="relative flex flex-wrap gap-1 rounded-full bg-raised p-1"
     >
+      <SlidingHighlight style={highlight} className="rounded-full bg-surface shadow-sm" />
       {options.map(([v, label]) => (
         <button
           key={v}
           role="tab"
           aria-selected={value === v}
+          data-active={value === v ? "true" : "false"}
           onClick={() => onChange(v)}
           className={cx(
-            "rounded-[9px] px-2.5 py-1.5 text-xs font-medium transition-colors duration-150",
-            value === v
-              ? "bg-surface text-brand shadow-sm"
-              : "text-ink-2 hover:text-ink"
+            "relative rounded-full px-3 py-1.5 text-xs font-medium transition-[color,transform] duration-200 ease-apple active:scale-[0.96]",
+            value === v ? "text-brand" : "text-ink-2 hover:text-ink"
           )}
         >
           {label}

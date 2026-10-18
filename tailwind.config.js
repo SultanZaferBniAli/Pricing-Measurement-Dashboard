@@ -79,6 +79,7 @@ export default {
       },
       transitionTimingFunction: {
         apple: "cubic-bezier(0.25, 0.1, 0.25, 1)",
+        spring: "cubic-bezier(0.34, 1.25, 0.64, 1)",
       },
       boxShadow: {
         card: "var(--shadow-card)",

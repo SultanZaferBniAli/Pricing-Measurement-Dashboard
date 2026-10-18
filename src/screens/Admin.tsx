@@ -3,6 +3,7 @@
  * developer connection to Claude, and the scope workbook re-upload.
  */
 import { useEffect, useRef, useState } from "react";
+import { SlidingHighlight, useSlidingHighlight } from "../components/SlidingHighlight";
 import { CheckCircle2, KeyRound, Loader2, Plus, RotateCcw, Trash2, Upload, Users, Activity, Database } from "lucide-react";
 import { KpiTile, Panel, StatusBadge } from "../components/dashboard";
 import { OwnerChip } from "../components/OwnerChip";
@@ -17,6 +18,8 @@ type Tab = "usage" | "users" | "developer" | "catalog";
 export function Admin() {
   const { t } = useT();
   const [tab, setTab] = useState<Tab>("usage");
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const highlight = useSlidingHighlight(tabsRef, tab);
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3">
@@ -26,7 +29,8 @@ export function Admin() {
           <p className="text-sm text-ink-2">{t("adminSub2")}</p>
         </div>
       </div>
-      <div role="tablist" className="flex flex-wrap gap-1 rounded-xl border border-line bg-surface p-1">
+      <div ref={tabsRef} role="tablist" className="relative flex flex-wrap gap-1 rounded-full border border-line bg-surface p-1">
+        <SlidingHighlight style={highlight} className="rounded-full bg-active" />
         {(
           [
             ["usage", <Activity size={14} />, t("adminTabUsage")],
@@ -39,8 +43,9 @@ export function Admin() {
             key={k}
             role="tab"
             aria-selected={tab === k}
+            data-active={tab === k ? "true" : "false"}
             onClick={() => setTab(k)}
-            className={cx("flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-sm font-medium", tab === k ? "bg-active text-brand" : "text-ink-2 hover:text-ink")}
+            className={cx("relative flex min-h-[36px] items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-[color,transform] duration-200 ease-apple active:scale-[0.96]", tab === k ? "text-brand" : "text-ink-2 hover:text-ink")}
           >
             {icon} {label}
           </button>

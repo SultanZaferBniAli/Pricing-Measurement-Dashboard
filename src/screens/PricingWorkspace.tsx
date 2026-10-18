@@ -8,6 +8,7 @@ import { ArrowRight, Boxes, Pencil, Sparkles } from "lucide-react";
 import { AiChat } from "../components/AiChat";
 import { AiProcessPanel } from "../components/AiProcessPanel";
 import { WbsTable } from "../components/WbsTable";
+import { SlidingHighlight, useSlidingHighlight } from "../components/SlidingHighlight";
 import { Button, Card, cx } from "../components/ui";
 import { ai as aiApi, type AiStatus, type Attachment } from "../lib/api";
 import { extractFile } from "../lib/extract";
@@ -41,6 +42,8 @@ export function PricingWorkspace({
   const [status, setStatus] = useState<AiStatus | null>(null);
   const [model, setModel] = useState<string>("");
   const abortRef = useRef<AbortController | null>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const tabHighlight = useSlidingHighlight(tabsRef, mode);
 
   useEffect(() => {
     aiApi
@@ -104,7 +107,8 @@ export function PricingWorkspace({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div role="tablist" className="flex rounded-xl border border-line bg-surface p-0.5">
+          <div ref={tabsRef} role="tablist" className="relative flex rounded-full border border-line bg-surface p-0.5">
+            <SlidingHighlight style={tabHighlight} className="rounded-full bg-active" />
             <ModeTab active={mode === "ai"} onClick={() => setMode("ai")} icon={<Sparkles size={14} />} label={t("wsModeAi")} />
             <ModeTab active={mode === "manual"} onClick={() => setMode("manual")} icon={<Boxes size={14} />} label={t("wsModeManual")} count={budget.catalogSelectedCount} />
           </div>
@@ -194,10 +198,11 @@ function ModeTab({ active, onClick, icon, label, count }: { active: boolean; onC
     <button
       role="tab"
       aria-selected={active}
+      data-active={active ? "true" : "false"}
       onClick={onClick}
       className={cx(
-        "flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-sm font-medium transition-colors",
-        active ? "bg-active text-brand" : "text-ink-2 hover:text-ink"
+        "relative flex min-h-[36px] items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-[color,transform] duration-200 ease-apple active:scale-[0.96]",
+        active ? "text-brand" : "text-ink-2 hover:text-ink"
       )}
     >
       {icon}

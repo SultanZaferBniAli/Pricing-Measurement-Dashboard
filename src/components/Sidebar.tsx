@@ -8,7 +8,7 @@
  * "Budget" is deliberately not a nav item. The footer's "Review budget" button
  * already goes there, and two controls for one destination is one too many.
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Boxes,
   FolderOpen,
@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { auth } from "../lib/api";
+import { SlidingHighlight, useSlidingHighlight } from "./SlidingHighlight";
 import { TamLogo } from "./TamLogo";
 import { ThemeToggle } from "./ThemeToggle";
 import { cx } from "./ui";
@@ -63,6 +64,8 @@ export function Sidebar({
   const setUser = useStore((s) => s.setUser);
   const project = useStore((s) => s.project);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+  const highlight = useSlidingHighlight(navRef, view.name);
 
   const signOut = () => auth.logout().finally(() => setUser(null));
 
@@ -99,6 +102,8 @@ export function Sidebar({
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
+        <div ref={navRef} className="relative">
+        <SlidingHighlight style={highlight} className="rounded-xl bg-active" />
         <RailButton
           active={view.name === "home"}
           onClick={() => go({ name: "home" })}
@@ -134,6 +139,7 @@ export function Sidebar({
         >
           {t("navVendors")}
         </RailButton>
+        </div>
 
         <p className="flex items-center gap-2 px-3 pb-2 pt-5 text-xs font-medium text-ink-muted">
           <History size={13} />
@@ -289,15 +295,20 @@ function RailButton({
   return (
     <button
       onClick={onClick}
+      data-active={active ? "true" : "false"}
       className={cx(
-        "flex items-center gap-2.5 rounded-xl text-sm font-medium transition-colors",
+        "group relative flex items-center gap-2.5 rounded-xl text-sm font-medium transition-[color,background-color,transform] duration-200 ease-apple active:scale-[0.97]",
         compact ? "px-2.5 py-2" : "w-full px-3 py-2.5",
         active
-          ? "bg-active text-brand"
-          : "text-ink-2 hover:bg-hover hover:text-ink"
+          ? compact
+            ? "bg-active text-brand"
+            : "text-brand"
+          : "text-ink-2 hover:text-ink",
+        !active && compact && "hover:bg-hover",
+        !active && !compact && "hover:bg-hover/60"
       )}
     >
-      {icon}
+      <span className={cx("transition-transform duration-300 ease-spring", active ? "scale-110" : "group-hover:scale-105")}>{icon}</span>
       {children}
     </button>
   );
