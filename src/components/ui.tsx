@@ -50,7 +50,7 @@ export function Button({
   // Apple-style controls: pill shape, a 44px primary target, a gentle lift on
   // hover and a quick press, with one easing curve throughout.
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-[transform,background-color,box-shadow,border-color,filter] duration-200 ease-apple hover:scale-[1.02] active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100";
+    "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[transform,background-color,box-shadow,border-color,filter] duration-200 ease-apple hover:scale-[1.02] active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100";
   const sizes = { sm: "text-sm px-4 min-h-[36px]", md: "text-[15px] px-5 min-h-[44px]" };
   const variants = {
     primary:
