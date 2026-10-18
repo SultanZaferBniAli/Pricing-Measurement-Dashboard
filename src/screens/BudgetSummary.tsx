@@ -160,10 +160,10 @@ export function BudgetSummary({ onBrowse, onSaved }: { onBrowse: () => void; onS
   }
 
   return (
-    <div className="space-y-5 animate-fade-in print:space-y-3">
+    <div className="space-y-6 animate-fade-in print:space-y-3">
       {/* header + actions */}
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <h1 className="text-2xl font-bold text-ink">{t("reviewTitle")}</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-ink">{t("reviewTitle")}</h1>
         <div className="flex items-center gap-2 print:hidden">
           <Button variant="secondary" size="sm" onClick={onBrowse}>
             <Plus size={15} /> {t("addMoreItems")}

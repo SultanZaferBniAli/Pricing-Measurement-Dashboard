@@ -18,11 +18,11 @@ export function Admin() {
   const { t } = useT();
   const [tab, setTab] = useState<Tab>("usage");
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3">
         <Diamond />
         <div>
-          <h1 className="text-2xl font-bold text-ink">{t("adminTitle")}</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-ink">{t("adminTitle")}</h1>
           <p className="text-sm text-ink-2">{t("adminSub2")}</p>
         </div>
       </div>

@@ -68,7 +68,7 @@ export function Login() {
               <LockKeyhole size={18} />
             </span>
             <div>
-              <h1 className="text-lg font-semibold">{t("loginTitle")}</h1>
+              <h1 className="text-[20px] font-semibold tracking-tight">{t("loginTitle")}</h1>
               <p className="text-sm text-ink-2">{t("loginSub")}</p>
             </div>
           </div>

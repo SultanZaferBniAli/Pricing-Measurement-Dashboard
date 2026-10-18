@@ -99,7 +99,7 @@ export default function App() {
           <ThemeToggle className={budget.selectedCount > 0 ? "" : "ms-auto"} />
         </header>
 
-        <main className="mx-auto w-full max-w-[96rem] px-4 py-6 md:px-8 md:py-8">
+        <main className="mx-auto w-full max-w-[96rem] px-4 py-6 md:px-10 md:py-10">
           {view.name === "home" && (
             <Overview
               budget={budget}

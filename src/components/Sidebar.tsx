@@ -74,7 +74,7 @@ export function Sidebar({
   const openEntry = (id: string) => go({ name: "history", id });
 
   return (
-    <div className="flex h-full flex-col border-e border-line bg-rail">
+    <div className="flex h-full flex-col border-e border-line/70 bg-rail/85 backdrop-blur-xl">
       {/* brand */}
       <div className="flex items-center justify-between gap-2 px-5 py-4">
         <button

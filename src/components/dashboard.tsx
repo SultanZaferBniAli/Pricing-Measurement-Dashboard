@@ -30,15 +30,15 @@ export function Panel({
   return (
     <section
       className={cx(
-        "min-w-0 rounded-card border border-line bg-surface shadow-card",
+        "min-w-0 rounded-card border border-line bg-surface/80 shadow-card backdrop-blur-xl",
         className
       )}
     >
       {(title || action) && (
-        <header className="flex flex-wrap items-start justify-between gap-3 px-5 pb-3 pt-4">
+        <header className="flex flex-wrap items-start justify-between gap-3 px-6 pb-3 pt-5">
           <div className="min-w-0">
             {title && (
-              <h2 className="text-base font-semibold text-ink">{title}</h2>
+              <h2 className="text-[17px] font-semibold text-ink">{title}</h2>
             )}
             {subtitle && (
               <p className="mt-0.5 text-xs text-ink-2">{subtitle}</p>
@@ -47,7 +47,7 @@ export function Panel({
           {action}
         </header>
       )}
-      <div className={cx("px-5 pb-5", !title && "pt-5", bodyClassName)}>
+      <div className={cx("px-6 pb-6", !title && "pt-6", bodyClassName)}>
         {children}
       </div>
     </section>
@@ -90,7 +90,7 @@ export function KpiTile({
 }) {
   const t = KPI_TONE[tone];
   return (
-    <div className="min-w-0 rounded-card border border-line bg-surface p-4 shadow-card transition-colors duration-150 hover:border-brand/30">
+    <div className="min-w-0 rounded-card border border-line bg-surface/80 p-5 shadow-card backdrop-blur-xl transition-[border-color,transform] duration-200 ease-apple hover:border-brand/30">
       <div className="flex items-start justify-between gap-3">
         <span className="text-xs font-medium text-ink-2">{label}</span>
         <span
@@ -102,7 +102,7 @@ export function KpiTile({
           {icon}
         </span>
       </div>
-      <p className={cx("num mt-2 text-2xl font-bold leading-tight", t.value)}>
+      <p className={cx("num mt-2 text-[28px] font-semibold leading-tight tracking-tight", t.value)}>
         {value}
         {unit && (
           <span className="ms-1 text-sm font-normal text-ink-2">{unit}</span>

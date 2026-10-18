@@ -18,15 +18,15 @@
   color-scheme: light;
 
   /* surfaces */
-  --bg: 248 247 252;          /* #F8F7FC page */
+  --bg: 245 245 247;          /* #F5F5F7 neutral ground, Apple-style; the brand lives in the accents */
   --surface: 255 255 255;     /* #FFFFFF card */
-  --raised: 250 249 254;      /* subtle row / inset */
+  --raised: 250 250 252;      /* subtle row / inset */
   --hover: 243 240 255;       /* #F3F0FF */
   --active: 238 233 255;      /* #EEE9FF */
-  --line: 232 229 242;        /* #E8E5F2 */
+  --line: 228 228 234;        /* hairline */
 
   /* text */
-  --ink: 23 19 47;            /* #17132F */
+  --ink: 29 29 31;            /* #1D1D1F */
   --ink-2: 105 100 127;       /* #69647F. The brief's #6F6A86 clears AA on a
                                  white card but drops to 4.42 once a row carries
                                  a selection tint. Two shades darker holds
@@ -60,18 +60,18 @@
   --c5: 215 210 255;          /* #D7D2FF */
 
   --ring: 94 69 255;
-  --shadow-card: 0 1px 2px rgb(23 19 47 / 0.04), 0 8px 24px -12px rgb(23 19 47 / 0.12);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.03), 0 4px 24px rgb(0 0 0 / 0.06);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: 15 16 32;             /* #0F1020 */
-  --surface: 23 25 47;        /* #17192F */
-  --raised: 29 32 56;         /* #1D2038 */
-  --hover: 34 37 65;          /* #222541 */
-  --active: 42 36 82;         /* #2A2452 */
-  --line: 42 45 71;           /* #2A2D47 */
+  --bg: 0 0 0;                /* true black ground */
+  --surface: 28 28 30;        /* #1C1C1E graphite */
+  --raised: 36 36 40;
+  --hover: 44 44 50;
+  --active: 46 40 84;         /* brand-tinted selection */
+  --line: 56 56 62;
 
   --ink: 245 244 255;         /* #F5F4FF */
   --ink-2: 199 195 218;       /* #C7C3DA */
@@ -97,7 +97,7 @@
   --c5: 74 64 160;
 
   --ring: 167 155 255;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.55);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 32px rgb(0 0 0 / 0.45);
 }
 
 /* the sidebar sits a shade apart from the page in both themes */
@@ -105,7 +105,7 @@
   --rail: 255 255 255;
 }
 :root[data-theme="dark"] {
-  --rail: 19 21 42;           /* #13152A */
+  --rail: 20 20 22;
 }
 
 /*
@@ -130,8 +130,9 @@ body {
   margin: 0;
   background-color: rgb(var(--bg));
   color: rgb(var(--ink));
-  font-family: Inter, "Helvetica Neue LT Arabic", "Helvetica Neue", Arial,
-    "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    Inter, "Helvetica Neue LT Arabic", "Helvetica Neue", "IBM Plex Sans Arabic",
+    "Noto Sans Arabic", "Segoe UI", sans-serif;
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -145,6 +146,11 @@ body {
 :root[lang="ar"] body {
   font-family: "Helvetica Neue LT Arabic", "IBM Plex Sans Arabic", Tajawal,
     "Noto Sans Arabic", "Segoe UI", sans-serif;
+}
+
+/* Display type: a touch tighter, as the system font is designed to be read */
+h1, h2, h3 {
+  letter-spacing: -0.015em;
 }
 
 /* RTL: numbers and prices stay LTR for readability */

@@ -54,7 +54,7 @@ export function ProjectSetup({ onDone, onCancel }: { onDone: () => void; onCance
       <div className="flex items-center gap-3">
         <Diamond />
         <div>
-          <h1 className="text-2xl font-bold text-ink">{existing ? t("setupTitleEdit") : t("setupTitle")}</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-ink">{existing ? t("setupTitleEdit") : t("setupTitle")}</h1>
           <p className="text-sm text-ink-2">{t("setupSub")}</p>
         </div>
       </div>

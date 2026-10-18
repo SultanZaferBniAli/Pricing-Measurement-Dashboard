@@ -87,7 +87,7 @@ export function PricingWorkspace({
       {/* header: the brief, the mode, the way onward */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-bold text-ink">{project.title}</h1>
+          <h1 className="truncate text-[28px] font-semibold tracking-tight text-ink">{project.title}</h1>
           <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-sm text-ink-2">
             <span>{project.client}</span>
             <span className="text-ink-muted">·</span>

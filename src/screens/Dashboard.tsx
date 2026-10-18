@@ -83,10 +83,10 @@ export function Dashboard({
   };
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {!embedded && (
         <div>
-          <h1 className="text-2xl font-bold text-ink md:text-3xl">{t("buildTitle")}</h1>
+          <h1 className="text-[28px] font-semibold tracking-tight text-ink">{t("buildTitle")}</h1>
         </div>
       )}
 

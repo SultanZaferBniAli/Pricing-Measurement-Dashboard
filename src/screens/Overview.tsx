@@ -127,11 +127,11 @@ export function Overview({
   }, [breakdown, budget.bySection, priced, tSection, tSubCategory]);
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* page header */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-ink md:text-[1.75rem]">
+          <h1 className="text-[28px] font-semibold tracking-tight text-ink">
             {t("overviewTitle")}
           </h1>
           <p className="mt-1 text-sm text-ink-2">{t("overviewSub")}</p>

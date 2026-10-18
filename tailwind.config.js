@@ -74,8 +74,11 @@ export default {
         ],
       },
       borderRadius: {
-        card: "16px",
+        card: "18px",
         control: "12px",
+      },
+      transitionTimingFunction: {
+        apple: "cubic-bezier(0.25, 0.1, 0.25, 1)",
       },
       boxShadow: {
         card: "var(--shadow-card)",

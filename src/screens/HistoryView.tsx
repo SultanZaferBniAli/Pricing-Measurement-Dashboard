@@ -69,7 +69,7 @@ export function HistoryView({
   const drifted = Math.abs(totals.grand - entry.grand) > 0.5;
 
   return (
-    <div className="space-y-5 animate-fade-in print:space-y-3">
+    <div className="space-y-6 animate-fade-in print:space-y-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <button
@@ -78,7 +78,7 @@ export function HistoryView({
           >
             <ArrowLeft size={13} /> {t("backToBuilder")}
           </button>
-          <h1 className="text-2xl font-bold text-ink">
+          <h1 className="text-[28px] font-semibold tracking-tight text-ink">
             {entry.title || t("untitledBudget")}
           </h1>
         </div>
