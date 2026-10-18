@@ -277,7 +277,7 @@ function FilterSelect({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cx(
-        "cursor-pointer rounded-xl border px-2.5 py-2 text-xs focus:outline-none",
+        "select cursor-pointer rounded-full border py-2 ps-3 text-xs focus:outline-none",
         active
           ? "border-brand/50 bg-brand/10 text-ink"
           : "border-line bg-bg/60 text-ink-2"

@@ -210,7 +210,7 @@ function UsersTab() {
                   }
                   title={t("admRole")}
                   className={cx(
-                    "cursor-pointer rounded-control border px-2 py-1 text-xs focus:outline-none",
+                    "select cursor-pointer rounded-full border py-1 ps-2.5 text-xs focus:outline-none",
                     u.role === "admin" ? "border-brand/40 bg-active text-brand" : "border-line bg-bg/60 text-ink-2"
                   )}
                 >
@@ -245,7 +245,7 @@ function UsersTab() {
           </label>
           <label className="block">
             <span className="text-xs text-ink-2">{t("admRole")}</span>
-            <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as "user" | "admin" })} className={field}>
+            <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as "user" | "admin" })} className={cx(field, "select")}>
               <option value="user">user</option>
               <option value="admin">admin</option>
             </select>

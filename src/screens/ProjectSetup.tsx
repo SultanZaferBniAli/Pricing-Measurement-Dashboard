@@ -75,7 +75,7 @@ export function ProjectSetup({ onDone, onCancel }: { onDone: () => void; onCance
             </label>
             <label className="block">
               <span className="text-xs text-ink-2">{t("setupType")} *</span>
-              <select value={form.projectType} onChange={(e) => set("projectType", e.target.value)} className={cx(field, "cursor-pointer", bad(form.projectType))}>
+              <select value={form.projectType} onChange={(e) => set("projectType", e.target.value)} className={cx(field, "select cursor-pointer", bad(form.projectType))}>
                 <option value="">{t("setupTypePlaceholder")}</option>
                 {PROJECT_TYPES.map((p) => (
                   <option key={p} value={p}>

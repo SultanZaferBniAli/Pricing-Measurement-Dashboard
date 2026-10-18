@@ -138,7 +138,7 @@ export function PricingWorkspace({
                     <select
                       value={model}
                       onChange={(e) => setModel(e.target.value)}
-                      className="cursor-pointer rounded-control border border-line bg-bg/60 px-2 py-1 text-[11px] text-ink focus:outline-none"
+                      className="select cursor-pointer rounded-full border border-line bg-bg/60 py-1 ps-3 text-[11px] text-ink focus:outline-none"
                     >
                       {status.models.map((m) => (
                         <option key={m.id} value={m.id}>
