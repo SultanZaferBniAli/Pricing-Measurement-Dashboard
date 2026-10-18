@@ -8,9 +8,9 @@ import path from "node:path";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-import { seedUsers } from "./auth";
+import { pruneSessions, seedUsers } from "./auth";
 import { config } from "./config";
-import { dbPath, flush } from "./db/store";
+import { closeStore, openStore, store } from "./db/store";
 import { catalogMeta } from "./pricing/catalog";
 import { providerStatus } from "./pricing/pipeline";
 import { adminRouter } from "./routes/admin";
@@ -19,8 +19,6 @@ import { authRouter } from "./routes/auth";
 import { budgetsRouter } from "./routes/budgets";
 import { catalogRouter } from "./routes/catalog";
 import { devRouter } from "./routes/dev";
-
-seedUsers();
 
 const app = express();
 app.disable("x-powered-by");
@@ -33,8 +31,14 @@ app.use(
 app.use(express.json({ limit: "60mb" }));
 app.use(cookieParser());
 
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, db: dbPath(), llm: providerStatus().ready ? "ready" : "no-key", builtOn: catalogMeta.builtOn });
+/** 200 when the app is up and the database answers; 503 otherwise. */
+app.get("/api/health", async (_req, res) => {
+  try {
+    await store().collection("users").get("health-probe");
+    res.json({ ok: true, db: store().kind, llm: providerStatus().ready ? "ready" : "no-key", builtOn: catalogMeta.builtOn });
+  } catch (err) {
+    res.status(503).json({ ok: false, error: (err as Error).message });
+  }
 });
 app.use("/api/auth", authRouter);
 app.use("/api/catalog", catalogRouter);
@@ -54,24 +58,40 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: "Something went wrong" });
 });
 
-const server = app.listen(config.PORT, config.HOST, () => {
-  const s = providerStatus();
-  console.log(
-    JSON.stringify({
-      level: "info",
-      msg: `API listening on http://${config.HOST}:${config.PORT}`,
-      provider: s.provider,
-      model: s.model,
-      llmReady: s.ready,
-      catalog: catalogMeta.counts,
-    })
-  );
-});
+async function main() {
+  const db = await openStore();
+  await seedUsers();
+  await pruneSessions();
+  setInterval(() => pruneSessions().catch(() => undefined), 60 * 60 * 1000).unref();
 
-for (const sig of ["SIGTERM", "SIGINT"] as const) {
-  process.on(sig, () => {
-    flush();
-    server.close(() => process.exit(0));
-    setTimeout(() => process.exit(0), 2000).unref();
+  const server = app.listen(config.PORT, config.HOST, () => {
+    const s = providerStatus();
+    console.log(
+      JSON.stringify({
+        level: "info",
+        msg: `API listening on http://${config.HOST}:${config.PORT}`,
+        db: db.kind,
+        dbTarget: db.description,
+        provider: s.provider,
+        model: s.model,
+        llmReady: s.ready,
+        catalog: catalogMeta.counts,
+      })
+    );
   });
+
+  for (const sig of ["SIGTERM", "SIGINT"] as const) {
+    process.on(sig, () => {
+      console.log(JSON.stringify({ level: "info", msg: `${sig} received, shutting down` }));
+      server.close(() => {
+        closeStore().finally(() => process.exit(0));
+      });
+      setTimeout(() => process.exit(0), 5000).unref();
+    });
+  }
 }
+
+main().catch((err) => {
+  console.error(JSON.stringify({ level: "fatal", msg: "startup failed", error: (err as Error).message }));
+  process.exit(1);
+});

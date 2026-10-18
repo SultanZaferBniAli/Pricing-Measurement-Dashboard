@@ -16,16 +16,15 @@ import { config } from "./config";
 import { collection, newId, type User } from "./db/store";
 
 const COOKIE = "tam_session";
-const sessions = new Map<string, { userId: string; expires: number }>();
 const TTL_MS = 1000 * 60 * 60 * 12;
 
-export function seedUsers() {
+export async function seedUsers() {
   const users = collection("users");
   for (const entry of config.SEED_USERS.split(",")) {
     const [email, password, role] = entry.split(":").map((s) => s?.trim());
     if (!email || !password) continue;
-    if (users.find((u) => u.email.toLowerCase() === email.toLowerCase()).length) continue;
-    users.insert({
+    if ((await users.find((u) => u.email.toLowerCase() === email.toLowerCase())).length) continue;
+    await users.insert({
       id: newId("usr"),
       email: email.toLowerCase(),
       name: email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
@@ -58,17 +57,17 @@ export function publicUser(u: User) {
   return { id: u.id, email: u.email, name: u.name, role: u.role, picture: u.picture ?? null, provider: u.provider ?? "password" };
 }
 
-export function login(email: string, password: string): User | null {
+export async function login(email: string, password: string): Promise<User | null> {
   if (!config.AUTH_PASSWORD_LOGIN) return null;
-  const user = collection("users").find((u) => u.email === email.toLowerCase())[0];
+  const user = (await collection("users").find((u) => u.email === email.toLowerCase()))[0];
   if (!user || !user.passwordHash || !bcrypt.compareSync(password, user.passwordHash)) return null;
-  collection("users").update(user.id, { lastLoginAt: new Date().toISOString() });
+  await collection("users").update(user.id, { lastLoginAt: new Date().toISOString() });
   return user;
 }
 
-export function startSession(res: Response, user: User) {
+export async function startSession(res: Response, user: User) {
   const id = crypto.randomBytes(24).toString("base64url");
-  sessions.set(id, { userId: user.id, expires: Date.now() + TTL_MS });
+  await collection("sessions").insert({ id, userId: user.id, expires: Date.now() + TTL_MS });
   res.cookie(COOKIE, sign(id), {
     httpOnly: true,
     sameSite: "lax",
@@ -78,21 +77,27 @@ export function startSession(res: Response, user: User) {
   });
 }
 
-export function endSession(req: Request, res: Response) {
+export async function endSession(req: Request, res: Response) {
   const id = verify(req.cookies?.[COOKIE]);
-  if (id) sessions.delete(id);
+  if (id) await collection("sessions").remove(id);
   res.clearCookie(COOKIE, { path: "/" });
 }
 
-export function currentUser(req: Request): User | null {
+export async function currentUser(req: Request): Promise<User | null> {
   const id = verify(req.cookies?.[COOKIE]);
   if (!id) return null;
-  const s = sessions.get(id);
+  const s = await collection("sessions").get(id);
   if (!s || s.expires < Date.now()) {
-    if (s) sessions.delete(id);
+    if (s) await collection("sessions").remove(id);
     return null;
   }
-  return collection("users").get(s.userId) ?? null;
+  return (await collection("users").get(s.userId)) ?? null;
+}
+
+/** Drop expired sessions. Called on startup and once an hour. */
+export async function pruneSessions() {
+  const now = Date.now();
+  for (const s of await collection("sessions").find((s) => s.expires < now)) await collection("sessions").remove(s.id);
 }
 
 declare module "express-serve-static-core" {
@@ -102,18 +107,24 @@ declare module "express-serve-static-core" {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const user = currentUser(req);
-  if (!user) return res.status(401).json({ error: "Not signed in" });
-  req.user = user;
-  next();
+  currentUser(req)
+    .then((user) => {
+      if (!user) return res.status(401).json({ error: "Not signed in" });
+      req.user = user;
+      next();
+    })
+    .catch(next);
 }
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const user = currentUser(req);
-  if (!user) return res.status(401).json({ error: "Not signed in" });
-  if (user.role !== "admin") return res.status(403).json({ error: "Admin only" });
-  req.user = user;
-  next();
+  currentUser(req)
+    .then((user) => {
+      if (!user) return res.status(401).json({ error: "Not signed in" });
+      if (user.role !== "admin") return res.status(403).json({ error: "Admin only" });
+      req.user = user;
+      next();
+    })
+    .catch(next);
 }
 
 // ---------------------------------------------------------------------------
@@ -208,7 +219,7 @@ export async function completeGoogleLogin(req: Request, res: Response, code: str
   const users = collection("users");
   const admins = config.ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
   const now = new Date().toISOString();
-  const existing = users.find((u) => u.email === email)[0];
+  const existing = (await users.find((u) => u.email === email))[0];
   const patch: Partial<User> = {
     name: payload.name || existing?.name || email.split("@")[0],
     picture: payload.picture ?? existing?.picture,
@@ -217,7 +228,7 @@ export async function completeGoogleLogin(req: Request, res: Response, code: str
     lastLoginAt: now,
     role: existing?.role === "admin" || admins.includes(email) ? "admin" : existing?.role ?? "user",
   };
-  if (existing) return users.update(existing.id, patch) ?? existing;
+  if (existing) return (await users.update(existing.id, patch)) ?? existing;
   return users.insert({
     id: newId("usr"),
     email,

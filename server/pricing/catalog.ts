@@ -266,7 +266,7 @@ export interface PastHit {
   score: number;
 }
 
-export function searchPastProjects(query: string, projectType?: string, limit = 8): PastHit[] {
+export async function searchPastProjects(query: string, projectType?: string, limit = 8): Promise<PastHit[]> {
   const tokens = tokenize(query);
   if (tokens.length === 0) return [];
   const expanded = expand(tokens);
@@ -281,7 +281,7 @@ export function searchPastProjects(query: string, projectType?: string, limit = 
       unitPrice: p.unitPrice, total: p.total, origin: "seed", score: s,
     });
   }
-  const observations: PriceObservation[] = collection("observations").all();
+  const observations: PriceObservation[] = await collection("observations").all();
   for (const o of observations) {
     const s = score(tokens, expanded, `${o.item} ${o.section}`, phrase);
     if (s < 0.34) continue;

@@ -121,82 +121,79 @@ export interface UsageEvent {
   outputTokens?: number;
 }
 
-interface Tables {
+/** A signed-in browser session, kept in the database so a redeploy does not sign everyone out. */
+export interface Session {
+  id: string;
+  userId: string;
+  expires: number;
+}
+
+export interface Tables {
   users: User[];
   budgets: Budget[];
   observations: PriceObservation[];
   aiSessions: AiSession[];
   usage: UsageEvent[];
+  sessions: Session[];
+}
+export type TableName = keyof Tables;
+export type RowOf<K extends TableName> = Tables[K][number];
+
+/**
+ * What every storage backend provides for one collection. Rows are documents
+ * with an `id`; the backend decides how to keep them. `find` takes a predicate
+ * because every query the app makes is small; the Postgres backend loads the
+ * collection and filters in memory, which is fine at TAM's scale (hundreds of
+ * budgets, thousands of observations) and keeps the two backends identical.
+ */
+export interface Collection<Row extends { id: string }> {
+  all(): Promise<Row[]>;
+  get(id: string): Promise<Row | undefined>;
+  find(pred: (r: Row) => boolean): Promise<Row[]>;
+  insert(row: Row): Promise<Row>;
+  update(id: string, patch: Partial<Row>): Promise<Row | undefined>;
+  remove(id: string): Promise<boolean>;
 }
 
-const EMPTY: Tables = { users: [], budgets: [], observations: [], aiSessions: [], usage: [] };
-
-const FILE = path.resolve(config.DATA_DIR, "db.json");
-
-let tables: Tables = load();
-
-function load(): Tables {
-  try {
-    const raw = fs.readFileSync(FILE, "utf8");
-    return { ...EMPTY, ...(JSON.parse(raw) as Partial<Tables>) };
-  } catch {
-    return structuredClone(EMPTY);
-  }
-}
-
-let writeTimer: NodeJS.Timeout | null = null;
-function scheduleWrite() {
-  if (writeTimer) return;
-  writeTimer = setTimeout(flush, 50);
-}
-export function flush() {
-  writeTimer = null;
-  fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  const tmp = FILE + ".tmp";
-  fs.writeFileSync(tmp, JSON.stringify(tables, null, 1));
-  fs.renameSync(tmp, FILE);
+export interface Store {
+  kind: "json" | "postgres";
+  description: string;
+  collection<K extends TableName>(name: K): Collection<RowOf<K>>;
+  /** Run migrations / open connections. Called once at startup. */
+  init(): Promise<void>;
+  close(): Promise<void>;
 }
 
 export function newId(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function collection<K extends keyof Tables>(name: K) {
-  type Row = Tables[K][number];
-  return {
-    all(): Row[] {
-      return tables[name] as Row[];
-    },
-    get(id: string): Row | undefined {
-      return (tables[name] as Row[]).find((r) => (r as { id: string }).id === id);
-    },
-    find(pred: (r: Row) => boolean): Row[] {
-      return (tables[name] as Row[]).filter(pred);
-    },
-    insert(row: Row): Row {
-      (tables[name] as Row[]).push(row);
-      scheduleWrite();
-      return row;
-    },
-    update(id: string, patch: Partial<Row>): Row | undefined {
-      const rows = tables[name] as Row[];
-      const i = rows.findIndex((r) => (r as { id: string }).id === id);
-      if (i < 0) return undefined;
-      rows[i] = { ...rows[i], ...patch };
-      scheduleWrite();
-      return rows[i];
-    },
-    remove(id: string): boolean {
-      const rows = tables[name] as Row[];
-      const i = rows.findIndex((r) => (r as { id: string }).id === id);
-      if (i < 0) return false;
-      rows.splice(i, 1);
-      scheduleWrite();
-      return true;
-    },
-  };
+let active: Store | null = null;
+
+/** Pick the backend: Postgres when DATABASE_URL is set, else the local JSON file. */
+export async function openStore(): Promise<Store> {
+  if (active) return active;
+  if (config.DATABASE_URL) {
+    const { createPostgresStore } = await import("./postgres");
+    active = await createPostgresStore(config.DATABASE_URL);
+  } else {
+    const { createJsonStore } = await import("./json");
+    active = createJsonStore(config.DATA_DIR);
+  }
+  await active.init();
+  return active;
 }
 
-export function dbPath(): string {
-  return FILE;
+export function store(): Store {
+  if (!active) throw new Error("Store not opened yet");
+  return active;
+}
+
+export function collection<K extends TableName>(name: K): Collection<RowOf<K>> {
+  return store().collection(name);
+}
+
+export async function closeStore() {
+  if (active) await active.close();
+  active = null;
 }

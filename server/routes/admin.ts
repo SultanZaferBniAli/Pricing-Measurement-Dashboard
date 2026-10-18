@@ -7,11 +7,12 @@ export const adminRouter = Router();
 adminRouter.use(requireAdmin);
 
 /** Who used the dashboard, what they priced, and what it came to. */
-adminRouter.get("/usage", (_req, res) => {
-  const usage = collection("usage").all().slice().sort((a, b) => b.at.localeCompare(a.at));
-  const budgets = collection("budgets").all();
-  const sessions = collection("aiSessions").all();
-  const users = collection("users").all();
+adminRouter.get("/usage", async (_req, res) => {
+  const usage = (await collection("usage").all()).sort((a, b) => b.at.localeCompare(a.at));
+  const budgets = await collection("budgets").all();
+  const sessions = await collection("aiSessions").all();
+  const users = await collection("users").all();
+  const observations = (await collection("observations").all()).length;
   const perUser = users.map((u) => {
     const mine = usage.filter((e) => e.userId === u.id);
     const myBudgets = budgets.filter((b) => b.userId === u.id);
@@ -31,13 +32,13 @@ adminRouter.get("/usage", (_req, res) => {
       users: users.length,
       budgets: budgets.length,
       aiRuns: usage.filter((e) => e.action === "ai_run").length,
-      observations: collection("observations").all().length,
+      observations,
       totalPriced: budgets.reduce((s, b) => s + (b.totals?.total ?? 0), 0),
     },
     perUser,
     events: usage.slice(0, 300),
-    budgets: budgets
-      .map(({ lines, ...b }) => ({ ...b, ...ownerOf(b.userId, b.userEmail), lineCount: lines.length }))
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+    budgets: (
+      await Promise.all(budgets.map(async ({ lines, ...b }) => ({ ...b, ...(await ownerOf(b.userId, b.userEmail)), lineCount: lines.length })))
+    ).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
   });
 });

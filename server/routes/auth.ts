@@ -37,34 +37,35 @@ authRouter.get("/google/callback", async (req, res) => {
   if (!q.success || q.data.error || !q.data.code || !q.data.state) return res.redirect("/?auth_error=cancelled");
   const result = await completeGoogleLogin(req, res, q.data.code, q.data.state);
   if (typeof result === "string") return res.redirect(`/?auth_error=${result}`);
-  startSession(res, result);
+  await startSession(res, result);
   logUsage({ userId: result.id, userEmail: result.email, action: "login" });
   res.redirect("/");
 });
 
-authRouter.post("/login", (req, res) => {
+authRouter.post("/login", async (req, res) => {
   const body = z.object({ email: z.string().email(), password: z.string().min(1) }).safeParse(req.body);
   if (!body.success) return res.status(400).json({ error: "Email and password are required" });
-  const user = login(body.data.email, body.data.password);
+  const user = await login(body.data.email, body.data.password);
   if (!user) return res.status(401).json({ error: "Wrong email or password" });
-  startSession(res, user);
+  await startSession(res, user);
   logUsage({ userId: user.id, userEmail: user.email, action: "login" });
   res.json({ user: publicUser(user) });
 });
 
-authRouter.post("/logout", (req, res) => {
-  endSession(req, res);
+authRouter.post("/logout", async (req, res) => {
+  await endSession(req, res);
   res.json({ ok: true });
 });
 
-authRouter.get("/me", (req, res) => {
-  const user = currentUser(req);
+authRouter.get("/me", async (req, res) => {
+  const user = await currentUser(req);
   res.json({ user: user ? publicUser(user) : null });
 });
 
 /** Admin: list users and add one. */
-authRouter.get("/users", requireAdmin, (_req, res) => {
-  res.json({ users: collection("users").all().map((u) => ({ ...publicUser(u), createdAt: u.createdAt, lastLoginAt: u.lastLoginAt, hasPassword: Boolean(u.passwordHash) })) });
+authRouter.get("/users", requireAdmin, async (_req, res) => {
+  const users = await collection("users").all();
+  res.json({ users: users.map((u) => ({ ...publicUser(u), createdAt: u.createdAt, lastLoginAt: u.lastLoginAt, hasPassword: Boolean(u.passwordHash) })) });
 });
 
 /**
@@ -72,7 +73,7 @@ authRouter.get("/users", requireAdmin, (_req, res) => {
  * is a Google-only account, pre-registered so the person gets the chosen role
  * the first time they sign in with Google.
  */
-authRouter.post("/users", requireAdmin, (req, res) => {
+authRouter.post("/users", requireAdmin, async (req, res) => {
   const body = z
     .object({
       email: z.string().email(),
@@ -84,9 +85,9 @@ authRouter.post("/users", requireAdmin, (req, res) => {
   if (!body.success) return res.status(400).json({ error: "Email, name and role are required; a password must be 8+ characters" });
   const email = body.data.email.toLowerCase();
   if (!emailAllowed(email)) return res.status(400).json({ error: "Only TAM email addresses can have an account" });
-  if (collection("users").find((u) => u.email === email).length) return res.status(409).json({ error: "That email already has an account" });
+  if ((await collection("users").find((u) => u.email === email)).length) return res.status(409).json({ error: "That email already has an account" });
   const password = body.data.password || "";
-  const user = collection("users").insert({
+  const user = await collection("users").insert({
     id: newId("usr"),
     email,
     name: body.data.name,
@@ -99,16 +100,16 @@ authRouter.post("/users", requireAdmin, (req, res) => {
 });
 
 /** Change someone's role. Admins cannot demote themselves, so there is always one left. */
-authRouter.patch("/users/:id", requireAdmin, (req, res) => {
+authRouter.patch("/users/:id", requireAdmin, async (req, res) => {
   const body = z.object({ role: z.enum(["admin", "user"]) }).safeParse(req.body);
   if (!body.success) return res.status(400).json({ error: "Role must be admin or user" });
   if (req.params.id === req.user.id) return res.status(400).json({ error: "You cannot change your own role" });
-  const user = collection("users").update(req.params.id, { role: body.data.role });
+  const user = await collection("users").update(req.params.id, { role: body.data.role });
   if (!user) return res.status(404).json({ error: "User not found" });
   res.json({ user: publicUser(user) });
 });
 
-authRouter.delete("/users/:id", requireAdmin, (req, res) => {
+authRouter.delete("/users/:id", requireAdmin, async (req, res) => {
   if (req.params.id === req.user.id) return res.status(400).json({ error: "You cannot remove your own account" });
-  res.json({ ok: collection("users").remove(req.params.id) });
+  res.json({ ok: await collection("users").remove(req.params.id) });
 });

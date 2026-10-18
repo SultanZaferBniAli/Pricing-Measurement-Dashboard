@@ -68,9 +68,13 @@ See `.env.example`. Key settings: `ANTHROPIC_API_KEY`, `LLM_PROVIDER`
 (`anthropic` or `mock`), `LLM_MODEL`, `LLM_EFFORT`, `LLM_WEB_SEARCH`,
 `SEED_USERS`, `ALLOWED_EMAIL_DOMAINS`, `DATA_DIR`.
 
-## Before release
+## Database
 
-- Replace the JSON store with Postgres behind the same `collection()` interface.
-- Put the API behind TAM's identity provider (OIDC) instead of seeded passwords.
-- Move the API key to the organisation's Anthropic account and keep it server-side only.
-- Containerise per the Dokploy conventions in `VibeCodersGonnaVibeCode.md`.
+Two backends sit behind one interface (`server/db/store.ts`):
+
+- **JSON file** (`server/data/db.json`) when `DATABASE_URL` is empty. This is what `npm run dev` uses on a laptop.
+- **Postgres** when `DATABASE_URL` is set. Migrations in `server/db/migrations` run at startup. `npm run db:test` exercises the backend against an in-process Postgres; `npm run db:import` copies a local JSON database into Postgres.
+
+## Deploy
+
+See `DEPLOYMENT.md`. `docker-compose.yml` follows the Dokploy conventions: an `app` service and a `db` (Postgres 17) service with a named volume, no host ports, health checks on both.

@@ -13,7 +13,9 @@ const schema = z.object({
   PORT: z.coerce.number().int().positive().default(8787),
   HOST: z.string().default("0.0.0.0"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  /** Where the JSON database and uploaded files live. */
+  /** Postgres connection string. When set, the app uses Postgres; when empty, the local JSON file. */
+  DATABASE_URL: z.string().optional().transform((v) => v?.trim() || undefined),
+  /** Where the JSON database (local development) and local secrets live. */
   DATA_DIR: z.string().default("./server/data"),
   /** Secret used to sign session cookies. Any long random string. */
   SESSION_SECRET: z.string().min(16).default("dev-only-change-me-please-0123456789"),

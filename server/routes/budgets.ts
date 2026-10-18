@@ -39,10 +39,10 @@ const Body = z.object({
   aiSessionId: z.string().nullable().optional(),
 });
 
-function observe(b: Budget, createdBy: string) {
+async function observe(b: Budget, createdBy: string) {
   const obs = collection("observations");
   // Replace this budget's earlier observations so a re-save does not double count.
-  for (const o of obs.find((o) => o.budgetId === b.id)) obs.remove(o.id);
+  for (const o of await obs.find((o) => o.budgetId === b.id)) await obs.remove(o.id);
   for (const l of b.lines) {
     if (l.unitPrice == null || l.unitPrice <= 0) continue;
     const row: PriceObservation = {
@@ -51,38 +51,37 @@ function observe(b: Budget, createdBy: string) {
       unit: l.unit, qty: l.qty, unitPrice: l.unitPrice, sourceType: l.sourceType, userAdjusted: Boolean(l.userAdjusted),
       matchedItemId: l.matchedItemId ?? null, createdBy,
     };
-    obs.insert(row);
+    await obs.insert(row);
   }
 }
 
 /** Who owns a budget, as the UI shows it: name and photo, looked up live. */
-export function ownerOf(userId: string, fallbackEmail: string) {
-  const u = collection("users").get(userId);
+export async function ownerOf(userId: string, fallbackEmail: string) {
+  const u = await collection("users").get(userId);
   return { userName: u?.name ?? fallbackEmail.split("@")[0], userPicture: u?.picture ?? null };
 }
 
-budgetsRouter.get("/", (req, res) => {
-  const all = collection("budgets").all();
+budgetsRouter.get("/", async (req, res) => {
+  const all = await collection("budgets").all();
   const mine = req.user.role === "admin" ? all : all.filter((b) => b.userId === req.user.id);
-  res.json({
-    budgets: mine
-      .map(({ lines, ...b }) => ({ ...b, ...ownerOf(b.userId, b.userEmail), lineCount: lines.length }))
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
-  });
+  const rows = await Promise.all(
+    mine.map(async ({ lines, ...b }) => ({ ...b, ...(await ownerOf(b.userId, b.userEmail)), lineCount: lines.length }))
+  );
+  res.json({ budgets: rows.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)) });
 });
 
-budgetsRouter.get("/:id", (req, res) => {
-  const b = collection("budgets").get(req.params.id);
+budgetsRouter.get("/:id", async (req, res) => {
+  const b = await collection("budgets").get(req.params.id);
   if (!b || (b.userId !== req.user.id && req.user.role !== "admin")) return res.status(404).json({ error: "Budget not found" });
   res.json({ budget: b });
 });
 
-budgetsRouter.post("/", (req, res) => {
+budgetsRouter.post("/", async (req, res) => {
   const body = Body.safeParse(req.body);
   if (!body.success) return res.status(400).json({ error: "Invalid budget", issues: body.error.issues });
   const now = new Date().toISOString();
   const budgets = collection("budgets");
-  const existing = body.data.id ? budgets.get(body.data.id) : undefined;
+  const existing = body.data.id ? await budgets.get(body.data.id) : undefined;
   if (existing && existing.userId !== req.user.id && req.user.role !== "admin") return res.status(403).json({ error: "Not your budget" });
   const budget: Budget = {
     id: existing?.id ?? newId("bud"),
@@ -95,18 +94,19 @@ budgetsRouter.post("/", (req, res) => {
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
-  if (existing) budgets.update(budget.id, budget);
-  else budgets.insert(budget);
-  observe(budget, req.user.email);
+  if (existing) await budgets.update(budget.id, budget);
+  else await budgets.insert(budget);
+  await observe(budget, req.user.email);
   logUsage({ userId: req.user.id, userEmail: req.user.email, action: "budget_saved", projectTitle: budget.project.title, client: budget.project.client, total: budget.totals.total, budgetId: budget.id, sessionId: budget.aiSessionId ?? undefined });
-  res.status(existing ? 200 : 201).json({ budget, observations: collection("observations").find((o) => o.budgetId === budget.id).length });
+  const observations = (await collection("observations").find((o) => o.budgetId === budget.id)).length;
+  res.status(existing ? 200 : 201).json({ budget, observations });
 });
 
-budgetsRouter.delete("/:id", (req, res) => {
-  const b = collection("budgets").get(req.params.id);
+budgetsRouter.delete("/:id", async (req, res) => {
+  const b = await collection("budgets").get(req.params.id);
   if (!b || (b.userId !== req.user.id && req.user.role !== "admin")) return res.status(404).json({ error: "Budget not found" });
   const obs = collection("observations");
-  for (const o of obs.find((o) => o.budgetId === b.id)) obs.remove(o.id);
-  collection("budgets").remove(b.id);
+  for (const o of await obs.find((o) => o.budgetId === b.id)) await obs.remove(o.id);
+  await collection("budgets").remove(b.id);
   res.json({ ok: true });
 });

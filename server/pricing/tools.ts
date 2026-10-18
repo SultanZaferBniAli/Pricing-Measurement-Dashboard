@@ -232,7 +232,7 @@ function short(text: string | null | undefined, max = 140): string | null {
   return t.length > max ? t.slice(0, max - 1) + "…" : t;
 }
 
-export function runTool(name: string, rawInput: unknown): ToolOutcome {
+export async function runTool(name: string, rawInput: unknown): Promise<ToolOutcome> {
   switch (name) {
     case "note_progress": {
       const p = NoteProgress.safeParse(rawInput);
@@ -287,7 +287,7 @@ export function runTool(name: string, rawInput: unknown): ToolOutcome {
     case "search_past_projects": {
       const p = SearchPast.safeParse(rawInput);
       if (!p.success) return invalid(rawInput);
-      const hits = searchPastProjects(p.data.query, p.data.projectType?.trim() || undefined, 6).map((h) => ({
+      const hits = (await searchPastProjects(p.data.query, p.data.projectType?.trim() || undefined, 6)).map((h) => ({
         id: h.id, project: h.project, client: h.client, projectType: h.projectType, date: h.date,
         item: h.item, description: short(h.description, 120), qty: h.qty, unit: h.unit,
         unitPriceSar: compact(h.unitPrice), totalSar: compact(h.total), origin: h.origin, userAdjusted: h.userAdjusted ?? false,

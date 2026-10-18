@@ -96,14 +96,14 @@ aiRouter.post("/sessions", async (req, res) => {
     updatedAt: new Date().toISOString(),
     usage: { inputTokens: 0, outputTokens: 0, cacheRead: 0, cacheWrite: 0, turns: 0 },
   };
-  collection("aiSessions").insert(session);
+  await collection("aiSessions").insert(session);
   logUsage({ userId: req.user.id, userEmail: req.user.email, action: "ai_run", projectTitle: session.project.title, client: session.project.client, sessionId: session.id });
   await runAndStream(res, session, body.data.scopeText, body.data.attachments, true);
 });
 
 /** Continue the conversation: changes, questions, more scope. */
 aiRouter.post("/sessions/:id/messages", async (req, res) => {
-  const session = collection("aiSessions").get(req.params.id);
+  const session = await collection("aiSessions").get(req.params.id);
   if (!session || session.userId !== req.user.id) return res.status(404).json({ error: "Session not found" });
   const body = z.object({ text: z.string().min(1), attachments: z.array(Attachment).default([]) }).safeParse(req.body);
   if (!body.success) return res.status(400).json({ error: "A message is required" });
@@ -111,8 +111,8 @@ aiRouter.post("/sessions/:id/messages", async (req, res) => {
   await runAndStream(res, session, body.data.text, body.data.attachments, false);
 });
 
-aiRouter.get("/sessions/:id", (req, res) => {
-  const session = collection("aiSessions").get(req.params.id);
+aiRouter.get("/sessions/:id", async (req, res) => {
+  const session = await collection("aiSessions").get(req.params.id);
   if (!session || session.userId !== req.user.id) return res.status(404).json({ error: "Session not found" });
   res.json({ session: { id: session.id, project: session.project, model: session.model, pricing: session.pricing, wbs: session.wbs, usage: session.usage, createdAt: session.createdAt, updatedAt: session.updatedAt } });
 });

@@ -138,7 +138,7 @@ export async function runPricing(opts: RunOptions): Promise<void> {
       } else {
         emit({ type: "error", message: (err as Error).message });
       }
-      persist();
+      await persist();
       return;
     }
 
@@ -174,13 +174,13 @@ export async function runPricing(opts: RunOptions): Promise<void> {
     const results: Anthropic.ToolResultBlockParam[] = [];
     for (const tu of toolUses) {
       emit({ type: "tool_call", id: tu.id, name: tu.name, input: tu.input });
-      const out = runTool(tu.name, tu.input);
+      const out = await runTool(tu.name, tu.input);
       emit({ type: "tool_result", id: tu.id, name: tu.name, summary: out.summary, data: out.data, isError: out.isError });
       afterTool(tu.name, out.data, session, emit);
       results.push({ type: "tool_result", tool_use_id: tu.id, content: out.result, is_error: out.isError });
     }
     messages.push({ role: "user", content: results });
-    persist();
+    await persist();
   }
 
   session.usage.inputTokens += totalIn;
@@ -188,13 +188,13 @@ export async function runPricing(opts: RunOptions): Promise<void> {
   session.usage.cacheRead += cacheRead;
   session.usage.cacheWrite += cacheWrite;
   session.usage.turns += 1;
-  persist();
+  await persist();
   emit({ type: "status", phase: "done", provider: "anthropic", model });
   emit({ type: "done", sessionId: session.id, stopReason });
 
-  function persist() {
+  async function persist() {
     session.updatedAt = new Date().toISOString();
-    sessions.update(session.id, { messages, pricing: session.pricing, wbs: session.wbs, usage: session.usage, updatedAt: session.updatedAt });
+    await sessions.update(session.id, { messages, pricing: session.pricing, wbs: session.wbs, usage: session.usage, updatedAt: session.updatedAt });
   }
 }
 

@@ -32,7 +32,7 @@ export async function runMockPricing(opts: RunOptions): Promise<void> {
 
   const say = (text: string) => emit({ type: "text", text });
   const note = async (step: number, text: string) => {
-    const out = runTool("note_progress", { step, note: text });
+    const out = await runTool("note_progress", { step, note: text });
     emit({ type: "tool_call", id: `m${Date.now()}`, name: "note_progress", input: { step, note: text } });
     afterTool("note_progress", out.data, session, emit);
     await sleep(250);
@@ -41,7 +41,7 @@ export async function runMockPricing(opts: RunOptions): Promise<void> {
   if (!opts.isFirst) {
     say("Mock mode: follow-up messages are recorded but not reasoned about. Add an Anthropic API key to use the real analyst.\n");
     messages.push({ role: "assistant", content: "Mock mode acknowledged." });
-    sessions.update(session.id, { messages, updatedAt: new Date().toISOString() });
+    await sessions.update(session.id, { messages, updatedAt: new Date().toISOString() });
     emit({ type: "done", sessionId: session.id, stopReason: "end_turn" });
     return;
   }
@@ -64,7 +64,7 @@ export async function runMockPricing(opts: RunOptions): Promise<void> {
     qty: (c.match(/\b(\d{1,4})\b/) ? Number(c.match(/\b(\d{1,4})\b/)![1]) : 1) || 1,
     scopeEvidence: c,
   }));
-  const wbsOut = runTool("propose_wbs", { analysis: "Mock analysis: items taken line by line from the request.", items });
+  const wbsOut = await runTool("propose_wbs", { analysis: "Mock analysis: items taken line by line from the request.", items });
   emit({ type: "tool_call", id: "m-wbs", name: "propose_wbs", input: { items } });
   emit({ type: "tool_result", id: "m-wbs", name: "propose_wbs", summary: wbsOut.summary });
   afterTool("propose_wbs", wbsOut.data, session, emit);
@@ -75,7 +75,7 @@ export async function runMockPricing(opts: RunOptions): Promise<void> {
     const q = it.name.replace(/\b\d+\b/g, "").trim();
     const id = `m-db-${it.ref}`;
     emit({ type: "tool_call", id, name: "search_price_database", input: { query: q, section: "" } });
-    const db = runTool("search_price_database", { query: q, section: "" });
+    const db = await runTool("search_price_database", { query: q, section: "" });
     emit({ type: "tool_result", id, name: "search_price_database", summary: db.summary, data: db.data });
     const hits = (db.data as { hits: { id: string; name: string; unitPriceSar: number | null; unit: string | null; source: string | null }[] }).hits;
     const hit = hits.find((h) => h.unitPriceSar != null);
@@ -86,7 +86,7 @@ export async function runMockPricing(opts: RunOptions): Promise<void> {
     }
     const pid = `m-past-${it.ref}`;
     emit({ type: "tool_call", id: pid, name: "search_past_projects", input: { query: q, projectType: session.project.projectType } });
-    const past = runTool("search_past_projects", { query: q, projectType: session.project.projectType });
+    const past = await runTool("search_past_projects", { query: q, projectType: session.project.projectType });
     emit({ type: "tool_result", id: pid, name: "search_past_projects", summary: past.summary, data: past.data });
     const ph = (past.data as { hits: { id: string; project: string; item: string; unitPriceSar: number | null; unit: string | null }[] }).hits.find((h) => h.unitPriceSar != null);
     if (ph) {
@@ -98,14 +98,14 @@ export async function runMockPricing(opts: RunOptions): Promise<void> {
   }
 
   await note(4, "Presenting the priced list.");
-  const sub = runTool("submit_pricing", { items: priced, assumptions: ["Mock run: quantities read from numbers in each line, else 1."], summary: "Mock pricing complete." });
+  const sub = await runTool("submit_pricing", { items: priced, assumptions: ["Mock run: quantities read from numbers in each line, else 1."], summary: "Mock pricing complete." });
   emit({ type: "tool_call", id: "m-sub", name: "submit_pricing", input: { count: priced.length } });
   emit({ type: "tool_result", id: "m-sub", name: "submit_pricing", summary: sub.summary });
   afterTool("submit_pricing", sub.data, session, emit);
   say(`Mock run finished: ${priced.length} items. ${priced.filter((p) => p.unitPrice != null).length} priced from the database or past projects, ${priced.filter((p) => p.unitPrice == null).length} left for a benchmark.`);
   messages.push({ role: "assistant", content: "Mock pricing submitted." });
   session.usage.turns += 1;
-  sessions.update(session.id, { messages, pricing: session.pricing, wbs: session.wbs, usage: session.usage, updatedAt: new Date().toISOString() });
+  await sessions.update(session.id, { messages, pricing: session.pricing, wbs: session.wbs, usage: session.usage, updatedAt: new Date().toISOString() });
   emit({ type: "status", phase: "done", provider: "mock", model: "mock" });
   emit({ type: "done", sessionId: session.id, stopReason: "end_turn" });
 }
