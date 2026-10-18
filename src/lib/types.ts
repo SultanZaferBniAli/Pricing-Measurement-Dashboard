@@ -159,3 +159,109 @@ export interface SectionTotals {
   selectedCount: number;
   unpricedSelectedCount: number;
 }
+
+// ---------------------------------------------------------------------------
+// AI pricing and project information (v2)
+// ---------------------------------------------------------------------------
+
+/** Where a line's price came from. The label is shown on every AI-priced row. */
+export type PriceSourceType = "database" | "similar_project" | "benchmark" | "manual";
+
+/** Entered before pricing starts. Travels with the budget and the AI session. */
+export interface ProjectInfo {
+  title: string;
+  client: string;
+  projectType: string;
+  startDate?: string;
+  endDate?: string;
+  durationMonths?: number;
+  location?: string;
+  description: string;
+  rfpReference?: string;
+}
+
+/** A line the AI priced (or the user added by hand in the AI workspace). */
+export interface AiLine {
+  id: string;
+  ref: string;
+  section: string;
+  name: string;
+  unit: string;
+  qty: number;
+  unitPrice: number | null;
+  sourceType: PriceSourceType;
+  sourceRef: string;
+  matchedItemId?: string | null;
+  confidence?: number;
+  rationale?: string;
+  /** True once the user changes qty or price after the AI set them. */
+  userAdjusted?: boolean;
+  aiUnitPrice?: number | null;
+  aiQty?: number;
+  /** False excludes the line from totals without deleting it. */
+  included: boolean;
+}
+
+export interface WbsEntry {
+  ref: string;
+  section: string;
+  name: string;
+  unit: string;
+  qty: number;
+  scopeEvidence: string;
+}
+
+export interface AiPricing {
+  items: Omit<AiLine, "id" | "included" | "userAdjusted" | "aiUnitPrice" | "aiQty">[];
+  assumptions: string[];
+  summary: string;
+}
+
+export type AiStepState = "pending" | "active" | "done";
+
+/** One row of the live process panel. */
+export interface ProcessEntry {
+  id: string;
+  at: number;
+  kind: "status" | "note" | "tool" | "result" | "web" | "error" | "wbs" | "pricing";
+  step?: number;
+  title: string;
+  detail?: string;
+  data?: unknown;
+  isError?: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  attachments?: string[];
+  at: number;
+  /** Still streaming. */
+  pending?: boolean;
+}
+
+export interface AiUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cacheRead: number;
+  cacheWrite: number;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: "admin" | "user";
+  picture?: string | null;
+  provider?: "password" | "google";
+}
+
+/** A computed AI line: the line plus its money. */
+export interface ComputedAiLine {
+  line: AiLine;
+  baseCost: number;
+  fee: number;
+  totalCost: number;
+  isUnpriced: boolean;
+}

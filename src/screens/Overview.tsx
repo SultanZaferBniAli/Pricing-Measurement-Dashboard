@@ -41,16 +41,20 @@ type Breakdown = "section" | "vendor" | "subCategory";
 
 export function Overview({
   budget,
-  onBuild,
+  onNew,
+  onContinue,
   onReview,
   onVendors,
   onOpenHistory,
+  onBudgets,
 }: {
   budget: BudgetSummary;
-  onBuild: () => void;
+  onNew: () => void;
+  onContinue: () => void;
   onReview: () => void;
   onVendors: () => void;
   onOpenHistory: (id: string) => void;
+  onBudgets: () => void;
 }) {
   const { t, tSection, tSubCategory } = useT();
   const data = useStore((s) => s.data);
@@ -58,6 +62,7 @@ export function Overview({
   const [breakdown, setBreakdown] = useState<Breakdown>("section");
   const [confirmNew, setConfirmNew] = useState(false);
   const startNewBudget = useStore((s) => s.startNewBudget);
+  const project = useStore((s) => s.project);
 
   /**
    * "New budget" used only to navigate, so the previous client, title and
@@ -72,7 +77,7 @@ export function Overview({
     }
     startNewBudget();
     setConfirmNew(false);
-    onBuild();
+    onNew();
   };
 
   const { catalog, totals, selectedCount, unpricedSelected, priced } = budget;
@@ -85,12 +90,19 @@ export function Overview({
 
   const slices: Slice[] = useMemo(() => {
     if (breakdown === "section") {
-      return budget.bySection.map((b) => ({
+      const catalogSlices = budget.bySection.map((b) => ({
         key: b.section.key,
         label: tSection(b.section.name),
         value: b.totals.grand,
         color: SECTION_ACCENT[b.section.key] ?? SECTION_FALLBACK,
       }));
+      const aiSlices = budget.aiBySection.map((b, i) => ({
+        key: `ai-${b.section}`,
+        label: `${b.section} (AI)`,
+        value: b.totals.grand,
+        color: `rgb(var(--c${(i % 5) + 1}))`,
+      }));
+      return [...catalogSlices, ...aiSlices];
     }
     const palette = ["c1", "c2", "c3", "c4", "c5"];
     const bucket = new Map<string, number>();
@@ -122,9 +134,16 @@ export function Overview({
           </h1>
           <p className="mt-1 text-sm text-ink-2">{t("overviewSub")}</p>
         </div>
-        <Button onClick={newBudget}>
-          <Plus size={16} /> {t("overviewNewBudget")}
-        </Button>
+        <div className="flex items-center gap-2">
+          {project && (
+            <Button variant="secondary" onClick={onContinue}>
+              <Sparkles size={16} /> {t("overviewContinue", { title: project.title })}
+            </Button>
+          )}
+          <Button onClick={newBudget}>
+            <Plus size={16} /> {t("overviewNewBudget")}
+          </Button>
+        </div>
       </div>
 
       {confirmNew && (
@@ -155,7 +174,7 @@ export function Overview({
         <KpiTile
           label={t("kpiSelected")}
           value={selectedCount}
-          hint={t("kpiSelectedHint", { n: catalog.items })}
+          hint={t("kpiSelectedHint2", { ai: budget.aiTotals.selectedCount, n: budget.catalogSelectedCount })}
           icon={<CheckCircle2 size={16} />}
         />
         <KpiTile
@@ -180,9 +199,9 @@ export function Overview({
         />
         <KpiTile
           label={t("kpiMissing")}
-          value={unpricedSelected.length}
+          value={unpricedSelected.length + budget.aiUnpriced.length}
           hint={t("kpiMissingHint", { n: catalog.unpriced })}
-          tone={unpricedSelected.length > 0 ? "warn" : "neutral"}
+          tone={unpricedSelected.length + budget.aiUnpriced.length > 0 ? "warn" : "neutral"}
           icon={<TriangleAlert size={16} />}
         />
       </div>
@@ -254,11 +273,9 @@ export function Overview({
         <Panel
           title={t("recentTitle")}
           action={
-            history.length > 0 ? (
-              <span className="text-xs text-ink-2">
-                {t("recentCount", { n: history.length })}
-              </span>
-            ) : undefined
+            <button onClick={onBudgets} className="flex items-center gap-1 text-xs font-medium text-brand hover:underline">
+              {t("navBudgets")} <ArrowRight size={13} />
+            </button>
           }
           bodyClassName="px-0 pb-2"
         >

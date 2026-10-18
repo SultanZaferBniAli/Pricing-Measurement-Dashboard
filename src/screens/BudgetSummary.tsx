@@ -1,17 +1,23 @@
 /** Screen 3 - Selected Budget Summary: review, edit qty/notes, totals, export. */
 import { useState } from "react";
 import {
+  CheckCircle2,
   Download,
+  Loader2,
   Plus,
   FileSpreadsheet,
   Printer,
+  Save,
+  Sparkles,
   Trash2,
   TriangleAlert,
 } from "lucide-react";
 import { SECTION_ACCENT, SECTION_FALLBACK } from "../components/BudgetBar";
 import { RfpCheck } from "../components/RfpCheck";
 import { QtyStepper } from "../components/QtyStepper";
+import { WbsTable } from "../components/WbsTable";
 import { Badge, Button, Card, Diamond, MatchBadge, cx } from "../components/ui";
+import { budgets as budgetsApi } from "../lib/api";
 import { money, sar } from "../lib/format";
 import { useT } from "../lib/i18n";
 import { sumLines } from "../lib/pricing";
@@ -19,7 +25,7 @@ import { useStore } from "../lib/store";
 import { useBudget } from "../lib/useTotals";
 import type { ComputedLine } from "../lib/types";
 
-export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
+export function BudgetSummary({ onBrowse, onSaved }: { onBrowse: () => void; onSaved: () => void }) {
   const { t, tSection, tSubCategory, tType } = useT();
   const budget = useBudget();
   const data = useStore((s) => s.data);
@@ -40,9 +46,54 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
   const clearAll = useStore((s) => s.clearAll);
   const saveToHistory = useStore((s) => s.saveToHistory);
   const startNewBudget = useStore((s) => s.startNewBudget);
+  const project = useStore((s) => s.project);
+  const aiLinesRaw = useStore((s) => s.aiLines);
+  const aiSessionId = useStore((s) => s.aiSessionId);
+  const savedBudgetId = useStore((s) => s.savedBudgetId);
+  const setSavedBudgetId = useStore((s) => s.setSavedBudgetId);
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const { lines, priced, unpricedSelected, totals } = budget;
+  const { lines, priced, unpricedSelected, totals, aiLines } = budget;
+
+  /** File the budget on the platform. Each priced line becomes a price observation. */
+  async function handleSave() {
+    setSaving(true);
+    setSaveMsg(null);
+    try {
+      const catalogLines = lines
+        .filter((l) => !l.isUnpriced)
+        .map((l) => ({
+          ref: l.item.id,
+          section: l.item.section,
+          name: l.item.name,
+          unit: l.item.type,
+          qty: l.qty,
+          unitPrice: l.unitPrice,
+          sourceType: "database" as const,
+          sourceRef: `${l.item.sourceItem} (${l.item.priceSource || "catalog"})`,
+          matchedItemId: l.item.id,
+          userAdjusted: Boolean(l.customPrice),
+        }));
+      const ai = aiLinesRaw
+        .filter((l) => l.included)
+        .map(({ id: _id, included: _inc, ...rest }) => rest);
+      const res = await budgetsApi.save({
+        id: savedBudgetId ?? undefined,
+        project: project ?? { title: budgetTitle, client, projectType: "other", description: projectDescription, startDate: projectDate },
+        lines: [...ai, ...catalogLines],
+        totals: { base: totals.base, fee: totals.fee, grand: totals.grand, vat: totals.vat, total: totals.total },
+        aiSessionId,
+      });
+      setSavedBudgetId(res.budget.id);
+      setSaveMsg({ ok: true, text: t("saveDone", { n: res.observations }) });
+    } catch (e) {
+      setSaveMsg({ ok: false, text: (e as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  }
 
   // Grouped by section, so each line is read under the heading it belongs to
   // and the Section column no longer has to repeat itself on every row.
@@ -63,6 +114,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
         client,
         projectDate,
         projectDescription,
+        aiLines,
       });
       // A downloaded budget is one worth keeping, so the export is what files it
       // into the sidebar's history. Selections are stored whole so it reopens.
@@ -90,7 +142,7 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
     }
   }
 
-  if (lines.length === 0) {
+  if (lines.length === 0 && aiLines.length === 0) {
     return (
       <div className="animate-fade-in">
         <Card className="p-12 text-center">
@@ -122,11 +174,27 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
           <Button variant="ghost" size="sm" onClick={clearAll}>
             <Trash2 size={15} /> {t("clearAll")}
           </Button>
+          <Button variant="secondary" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            {savedBudgetId ? t("saveUpdate") : t("saveBudget")}
+          </Button>
           <Button variant="warn" onClick={handleExport} disabled={exporting}>
             <Download size={16} /> {exporting ? t("exporting") : t("exportExcel")}
           </Button>
         </div>
       </div>
+
+      {saveMsg && (
+        <p className={cx("flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm", saveMsg.ok ? "border-ok/25 bg-ok/10 text-ok" : "border-bad/30 bg-bad-bg text-bad")}>
+          {saveMsg.ok && <CheckCircle2 size={16} />}
+          <span className="flex-1">{saveMsg.text}</span>
+          {saveMsg.ok && (
+            <button onClick={onSaved} className="underline underline-offset-2">
+              {t("navBudgets")}
+            </button>
+          )}
+        </p>
+      )}
 
       {/* the brief: what this budget is for, and for whom */}
       <Card className="p-5">
@@ -201,6 +269,19 @@ export function BudgetSummary({ onBrowse }: { onBrowse: () => void }) {
               : t("unpricedCalloutTailMany")}
           </div>
         </div>
+      )}
+
+      {/* lines priced by the AI */}
+      {aiLines.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="flex items-center justify-between gap-3 border-b border-line bg-bg/40 px-4 py-2.5">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
+              <Sparkles size={14} className="text-brand" /> {t("reviewAiLines")}
+            </h3>
+            <span className="num text-sm font-bold text-warn">{money(budget.aiTotals.grand)}</span>
+          </div>
+          <WbsTable budget={budget} compact />
+        </Card>
       )}
 
       {/* one block per section */}

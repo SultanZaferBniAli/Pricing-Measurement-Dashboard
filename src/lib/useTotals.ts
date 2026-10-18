@@ -1,12 +1,13 @@
 /** Derived-state hooks: compute totals/counts from the store's selections. */
 import { useMemo } from "react";
-import { resolveBudget, sumLines } from "./pricing";
+import { addTotals, computeAiLine, resolveBudget, sumAiLines, sumLines } from "./pricing";
 import { useStore } from "./store";
 import type { ComputedLine } from "./types";
 
 export function useBudget() {
   const data = useStore((s) => s.data);
   const selections = useStore((s) => s.selections);
+  const aiLinesRaw = useStore((s) => s.aiLines);
 
   return useMemo(() => {
     // One resolve pass feeds both the global totals and the per-section rollup,
@@ -15,7 +16,14 @@ export function useBudget() {
     const lines = resolved.lines;
     const priced = lines.filter((l) => !l.isUnpriced);
     const unpricedSelected = lines.filter((l) => l.isUnpriced);
-    const totals = sumLines(priced);
+    const catalogTotals = sumLines(priced);
+
+    // AI-priced lines live beside the catalog lines and roll into the same
+    // totals. They are excluded individually by the user, never silently.
+    const aiLines = aiLinesRaw.map(computeAiLine);
+    const aiTotals = sumAiLines(aiLines);
+    const aiUnpriced = aiLines.filter((l) => l.isUnpriced);
+    const totals = addTotals(catalogTotals, aiTotals);
 
     // per-section rollup (priced only for money; counts include all)
     const bySection = data.sections.map((section) => {
@@ -33,6 +41,17 @@ export function useBudget() {
       };
     });
 
+    // AI lines grouped by their own section names
+    const aiBySection = Array.from(
+      aiLines.reduce((m, l) => {
+        if (!l.line.included) return m;
+        const list = m.get(l.line.section) ?? [];
+        list.push(l);
+        m.set(l.line.section, list);
+        return m;
+      }, new Map<string, typeof aiLines>())
+    ).map(([section, sl]) => ({ section, lines: sl, totals: sumAiLines(sl) }));
+
     // global catalog counts
     const allItems = data.sections.flatMap((s) => s.items);
     const catalog = {
@@ -47,11 +66,17 @@ export function useBudget() {
       priced,
       unpricedSelected,
       totals,
+      catalogTotals,
+      aiLines,
+      aiTotals,
+      aiUnpriced,
+      aiBySection,
       bySection,
       catalog,
-      selectedCount: lines.length,
+      selectedCount: lines.length + aiTotals.selectedCount,
+      catalogSelectedCount: lines.length,
     };
-  }, [data, selections]);
+  }, [data, selections, aiLinesRaw]);
 }
 
 export type BudgetSummary = ReturnType<typeof useBudget>;

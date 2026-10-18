@@ -11,15 +11,19 @@
 import { useState } from "react";
 import {
   Boxes,
+  FolderOpen,
   History,
   Handshake,
+  LogOut,
   Sparkles,
   LayoutGrid,
   Languages,
+  Plus,
   Settings2,
   Trash2,
   X,
 } from "lucide-react";
+import { auth } from "../lib/api";
 import { TamLogo } from "./TamLogo";
 import { ThemeToggle } from "./ThemeToggle";
 import { cx } from "./ui";
@@ -30,9 +34,12 @@ import type { BudgetSummary } from "../lib/useTotals";
 
 export type View =
   | { name: "home" }
+  | { name: "setup" }
+  | { name: "workspace" }
   | { name: "builder" }
   | { name: "vendors" }
   | { name: "summary" }
+  | { name: "budgets" }
   | { name: "admin" }
   | { name: "history"; id: string };
 
@@ -52,7 +59,12 @@ export function Sidebar({
   const history = useStore((s) => s.history);
   const removeFromHistory = useStore((s) => s.removeFromHistory);
   const budgetTitle = useStore((s) => s.budgetTitle);
+  const user = useStore((s) => s.user);
+  const setUser = useStore((s) => s.setUser);
+  const project = useStore((s) => s.project);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const signOut = () => auth.logout().finally(() => setUser(null));
 
   const go = (v: View) => {
     onNavigate(v);
@@ -93,6 +105,20 @@ export function Sidebar({
           icon={<LayoutGrid size={16} />}
         >
           {t("navHome")}
+        </RailButton>
+        <RailButton
+          active={view.name === "setup" || view.name === "workspace"}
+          onClick={() => go(project ? { name: "workspace" } : { name: "setup" })}
+          icon={project ? <Sparkles size={16} /> : <Plus size={16} />}
+        >
+          {project ? t("navWorkspace") : t("overviewNewBudget")}
+        </RailButton>
+        <RailButton
+          active={view.name === "budgets"}
+          onClick={() => go({ name: "budgets" })}
+          icon={<FolderOpen size={16} />}
+        >
+          {t("navBudgets")}
         </RailButton>
         <RailButton
           active={view.name === "builder"}
@@ -176,15 +202,25 @@ export function Sidebar({
         )}
       </nav>
 
-      {/* what the RFP tooling is for, said once */}
-      <div className="mx-3 mb-3 rounded-card border border-brand/20 bg-active p-3">
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-brand">
-          <Sparkles size={13} /> {t("aiCardTitle")}
-        </p>
-        <p className="mt-1 text-[11px] leading-relaxed text-ink">
-          {t("aiCardBody")}
-        </p>
-      </div>
+      {/* who is signed in */}
+      {user && (
+        <div className="mx-3 mb-3 flex items-center gap-2 rounded-card border border-line bg-surface px-3 py-2">
+          {user.picture ? (
+            <img src={user.picture} alt="" referrerPolicy="no-referrer" className="h-7 w-7 shrink-0 rounded-full object-cover" />
+          ) : (
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-active text-[11px] font-bold text-brand">
+              {user.name.slice(0, 1).toUpperCase()}
+            </span>
+          )}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-xs font-medium text-ink">{user.name}</span>
+            <span className="block truncate text-[10px] text-ink-muted">{user.role === "admin" ? t("roleAdmin") : t("roleUser")}</span>
+          </span>
+          <button onClick={signOut} title={t("signOut")} aria-label={t("signOut")} className="rounded-md p-1.5 text-ink-muted hover:bg-hover hover:text-ink">
+            <LogOut size={14} />
+          </button>
+        </div>
+      )}
 
       {/* running total: the single home for this figure */}
       <div className="border-t border-line px-4 py-4">
@@ -207,14 +243,18 @@ export function Sidebar({
           </>
         )}
         <div className="mt-3 flex items-center justify-between gap-2">
-          <RailButton
-            active={view.name === "admin"}
-            onClick={() => go({ name: "admin" })}
-            icon={<Settings2 size={15} />}
-            compact
-          >
-            {t("navAdmin")}
-          </RailButton>
+          {user?.role === "admin" ? (
+            <RailButton
+              active={view.name === "admin"}
+              onClick={() => go({ name: "admin" })}
+              icon={<Settings2 size={15} />}
+              compact
+            >
+              {t("navAdmin")}
+            </RailButton>
+          ) : (
+            <span />
+          )}
           <div className="flex items-center gap-1">
             <button
               onClick={() => setLanguage(lang === "ar" ? "en" : "ar")}

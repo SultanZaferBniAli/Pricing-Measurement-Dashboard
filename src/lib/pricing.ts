@@ -199,3 +199,46 @@ export function allSelectedLines(
 ): ComputedLine[] {
   return resolveBudget(sections, selections).lines;
 }
+
+// ---------------------------------------------------------------------------
+// AI-priced lines. Same chain as catalog lines: base, 15% fee, VAT on top.
+// ---------------------------------------------------------------------------
+import type { AiLine, ComputedAiLine } from "./types";
+
+export function computeAiLine(line: AiLine): ComputedAiLine {
+  const priced = line.unitPrice != null && line.unitPrice > 0 && line.included;
+  const baseCost = priced ? line.qty * (line.unitPrice as number) : 0;
+  const fee = baseCost * FEE_RATE;
+  return { line, baseCost, fee, totalCost: baseCost + fee, isUnpriced: !priced && line.included };
+}
+
+export function sumAiLines(lines: ComputedAiLine[]): SectionTotals {
+  const t = lines.reduce(
+    (acc, l) => {
+      if (!l.line.included) return acc;
+      acc.base += l.baseCost;
+      acc.fee += l.fee;
+      acc.grand += l.totalCost;
+      acc.selectedCount += 1;
+      if (l.isUnpriced) acc.unpricedSelectedCount += 1;
+      return acc;
+    },
+    { base: 0, fee: 0, grand: 0, selectedCount: 0, unpricedSelectedCount: 0 }
+  );
+  const vat = t.grand * VAT_RATE;
+  return { ...t, vat, total: t.grand + vat };
+}
+
+/** Add two totals together (catalog lines + AI lines). */
+export function addTotals(a: SectionTotals, b: SectionTotals): SectionTotals {
+  const grand = a.grand + b.grand;
+  return {
+    base: a.base + b.base,
+    fee: a.fee + b.fee,
+    grand,
+    vat: grand * VAT_RATE,
+    total: grand * (1 + VAT_RATE),
+    selectedCount: a.selectedCount + b.selectedCount,
+    unpricedSelectedCount: a.unpricedSelectedCount + b.unpricedSelectedCount,
+  };
+}

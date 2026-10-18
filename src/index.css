@@ -270,3 +270,8 @@ input[type="number"] {
     scroll-behavior: auto !important;
   }
 }
+
+/* compact inputs inside tables */
+.input-sm {
+  @apply mt-0.5 block w-full rounded-control border border-line bg-bg/50 px-2 py-1 text-sm text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none;
+}

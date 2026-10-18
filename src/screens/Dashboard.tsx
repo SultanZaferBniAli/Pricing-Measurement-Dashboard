@@ -27,10 +27,13 @@ export function Dashboard({
   budget,
   onOpenExport,
   onReview,
+  embedded,
 }: {
   budget: BudgetSummary;
   onOpenExport: (id: string) => void;
   onReview: () => void;
+  /** Inside the pricing workspace: no page title, no budget bar. */
+  embedded?: boolean;
 }) {
   const data = useStore((s) => s.data);
   const activeSection = useStore((s) => s.activeSection);
@@ -81,9 +84,11 @@ export function Dashboard({
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-ink md:text-3xl">{t("buildTitle")}</h1>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-2xl font-bold text-ink md:text-3xl">{t("buildTitle")}</h1>
+        </div>
+      )}
 
       {/* the previous budget did not vanish: say where it went */}
       {lastExport && (
@@ -110,7 +115,7 @@ export function Dashboard({
         </div>
       )}
 
-      <BudgetBar budget={budget} />
+      {!embedded && <BudgetBar budget={budget} />}
 
       {/* the catalog on the left, what you have chosen on the right */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_23rem] 2xl:grid-cols-[minmax(0,1fr)_26rem]">
