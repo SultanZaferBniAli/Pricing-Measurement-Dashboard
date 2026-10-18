@@ -4,6 +4,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Paperclip, Send, Sparkles, X } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
 import { Button, cx } from "./ui";
 import { useT } from "../lib/i18n";
 import type { ChatMessage } from "../lib/types";
@@ -66,7 +67,7 @@ export function AiChat({
                 <p dir="auto" className="whitespace-pre-wrap break-words text-start">{m.text}</p>
               ) : m.pending ? (
                 <span className="flex items-center gap-2 text-ink-2">
-                  <Loader2 size={14} className="animate-spin" /> {t("chatWorking")}
+                  <ThinkingOrb state="composing" size={20} aria-label={t("chatWorking")} /> {t("chatWorking")}
                 </span>
               ) : null}
               {m.attachments && m.attachments.length > 0 && (

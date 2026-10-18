@@ -18,13 +18,28 @@ import {
   Receipt,
   TriangleAlert,
 } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
 import { cx } from "./ui";
 import { useT } from "../lib/i18n";
 import type { AiRunState } from "../lib/store";
 import type { ProcessEntry } from "../lib/types";
 
+/** Which orb animation matches what the analyst is doing right now. */
+export function orbStateFor(run: AiRunState): "breathing" | "listening" | "shaping" | "searching" | "connecting" | "solving" | "composing" {
+  if (!run.running) return "breathing";
+  const last = [...run.log].reverse().find((e) => e.kind !== "note" && e.kind !== "status");
+  if (last?.kind === "web") return "connecting";
+  if (last?.kind === "pricing") return "composing";
+  if (run.steps[4] === "active") return "solving";
+  if (run.steps[3] === "active") return "searching";
+  if (run.steps[2] === "active") return "shaping";
+  if (run.steps[1] === "active") return "listening";
+  return "composing";
+}
+
 export function AiProcessPanel({ run }: { run: AiRunState }) {
   const { t } = useT();
+  const orb = orbStateFor(run);
   const [showThinking, setShowThinking] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +74,7 @@ export function AiProcessPanel({ run }: { run: AiRunState }) {
               {state === "done" ? (
                 <CheckCircle2 size={13} className="shrink-0" />
               ) : state === "active" && run.running ? (
-                <Loader2 size={13} className="shrink-0 animate-spin" />
+                <ThinkingOrb state={orb} size={20} className="shrink-0" aria-label={s.label} />
               ) : (
                 <Circle size={13} className="shrink-0" />
               )}
@@ -75,7 +90,10 @@ export function AiProcessPanel({ run }: { run: AiRunState }) {
       {/* the log */}
       <div ref={logRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         {run.log.length === 0 ? (
-          <p className="px-1 py-6 text-center text-sm text-ink-muted">{t("aiLogEmpty")}</p>
+          <div className="flex flex-col items-center gap-3 px-1 py-6 text-center text-sm text-ink-muted">
+            <ThinkingOrb state={run.running ? orb : "breathing"} size={64} aria-label={t("aiLogEmpty")} />
+            <p>{t("aiLogEmpty")}</p>
+          </div>
         ) : (
           <ul className="space-y-1">
             {run.log.map((e) => (
@@ -83,7 +101,7 @@ export function AiProcessPanel({ run }: { run: AiRunState }) {
             ))}
             {run.running && (
               <li className="flex items-center gap-2 px-2 py-1.5 text-xs text-ink-muted">
-                <Loader2 size={13} className="animate-spin text-brand" /> {t("aiWorking")}
+                <ThinkingOrb state={orb} size={20} aria-label={t("aiWorking")} /> {t("aiWorking")}
               </li>
             )}
           </ul>

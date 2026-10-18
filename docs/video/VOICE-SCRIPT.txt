@@ -1,0 +1,17 @@
+TAM PRICING DASHBOARD — VOICE-OVER SCRIPT (11 lines, generate each as its own file)
+
+Voice direction: confident product presenter, warm, upbeat, slightly fast. A short beat before each step number. No sales shout.
+Suggested ElevenLabs settings: Stability 0.40, Similarity 0.80, Style 0.35, Speed 1.05.
+File names to use when exporting: s0, s1, s2 … s10 (mp3 or wav). Drop them in docs/video/build/vo/ and run: node docs/video/record.mjs
+
+[s0]  Bored of pricing five RFPs a day, and chasing third-party prices?
+[s1]  At TAM, we built something for that.
+[s2]  The all-new Pricing Dashboard. It prices third-party costs straight from the scope of work.
+[s3]  Upload the scope. The rest is on us. Here's how.
+[s4]  One. Sign in with your TAM Google account, and hit New budget.
+[s5]  Two. Fill in the RFP: title, client, type, dates, location, a short description.
+[s6]  Three. Not confidential? Drop the RFP in. Confidential? Just describe the scope. Nothing leaves TAM's servers.
+[s7]  Four. The analyst reads the scope, breaks it into priceable items, and prices each one: database first, then similar projects, then benchmark. Every search, visible.
+[s8]  Five. Check the items. Every line shows its source and a confidence score. Don't trust a price? Type yours. The AI's number stays one click away.
+[s9]  Six. Save it. Every line you confirm sharpens the next estimate. That's how we price more precisely, every week.
+[s10]  Upload the scope. The rest is on us. TAM Pricing Dashboard.

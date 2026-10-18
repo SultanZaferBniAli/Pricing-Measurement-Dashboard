@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import {
   ArrowRight,
   Boxes,
+  PlayCircle,
   CheckCircle2,
   Handshake,
   Plus,
@@ -31,6 +32,7 @@ import {
   type Slice,
 } from "../components/dashboard";
 import { Button } from "../components/ui";
+import { assetUrl } from "../lib/asset";
 import { compact, money, sar } from "../lib/format";
 import { useT } from "../lib/i18n";
 import { vendorFor, VENDORS } from "../data/vendors";
@@ -205,6 +207,29 @@ export function Overview({
           icon={<TriangleAlert size={16} />}
         />
       </div>
+
+      {/* how it works: the explainer, always one click away */}
+      <Panel
+        title={t("howTitle")}
+        subtitle={t("howSub")}
+        action={
+          <span className="flex items-center gap-1 text-xs text-ink-muted">
+            <PlayCircle size={13} /> 1:40
+          </span>
+        }
+        bodyClassName="px-0 pb-0"
+      >
+        <video
+          controls
+          preload="metadata"
+          playsInline
+          poster={assetUrl("/explainer-poster.jpg")}
+          className="block w-full bg-black"
+          style={{ aspectRatio: "16 / 9" }}
+        >
+          <source src={assetUrl("/explainer.mp4")} type="video/mp4" />
+        </video>
+      </Panel>
 
       <div className="grid gap-4 xl:grid-cols-5">
         {/* breakdown */}
