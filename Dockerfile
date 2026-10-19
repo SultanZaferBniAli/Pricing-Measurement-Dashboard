@@ -23,5 +23,5 @@ COPY src/data ./src/data
 RUN mkdir -p /app/server/data && chown -R node:node /app
 USER node
 EXPOSE 8787
-HEALTHCHECK --interval=15s --timeout=5s --retries=5 CMD wget -qO- http://localhost:8787/api/health || exit 1
+HEALTHCHECK --interval=15s --timeout=5s --retries=5 CMD wget -qO- http://127.0.0.1:8787/api/health || exit 1
 CMD ["node", "node_modules/.bin/tsx", "server/index.ts"]

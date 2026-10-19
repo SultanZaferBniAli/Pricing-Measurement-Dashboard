@@ -64,6 +64,6 @@ cp .env.example .env   # fill in POSTGRES_* and SESSION_SECRET at least
 docker compose build
 docker compose up -d
 docker compose ps       # both healthy
-docker compose exec app wget -qO- http://localhost:8787/api/health
+docker compose exec app wget -qO- http://127.0.0.1:8787/api/health
 docker compose down -v
 ```
