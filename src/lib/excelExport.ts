@@ -10,14 +10,24 @@
 import ExcelJS from "exceljs";
 import { FEE_RATE, VAT_RATE } from "./format";
 import { allSelectedLines, sumLines } from "./pricing";
-import type { ComputedLine, ScopeData, Selection } from "./types";
+import { sumAiLines } from "./pricing";
+import type { ComputedAiLine, ComputedLine, ScopeData, Selection } from "./types";
 
 /** The project brief captured on the review page, carried onto the export. */
 export interface BudgetBrief {
   client?: string;
   projectDate?: string;
   projectDescription?: string;
+  /** Lines priced by the AI analyst, exported on their own sheet. */
+  aiLines?: ComputedAiLine[];
 }
+
+const SOURCE_LABEL: Record<string, string> = {
+  database: "Priced from database",
+  similar_project: "Priced from similar project",
+  benchmark: "Priced from benchmark",
+  manual: "Entered by user",
+};
 
 // Brand colours as ARGB (ExcelJS wants no leading #)
 const NAVY = "FF222242";
@@ -67,7 +77,9 @@ export async function buildWorkbook(
   dateStr: string,
   brief: BudgetBrief = {}
 ): Promise<ExcelJS.Buffer> {
-  const { client = "", projectDate = "", projectDescription = "" } = brief;
+  const { client = "", projectDate = "", projectDescription = "", aiLines = [] } = brief;
+  const aiIncluded = aiLines.filter((l) => l.line.included && !l.isUnpriced);
+  const aiTotals = sumAiLines(aiIncluded);
   const wb = new ExcelJS.Workbook();
   wb.creator = "TAM Scope-Based Budget Builder";
   wb.created = new Date(dateStr);
@@ -75,7 +87,15 @@ export async function buildWorkbook(
   const lines = allSelectedLines(data.sections, selections);
   const priced = lines.filter((l) => !l.isUnpriced);
   const unpriced = lines.filter((l) => l.isUnpriced);
-  const totals = sumLines(priced);
+  const catalogTotals = sumLines(priced);
+  const grand = catalogTotals.grand + aiTotals.grand;
+  const totals = {
+    base: catalogTotals.base + aiTotals.base,
+    fee: catalogTotals.fee + aiTotals.fee,
+    grand,
+    vat: grand * VAT_RATE,
+    total: grand * (1 + VAT_RATE),
+  };
 
   // ---------- Sheet 1: Budget Summary ----------
   const s1 = wb.addWorksheet("Budget Summary", {
@@ -91,7 +111,8 @@ export async function buildWorkbook(
   s1.addRow(["Currency", data.meta.currency]);
   s1.addRow(["Fee Rate", `${FEE_RATE * 100}%`]);
   s1.addRow(["VAT Rate", `${VAT_RATE * 100}%`]);
-  s1.addRow(["Selected Items", priced.length + unpriced.length]);
+  s1.addRow(["Selected Items", priced.length + unpriced.length + aiIncluded.length]);
+  s1.addRow(["AI-priced lines", aiIncluded.length]);
   s1.addRow(["Unpriced (excluded)", unpriced.length]);
   if (projectDescription) {
     const r = s1.addRow(["Project description", projectDescription]);
@@ -117,6 +138,17 @@ export async function buildWorkbook(
   s1.addRow([]);
 
   headerRow(s1, ["Section", "Base Cost", "Fees (15%)", "Subtotal (incl. fee)"]);
+  if (aiIncluded.length > 0) {
+    const bySec = new Map<string, ComputedAiLine[]>();
+    for (const l of aiIncluded) bySec.set(l.line.section, [...(bySec.get(l.line.section) ?? []), l]);
+    for (const [name, sl] of bySec) {
+      const st = sumAiLines(sl);
+      const r = s1.addRow([`${name} (AI priced)`, st.base, st.fee, st.grand]);
+      money(r.getCell(2));
+      money(r.getCell(3));
+      money(r.getCell(4));
+    }
+  }
   for (const section of data.sections) {
     const sl = lines.filter(
       (l) => l.item.sectionKey === section.key && !l.isUnpriced
@@ -210,6 +242,32 @@ export async function buildWorkbook(
         l.item.mappingNote,
       ]);
     }
+  }
+
+  // ---------- Sheet: AI Priced Items ----------
+  if (aiLines.length > 0) {
+    const sa = wb.addWorksheet("AI Priced Items");
+    const colsA = ["Ref", "Section", "Item", "Unit", "Qty", "Unit Price (SAR)", "Base Cost", "Fee (15%)", "Total Cost (SAR)", "Price Label", "Source", "Confidence", "Rationale", "Included"];
+    sa.columns = colsA.map((_, i) => ({ width: i === 2 ? 36 : i === 10 || i === 12 ? 48 : 14 }));
+    titleRow(sa, "AI Priced Items (every line labelled with where its price came from)", colsA.length);
+    headerRow(sa, colsA);
+    for (const l of aiLines) {
+      const r = sa.addRow([
+        l.line.ref, l.line.section, l.line.name, l.line.unit, l.line.qty, l.line.unitPrice ?? 0,
+        l.baseCost, l.fee, l.totalCost, SOURCE_LABEL[l.line.sourceType] ?? l.line.sourceType,
+        l.line.sourceRef, l.line.confidence != null ? Math.round(l.line.confidence * 100) / 100 : "",
+        l.line.rationale ?? "", l.line.included ? "Yes" : "No",
+      ]);
+      [6, 7, 8, 9].forEach((i) => money(r.getCell(i)));
+      if (l.line.userAdjusted) r.getCell(6).font = { color: { argb: "FF9A6B00" }, italic: true };
+      if (!l.line.included) r.eachCell((c) => (c.font = { ...(c.font ?? {}), color: { argb: "FF9A9A9A" } }));
+    }
+    const fa = sa.addRow(["", "", "", "", "", "TOTAL", aiTotals.base, aiTotals.fee, aiTotals.grand]);
+    [7, 8, 9].forEach((i) => money(fa.getCell(i)));
+    fa.eachCell((c) => {
+      c.font = { bold: true, color: { argb: WHITE } };
+      c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: SURFACE } };
+    });
   }
 
   // ---------- Sheet 4: Source Reference ----------

@@ -6,3 +6,5 @@ dist-ssr
 .vite
 *.tsbuildinfo
 test_budget.xlsx
+.env
+server/data/

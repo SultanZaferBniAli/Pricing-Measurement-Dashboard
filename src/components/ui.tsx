@@ -16,7 +16,7 @@ export function Card({ className, ...props }: DivProps) {
   return (
     <div
       className={cx(
-        "rounded-card bg-surface/90 border border-line shadow-card",
+        "rounded-card border border-line bg-surface/80 shadow-card backdrop-blur-xl",
         className
       )}
       {...props}
@@ -47,12 +47,14 @@ export function Button({
 }: ButtonProps) {
   // emil-design-eng: name exact properties (never `transition: all`), give an
   // instant `:active` press response, and keep a visible keyboard focus ring.
+  // Apple-style controls: pill shape, a 44px primary target, a gentle lift on
+  // hover and a quick press, with one easing curve throughout.
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-[transform,background-color,box-shadow,border-color] duration-150 ease-out active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100";
-  const sizes = { sm: "text-sm px-3 py-1.5", md: "text-sm px-4 py-2.5" };
+    "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[transform,background-color,box-shadow,border-color,filter] duration-200 ease-apple hover:scale-[1.02] active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100";
+  const sizes = { sm: "text-sm px-4 min-h-[36px]", md: "text-[15px] px-5 min-h-[44px]" };
   const variants = {
     primary:
-      "bg-brand text-on-brand hover:bg-brand/90 shadow-[0_6px_20px_-8px_rgb(var(--brand)/0.55)]",
+      "bg-brand text-on-brand hover:brightness-110 shadow-[0_6px_20px_-8px_rgb(var(--brand)/0.55)]",
     secondary: "border border-line bg-surface text-ink hover:bg-hover",
     ghost: "bg-transparent text-ink-2 hover:bg-hover hover:text-ink",
     warn: "bg-warn text-on-brand hover:bg-warn/90 font-semibold",

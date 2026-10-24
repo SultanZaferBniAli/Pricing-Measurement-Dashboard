@@ -6,7 +6,8 @@
  * from the same parts rather than each inventing its own card. Everything here
  * is theme-agnostic: colours come from the tokens, so light and dark are free.
  */
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { SlidingHighlight, useSlidingHighlight } from "./SlidingHighlight";
 import { cx } from "./ui";
 
 /* ------------------------------------------------------------------ panel */
@@ -30,15 +31,15 @@ export function Panel({
   return (
     <section
       className={cx(
-        "min-w-0 rounded-card border border-line bg-surface shadow-card",
+        "min-w-0 rounded-card border border-line bg-surface/80 shadow-card backdrop-blur-xl",
         className
       )}
     >
       {(title || action) && (
-        <header className="flex flex-wrap items-start justify-between gap-3 px-5 pb-3 pt-4">
+        <header className="flex flex-wrap items-start justify-between gap-3 px-6 pb-3 pt-5">
           <div className="min-w-0">
             {title && (
-              <h2 className="text-base font-semibold text-ink">{title}</h2>
+              <h2 className="text-[17px] font-semibold text-ink">{title}</h2>
             )}
             {subtitle && (
               <p className="mt-0.5 text-xs text-ink-2">{subtitle}</p>
@@ -47,7 +48,7 @@ export function Panel({
           {action}
         </header>
       )}
-      <div className={cx("px-5 pb-5", !title && "pt-5", bodyClassName)}>
+      <div className={cx("px-6 pb-6", !title && "pt-6", bodyClassName)}>
         {children}
       </div>
     </section>
@@ -90,7 +91,7 @@ export function KpiTile({
 }) {
   const t = KPI_TONE[tone];
   return (
-    <div className="min-w-0 rounded-card border border-line bg-surface p-4 shadow-card transition-colors duration-150 hover:border-brand/30">
+    <div className="min-w-0 rounded-card border border-line bg-surface/80 p-5 shadow-card backdrop-blur-xl transition-[border-color,transform] duration-200 ease-apple hover:border-brand/30">
       <div className="flex items-start justify-between gap-3">
         <span className="text-xs font-medium text-ink-2">{label}</span>
         <span
@@ -102,7 +103,7 @@ export function KpiTile({
           {icon}
         </span>
       </div>
-      <p className={cx("num mt-2 text-2xl font-bold leading-tight", t.value)}>
+      <p className={cx("num mt-2 text-[28px] font-semibold leading-tight tracking-tight", t.value)}>
         {value}
         {unit && (
           <span className="ms-1 text-sm font-normal text-ink-2">{unit}</span>
@@ -300,22 +301,25 @@ export function FilterTabs<T extends string>({
   onChange: (v: T) => void;
   options: readonly (readonly [T, string])[];
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const highlight = useSlidingHighlight(ref, value);
   return (
     <div
+      ref={ref}
       role="tablist"
-      className="flex flex-wrap gap-1 rounded-control bg-raised p-1"
+      className="relative flex flex-wrap gap-1 rounded-full bg-raised p-1"
     >
+      <SlidingHighlight style={highlight} className="rounded-full bg-surface shadow-sm" />
       {options.map(([v, label]) => (
         <button
           key={v}
           role="tab"
           aria-selected={value === v}
+          data-active={value === v ? "true" : "false"}
           onClick={() => onChange(v)}
           className={cx(
-            "rounded-[9px] px-2.5 py-1.5 text-xs font-medium transition-colors duration-150",
-            value === v
-              ? "bg-surface text-brand shadow-sm"
-              : "text-ink-2 hover:text-ink"
+            "relative rounded-full px-3 py-1.5 text-xs font-medium transition-[color,transform] duration-200 ease-apple active:scale-[0.96]",
+            value === v ? "text-brand" : "text-ink-2 hover:text-ink"
           )}
         >
           {label}

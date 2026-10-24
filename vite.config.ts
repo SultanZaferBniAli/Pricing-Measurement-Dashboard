@@ -2,19 +2,20 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 /*
- * The deployed build is a GitHub Pages project site, served from
- * /Pricing-Measurement-Dashboard/ rather than the domain root, so the built
- * asset URLs have to carry that prefix. Dev keeps serving from "/" so the
- * localhost URL stays plain.
+ * Dev: Vite serves the app on 5183 and proxies /api to the Node API on 8787.
+ * Production: the API serves the built dist/ itself, from "/".
  */
-const REPO_BASE = "/Pricing-Measurement-Dashboard/";
-
-// https://vite.dev/config/
-export default defineConfig(({ command }) => ({
-  base: command === "build" ? REPO_BASE : "/",
+export default defineConfig(() => ({
+  base: "/",
   plugins: [react()],
   server: {
     port: 5183,
     host: true,
+    proxy: {
+      "/api": {
+        target: `http://localhost:${process.env.API_PORT ?? 8787}`,
+        changeOrigin: false,
+      },
+    },
   },
 }));

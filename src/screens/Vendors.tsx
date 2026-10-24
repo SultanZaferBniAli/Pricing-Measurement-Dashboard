@@ -60,9 +60,9 @@ export function Vendors() {
   const quotedPct = total > 0 ? (quoted / total) * 100 : 0;
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-ink md:text-3xl">{t("vendorsTitle")}</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-ink">{t("vendorsTitle")}</h1>
         <p className="mt-1 max-w-2xl text-sm text-ink-2">{t("vendorsSub")}</p>
       </div>
 
